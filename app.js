@@ -121,24 +121,32 @@ document.addEventListener('DOMContentLoaded', () => {
     pdfjsLib.getDocument({ data: data.slice(0), password }).promise;
 
   // ----------------------------------------------------------- view routing
-  // Home shows the tool-card grid; picking a tool swaps to the tool view with
-  // a "← All tools" breadcrumb. Deep links like #split still work.
+  // Two page types share this script:
+  //  - The homepage hub ("/") has #home-view (card grid) + #tool-view and swaps
+  //    panels in place, mirroring the active tool in the URL hash.
+  //  - Dedicated static landing pages (/merge-pdf/, /sign-pdf/, ...) declare
+  //    <body data-default-tool="..."> and ship without #home-view. They never
+  //    write to the URL, so each route remains a clean, individually indexable
+  //    document with its own immutable <head> metadata.
   const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg'];
+  const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
-    $('#home-view').classList.toggle('hidden', isTool);
-    $('#tool-view').classList.toggle('hidden', !isTool);
+    $('#home-view')?.classList.toggle('hidden', isTool);
+    $('#tool-view')?.classList.toggle('hidden', !isTool);
     if (isTool) {
       $$('.panel').forEach((p) => p.classList.add('hidden'));
-      $(`#panel-${view}`).classList.remove('hidden');
+      $(`#panel-${view}`)?.classList.remove('hidden');
     }
-    history.replaceState(null, '', isTool ? `#${view}` : location.pathname + location.search);
+    if (!DEDICATED_TOOL) {
+      history.replaceState(null, '', isTool ? `#${view}` : location.pathname + location.search);
+    }
     if (scroll) window.scrollTo(0, 0);
   };
   $$('[data-tool]').forEach((b) => b.addEventListener('click', () => activate(b.dataset.tool)));
   $$('[data-home]').forEach((b) => b.addEventListener('click', () => activate('home')));
-  activate(location.hash.replace('#', '') || 'home', false);
-  $('#year').textContent = new Date().getFullYear();
+  activate(location.hash.replace('#', '') || DEDICATED_TOOL || 'home', false);
+  if ($('#year')) $('#year').textContent = new Date().getFullYear();
 
   // ================================================================= MERGE
   const mergeState = { files: [] };
@@ -344,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ================================================================== SIGN
-  const signState = { file: null, doc: null, pageNum: 1, placement: null, hasInk: false };
+  const signState = { file: null, doc: null, pageNum: 1, placement: null, hasInk: false, mode: 'draw', typedName: '', uploadedDataUrl: null };
 
   // signature pad
   const pad = $('#sigpad');
@@ -374,16 +382,88 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   ['pointerup', 'pointercancel'].forEach((ev) => pad.addEventListener(ev, () => (drawing = false)));
   $('#sig-clear').addEventListener('click', () => {
-    padCtx.clearRect(0, 0, pad.width, pad.height);
-    signState.hasInk = false;
+    if (signState.mode === 'draw') {
+      padCtx.clearRect(0, 0, pad.width, pad.height);
+      signState.hasInk = false;
+    } else if (signState.mode === 'type') {
+      signState.typedName = '';
+      $('#sig-type-text').value = '';
+    } else {
+      signState.uploadedDataUrl = null;
+      $('#sig-upload-input').value = '';
+      $('#sig-upload-preview').innerHTML = '';
+    }
     updateSignReady();
   });
   $('#sig-width').addEventListener('input', () => {
     $('#sig-width-val').textContent = `${$('#sig-width').value}%`;
   });
 
+  // Signature source modes: draw on the pad, type a name in a script face, or
+  // upload an existing signature image. All three resolve to a PNG data URL.
+  const setSigMode = (mode) => {
+    signState.mode = mode;
+    $('#sigpad').classList.toggle('hidden', mode !== 'draw');
+    $('#sig-type-box').classList.toggle('hidden', mode !== 'type');
+    $('#sig-upload-box').classList.toggle('hidden', mode !== 'upload');
+    $$('.sigmode').forEach((b) => {
+      const on = b.dataset.sigmode === mode;
+      b.className = 'sigmode btn text-sm rounded-lg px-3.5 py-1.5 ' + (on
+        ? 'border border-brand-600 bg-brand-50 text-brand-700 font-semibold'
+        : 'border border-slate-300 hover:bg-slate-100');
+    });
+    updateSignReady();
+  };
+  $$('.sigmode').forEach((b) => b.addEventListener('click', () => setSigMode(b.dataset.sigmode)));
+  $('#sig-type-text').addEventListener('input', () => {
+    signState.typedName = $('#sig-type-text').value.trim();
+    updateSignReady();
+  });
+  $('#sig-upload-input').addEventListener('change', () => {
+    const f = $('#sig-upload-input').files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      signState.uploadedDataUrl = reader.result;
+      $('#sig-upload-preview').innerHTML = `<img src="${reader.result}" alt="Signature preview" class="max-h-20 inline-block" />`;
+      updateSignReady();
+    };
+    reader.readAsDataURL(f);
+  });
+  const hasSignature = () =>
+    signState.mode === 'draw' ? signState.hasInk
+    : signState.mode === 'type' ? !!signState.typedName
+    : !!signState.uploadedDataUrl;
+  const signaturePngDataUrl = () =>
+    new Promise((resolve, reject) => {
+      if (signState.mode === 'draw') return resolve(pad.toDataURL('image/png'));
+      if (signState.mode === 'type') {
+        const c = document.createElement('canvas');
+        const ctx = c.getContext('2d');
+        const fontSpec = '72px "Segoe Script", "Brush Script MT", "Lucida Handwriting", cursive';
+        ctx.font = fontSpec;
+        c.width = Math.ceil(ctx.measureText(signState.typedName).width) + 48;
+        c.height = 130;
+        ctx.font = fontSpec; // resizing the canvas resets context state
+        ctx.fillStyle = '#1e293b';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(signState.typedName, 24, 65);
+        return resolve(c.toDataURL('image/png'));
+      }
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        resolve(c.toDataURL('image/png'));
+      };
+      img.onerror = () => reject(new Error('Could not read the uploaded signature image.'));
+      img.src = signState.uploadedDataUrl;
+    });
+
   const updateSignReady = () => {
-    $('#btn-sign').disabled = !(signState.file && signState.hasInk && signState.placement);
+    $('#btn-sign').disabled = !(signState.file && hasSignature() && signState.placement);
   };
 
   setupDropzone('sign', async ([f]) => {
@@ -437,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const doc = await PDFDocument.load(await signState.file.arrayBuffer());
       const page = doc.getPage(signState.pageNum - 1);
       const { width: pw, height: ph } = page.getSize();
-      const pngBytes = await (await fetch(pad.toDataURL('image/png'))).arrayBuffer();
+      const pngBytes = await (await fetch(await signaturePngDataUrl())).arrayBuffer();
       const img = await doc.embedPng(pngBytes);
       const w = (pw * +$('#sig-width').value) / 100;
       const h = (w * img.height) / img.width;
