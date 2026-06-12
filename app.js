@@ -33,6 +33,24 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/[ \t]/g, ' ')
       .replace(/[^\x20-\xFF]/g, '');
 
+  // Unicode (Thai) text support: pdf-lib standard fonts cannot encode Thai, so
+  // when text contains Thai characters we embed Noto Sans Thai via fontkit.
+  // The font is fetched once and cached for the session; subsetting keeps the
+  // saved PDF small.
+  const UNICODE_FONT_URL = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/noto-sans-thai/NotoSansThai_400Regular.ttf';
+  let unicodeFontBytes = null;
+  const hasThai = (s) => /[฀-๿]/.test(s);
+  const getUnicodeFont = async (doc) => {
+    if (typeof fontkit === 'undefined') throw new Error('Font engine still loading — please try again in a moment.');
+    doc.registerFontkit(fontkit);
+    if (!unicodeFontBytes) {
+      const res = await fetch(UNICODE_FONT_URL);
+      if (!res.ok) throw new Error('Could not download the Thai font — check your connection and try again.');
+      unicodeFontBytes = await res.arrayBuffer();
+    }
+    return doc.embedFont(unicodeFontBytes, { subset: true });
+  };
+
   const setStatus = (tool, msg, kind = 'info') => {
     const el = $(`#status-${tool}`);
     if (!el) return;
@@ -105,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ----------------------------------------------------------- view routing
   // Home shows the tool-card grid; picking a tool swaps to the tool view with
   // a "← All tools" breadcrumb. Deep links like #split still work.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'sign', 'type', 'word2pdf', 'pdf2word', 'img2pdf'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg'];
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
     $('#home-view').classList.toggle('hidden', isTool);
@@ -536,11 +554,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       setStatus('type', 'Writing text into PDF…');
       const doc = await PDFDocument.load(await typeState.file.arrayBuffer());
-      const font = await doc.embedFont(StandardFonts.Helvetica);
+      const needsUnicode = typeState.items.some((it) => hasThai(it.text));
+      const font = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
       for (const it of typeState.items) {
         const page = doc.getPage(it.page - 1);
         const { width: pw, height: ph } = page.getSize();
-        page.drawText(toWinAnsi(it.text) || ' ', {
+        page.drawText((needsUnicode ? it.text : toWinAnsi(it.text)) || ' ', {
           x: it.nx * pw,
           y: ph - it.ny * ph - it.size * 0.78,
           size: it.size,
@@ -636,14 +655,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       setStatus('word2pdf', 'Laying out PDF…');
       const doc = await PDFDocument.create();
-      const fontReg = await doc.embedFont(StandardFonts.Helvetica);
-      const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
+      const needsUnicode = blocks.some((b) => hasThai(b.text));
+      const fontReg = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+      const fontBold = needsUnicode ? fontReg : await doc.embedFont(StandardFonts.HelveticaBold);
       const PAGE_W = 595.28, PAGE_H = 841.89, MARGIN = 56; // A4
       let page = doc.addPage([PAGE_W, PAGE_H]);
       let y = PAGE_H - MARGIN;
       for (const b of blocks) {
         const font = b.bold ? fontBold : fontReg;
-        const text = toWinAnsi(b.text);
+        const text = needsUnicode ? b.text : toWinAnsi(b.text);
         const maxW = PAGE_W - MARGIN * 2 - b.indent;
         const lineH = b.size * 1.45;
         if (!text) { y -= lineH * 0.7; continue; }
@@ -909,6 +929,232 @@ document.addEventListener('DOMContentLoaded', () => {
       setStatus('img2pdf', `❌ ${err.message || err}`, 'error');
     } finally {
       btn.disabled = i2pState.files.length === 0;
+    }
+  });
+
+  // ============================================================ PDF TO JPG
+  const p2jState = { file: null };
+  setupDropzone('pdf2jpg', ([f]) => {
+    p2jState.file = f;
+    $('#picked-pdf2jpg').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+    $('#btn-pdf2jpg').disabled = false;
+    hideResult('pdf2jpg');
+    setStatus('pdf2jpg', '');
+  });
+  $('#btn-pdf2jpg').addEventListener('click', async () => {
+    const f = p2jState.file;
+    if (!f) return;
+    const btn = $('#btn-pdf2jpg');
+    btn.disabled = true;
+    hideResult('pdf2jpg');
+    try {
+      const hi = $('#quality-pdf2jpg').value === 'high';
+      const scale = hi ? 2 : 1.5;
+      const quality = hi ? 0.92 : 0.8;
+      const src = await loadPdfJs(await f.arrayBuffer());
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const images = [];
+      for (let i = 1; i <= src.numPages; i++) {
+        setStatus('pdf2jpg', `Rendering page ${i} of ${src.numPages}…`);
+        const page = await src.getPage(i);
+        const vp = page.getViewport({ scale });
+        canvas.width = Math.ceil(vp.width);
+        canvas.height = Math.ceil(vp.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        images.push(await canvasToJpeg(canvas, quality));
+      }
+      if (images.length === 1) {
+        showResult('pdf2jpg', new Blob([images[0]], { type: 'image/jpeg' }), `${baseName(f.name)}.jpg`, 'image/jpeg');
+      } else {
+        setStatus('pdf2jpg', 'Packing images into a ZIP…');
+        const zip = new JSZip();
+        const pad = String(images.length).length;
+        images.forEach((img, i) =>
+          zip.file(`${baseName(f.name)}_page_${String(i + 1).padStart(pad, '0')}.jpg`, img));
+        const blob = await zip.generateAsync({ type: 'blob' });
+        showResult('pdf2jpg', blob, `${baseName(f.name)}_images.zip`, 'application/zip',
+          `${images.length} images · ${fmtBytes(blob.size)}`);
+      }
+    } catch (err) {
+      setStatus('pdf2jpg',
+        `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`,
+        'error');
+    } finally {
+      btn.disabled = !p2jState.file;
+    }
+  });
+
+  // ======================================================== PAGE NUMBERS
+  const pnState = { file: null };
+  setupDropzone('pagenum', ([f]) => {
+    pnState.file = f;
+    $('#picked-pagenum').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+    $('#btn-pagenum').disabled = false;
+    hideResult('pagenum');
+    setStatus('pagenum', '');
+  });
+  $('#btn-pagenum').addEventListener('click', async () => {
+    const f = pnState.file;
+    if (!f) return;
+    const btn = $('#btn-pagenum');
+    btn.disabled = true;
+    hideResult('pagenum');
+    try {
+      setStatus('pagenum', 'Adding page numbers…');
+      const doc = await PDFDocument.load(await f.arrayBuffer());
+      const font = await doc.embedFont(StandardFonts.Helvetica);
+      const total = doc.getPageCount();
+      const fmt = $('#fmt-pagenum').value;
+      const pos = $('#pos-pagenum').value;
+      const SIZE = 10;
+      const MARGIN = 28;
+      for (let i = 0; i < total; i++) {
+        const page = doc.getPage(i);
+        const { width: pw, height: ph } = page.getSize();
+        const label = fmt === 'pageofn' ? `Page ${i + 1} of ${total}` : String(i + 1);
+        const tw = font.widthOfTextAtSize(label, SIZE);
+        const x = pos.endsWith('left') ? MARGIN : pos.endsWith('right') ? pw - MARGIN - tw : (pw - tw) / 2;
+        const y = pos.startsWith('top') ? ph - MARGIN : 18;
+        page.drawText(label, { x, y, size: SIZE, font, color: rgb(0.3, 0.3, 0.3) });
+      }
+      const bytes = await doc.save();
+      showResult('pagenum', bytes, `${baseName(f.name)}_numbered.pdf`, 'application/pdf',
+        `${total} pages numbered · ${fmtBytes(bytes.length)}`);
+    } catch (err) {
+      setStatus('pagenum',
+        `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`,
+        'error');
+    } finally {
+      btn.disabled = !pnState.file;
+    }
+  });
+
+  // ============================================================ WATERMARK
+  const wmState = { file: null };
+  $('#opacity-watermark').addEventListener('input', () => {
+    $('#opacity-val').textContent = `${$('#opacity-watermark').value}%`;
+  });
+  setupDropzone('watermark', ([f]) => {
+    wmState.file = f;
+    $('#picked-watermark').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+    $('#btn-watermark').disabled = false;
+    hideResult('watermark');
+    setStatus('watermark', '');
+  });
+  $('#btn-watermark').addEventListener('click', async () => {
+    const f = wmState.file;
+    if (!f) return;
+    const raw = $('#text-watermark').value.trim();
+    if (!raw) {
+      setStatus('watermark', 'Type the watermark text first — e.g. CONFIDENTIAL or DRAFT.', 'error');
+      return;
+    }
+    const btn = $('#btn-watermark');
+    btn.disabled = true;
+    hideResult('watermark');
+    try {
+      setStatus('watermark', 'Stamping watermark…');
+      const doc = await PDFDocument.load(await f.arrayBuffer());
+      const thai = hasThai(raw);
+      const font = thai ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.HelveticaBold);
+      const text = thai ? raw : toWinAnsi(raw);
+      const opacity = +$('#opacity-watermark').value / 100;
+      const cos45 = Math.cos(Math.PI / 4);
+      for (const page of doc.getPages()) {
+        const { width: pw, height: ph } = page.getSize();
+        const diag = Math.sqrt(pw * pw + ph * ph);
+        // size the text so it spans ~60% of the page diagonal
+        let size = 60;
+        size = Math.max(18, Math.min(110, (size * diag * 0.6) / font.widthOfTextAtSize(text, size)));
+        const tw = font.widthOfTextAtSize(text, size);
+        page.drawText(text, {
+          x: pw / 2 - (tw / 2) * cos45,
+          y: ph / 2 - (tw / 2) * cos45,
+          size,
+          font,
+          color: rgb(0.55, 0.55, 0.55),
+          opacity,
+          rotate: degrees(45),
+        });
+      }
+      const bytes = await doc.save();
+      showResult('watermark', bytes, `${baseName(f.name)}_watermarked.pdf`, 'application/pdf');
+    } catch (err) {
+      setStatus('watermark',
+        `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`,
+        'error');
+    } finally {
+      btn.disabled = !wmState.file;
+    }
+  });
+
+  // ============================================================== PROTECT
+  // pdf-lib cannot write encrypted PDFs, so this tool lazily loads the
+  // @cantoo/pdf-lib fork (which adds AES encryption) only when used. The fork's
+  // UMD bundle also sets window.PDFLib, so we swap the global back immediately.
+  const protState = { file: null };
+  let encryptLibPromise = null;
+  const getEncryptLib = () => {
+    if (!encryptLibPromise) {
+      encryptLibPromise = new Promise((resolve, reject) => {
+        const orig = window.PDFLib;
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@cantoo/pdf-lib/dist/pdf-lib.min.js';
+        s.onload = () => {
+          const lib = window.PDFLib;
+          window.PDFLib = orig;
+          lib && lib !== orig ? resolve(lib) : reject(new Error('Encryption library failed to initialize.'));
+        };
+        s.onerror = () => {
+          window.PDFLib = orig;
+          encryptLibPromise = null;
+          reject(new Error('Could not load the encryption library — check your connection and try again.'));
+        };
+        document.head.appendChild(s);
+      });
+    }
+    return encryptLibPromise;
+  };
+  setupDropzone('protect', ([f]) => {
+    protState.file = f;
+    $('#picked-protect').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+    $('#btn-protect').disabled = false;
+    hideResult('protect');
+    setStatus('protect', '');
+  });
+  $('#btn-protect').addEventListener('click', async () => {
+    const f = protState.file;
+    if (!f) return;
+    const pw = $('#pw-protect').value;
+    if (pw.length < 4) {
+      setStatus('protect', 'Choose a password of at least 4 characters.', 'error');
+      return;
+    }
+    const btn = $('#btn-protect');
+    btn.disabled = true;
+    hideResult('protect');
+    try {
+      setStatus('protect', 'Loading encryption engine…');
+      const lib = await getEncryptLib();
+      setStatus('protect', 'Encrypting PDF…');
+      const doc = await lib.PDFDocument.load(await f.arrayBuffer());
+      let bytes;
+      if (typeof doc.encrypt === 'function') {
+        await doc.encrypt({ userPassword: pw, ownerPassword: pw });
+        bytes = await doc.save();
+      } else {
+        bytes = await doc.save({ userPassword: pw, ownerPassword: pw });
+      }
+      showResult('protect', bytes, `${baseName(f.name)}_protected.pdf`, 'application/pdf');
+    } catch (err) {
+      setStatus('protect',
+        `❌ ${/encrypt/i.test(String(err)) && /load/i.test(String(err)) ? 'This PDF is already password-protected.' : err.message || err}`,
+        'error');
+    } finally {
+      btn.disabled = !protState.file;
     }
   });
 });

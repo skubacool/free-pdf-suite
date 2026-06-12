@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Free PDF Tools — Merge, Split, Compress, Convert, Sign &amp; Unlock PDF Online (100% Private)</title>
-  <meta name="description" content="Free online PDF tools for work and study: merge, split, rotate, compress, unlock, sign, type on PDF, Word to PDF, PDF to Word and JPG to PDF. 100% private — files never leave your device." />
-  <meta name="keywords" content="free pdf tools, merge pdf, split pdf, rotate pdf, compress pdf, unlock pdf, sign pdf online, type on pdf, word to pdf, pdf to word, jpg to pdf, private pdf editor" />
+  <meta name="description" content="Free online PDF tools for work and study: merge, split, rotate, compress, unlock, protect, sign, watermark, page numbers, Word to PDF, PDF to Word, JPG to PDF and PDF to JPG. 100% private — files never leave your device." />
+  <meta name="keywords" content="free pdf tools, merge pdf, split pdf, rotate pdf, compress pdf, unlock pdf, protect pdf password, sign pdf online, watermark pdf, add page numbers to pdf, type on pdf, word to pdf, pdf to word, jpg to pdf, pdf to jpg, private pdf editor" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://skubacool.github.io/free-pdf-suite/" />
 
@@ -30,7 +30,7 @@
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Any (Web Browser)",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "featureList": "Merge PDF, Split PDF, Rotate PDF, Compress PDF, Unlock PDF, Sign PDF, Type on PDF, Word to PDF, PDF to Word, JPG to PDF",
+    "featureList": "Merge PDF, Split PDF, Rotate PDF, Compress PDF, Unlock PDF, Protect PDF, Sign PDF, Type on PDF, Add Page Numbers, Watermark PDF, Word to PDF, PDF to Word, JPG to PDF, PDF to JPG",
     "description": "Free client-side PDF utilities. All processing happens locally in your browser; files are never uploaded to any server."
   }
   </script>
@@ -44,7 +44,7 @@
       {
         "@type": "Question",
         "name": "Are these online PDF tools really free?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every tool on Free PDF Suite — merge, split, rotate, compress, unlock, sign, type on PDF, Word to PDF, PDF to Word and JPG to PDF — is completely free with no sign-up, no watermarks and no daily limits. The site is supported by advertising." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. All fourteen tools on Free PDF Suite — merge, split, rotate, compress, unlock, protect, sign, page numbers, watermark, type on PDF and every converter — are completely free with no sign-up, no forced watermarks and no daily limits. The site is supported by advertising." }
       },
       {
         "@type": "Question",
@@ -142,6 +142,8 @@
   <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script defer src="./app.js"></script>
   <!-- Optional backend scaffolding (Nhost) — inert until configured in nhost.js -->
   <script type="module" src="./nhost.js"></script>
@@ -253,6 +255,11 @@
             <div class="font-bold mt-3">JPG to PDF</div>
             <p class="text-sm text-slate-500 mt-1">Combine photos and scans into a single PDF.</p>
           </button>
+          <button data-tool="pdf2jpg" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">📸</span>
+            <div class="font-bold mt-3">PDF to JPG</div>
+            <p class="text-sm text-slate-500 mt-1">Save every page as a high-quality image.</p>
+          </button>
         </div>
 
         <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">Edit &amp; Sign</h2>
@@ -266,6 +273,16 @@
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">⌨️</span>
             <div class="font-bold mt-3">Type on PDF</div>
             <p class="text-sm text-slate-500 mt-1">Fill forms and add text, dates or notes anywhere.</p>
+          </button>
+          <button data-tool="pagenum" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔢</span>
+            <div class="font-bold mt-3">Add Page Numbers</div>
+            <p class="text-sm text-slate-500 mt-1">Stamp page numbers on every page, where you want them.</p>
+          </button>
+          <button data-tool="watermark" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">💧</span>
+            <div class="font-bold mt-3">Watermark PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Stamp CONFIDENTIAL, DRAFT or your own text across pages.</p>
           </button>
         </div>
 
@@ -281,6 +298,13 @@
             <div class="font-bold mt-3">Unlock PDF</div>
             <p class="text-sm text-slate-500 mt-1">Remove the password from a PDF you own.</p>
           </button>
+          <button data-tool="protect" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-red-50 text-2xl">🔐</span>
+            <div class="font-bold mt-3">Protect PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Add a password to keep a document private.</p>
+          </button>
+          <!-- ADVERTISEMENT SLOT -->
+          <div class="ad-box rounded-2xl min-h-[140px]" aria-label="Advertisement"></div>
         </div>
       </section>
 
@@ -652,6 +676,148 @@
               <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
             </div>
           </div>
+          <!-- ============ PDF TO JPG ============ -->
+          <div id="panel-pdf2jpg" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">📸</span>
+              <div>
+                <h2 class="text-2xl font-bold">PDF to JPG</h2>
+                <p class="text-slate-500 text-sm">Save every page as a high-quality image. Multiple pages download as one ZIP file.</p>
+              </div>
+            </div>
+            <div id="dz-pdf2jpg" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-pdf2jpg" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-pdf2jpg" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">Image quality</label>
+            <select id="quality-pdf2jpg" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="high" selected>High — sharp, larger images</option>
+              <option value="medium">Medium — smaller files</option>
+            </select>
+            <button id="btn-pdf2jpg" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Convert to JPG</button>
+            <p id="status-pdf2jpg" class="mt-4 text-sm font-medium"></p>
+            <div id="res-pdf2jpg" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-pdf2jpg" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-pdf2jpg"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ ADD PAGE NUMBERS ============ -->
+          <div id="panel-pagenum" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔢</span>
+              <div>
+                <h2 class="text-2xl font-bold">Add Page Numbers</h2>
+                <p class="text-slate-500 text-sm">Stamp page numbers on every page — handy for reports, theses and contracts.</p>
+              </div>
+            </div>
+            <div id="dz-pagenum" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-pagenum" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-pagenum" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 flex flex-wrap gap-4">
+              <label class="text-sm font-semibold">Position
+                <select id="pos-pagenum" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="bottom-center" selected>Bottom center</option>
+                  <option value="bottom-right">Bottom right</option>
+                  <option value="bottom-left">Bottom left</option>
+                  <option value="top-right">Top right</option>
+                </select>
+              </label>
+              <label class="text-sm font-semibold">Format
+                <select id="fmt-pagenum" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="n" selected>1, 2, 3 …</option>
+                  <option value="pageofn">Page 1 of N</option>
+                </select>
+              </label>
+            </div>
+            <button id="btn-pagenum" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Add Page Numbers</button>
+            <p id="status-pagenum" class="mt-4 text-sm font-medium"></p>
+            <div id="res-pagenum" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-pagenum" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-pagenum"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ WATERMARK ============ -->
+          <div id="panel-watermark" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">💧</span>
+              <div>
+                <h2 class="text-2xl font-bold">Watermark PDF</h2>
+                <p class="text-slate-500 text-sm">Stamp CONFIDENTIAL, DRAFT or any text diagonally across every page.</p>
+              </div>
+            </div>
+            <div id="dz-watermark" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-watermark" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-watermark" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 flex flex-wrap items-end gap-4">
+              <label class="text-sm font-semibold">Watermark text
+                <input type="text" id="text-watermark" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 w-64" placeholder="e.g. CONFIDENTIAL" value="CONFIDENTIAL" />
+              </label>
+              <label class="text-sm font-semibold">Visibility
+                <span class="mt-1.5 flex items-center gap-2 font-normal">
+                  <input type="range" id="opacity-watermark" min="10" max="60" value="25" class="accent-[#2563EB]" />
+                  <span id="opacity-val" class="text-slate-500 text-sm w-10">25%</span>
+                </span>
+              </label>
+            </div>
+            <button id="btn-watermark" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Add Watermark</button>
+            <p id="status-watermark" class="mt-4 text-sm font-medium"></p>
+            <div id="res-watermark" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-watermark" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-watermark"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ PROTECT ============ -->
+          <div id="panel-protect" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-red-50 text-2xl">🔐</span>
+              <div>
+                <h2 class="text-2xl font-bold">Protect PDF</h2>
+                <p class="text-slate-500 text-sm">Add a password so only people you trust can open the document. Encrypted locally in your browser.</p>
+              </div>
+            </div>
+            <div id="dz-protect" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-protect" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-protect" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">Password</label>
+            <input type="password" id="pw-protect" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="Choose a password (min. 4 characters)" autocomplete="new-password" />
+            <p class="mt-2 text-xs text-slate-500">⚠️ Remember this password — there is no way to recover the file without it.</p>
+            <button id="btn-protect" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Protect PDF</button>
+            <p id="status-protect" class="mt-4 text-sm font-medium"></p>
+            <div id="res-protect" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-protect" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-protect"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
         </section>
 
         <!-- Right rail -->
@@ -678,7 +844,7 @@
       <div class="mt-8 border-t border-slate-200">
         <details class="faq border-b border-slate-200 py-4" open>
           <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Are these online PDF tools really free?</summary>
-          <p class="mt-2.5 text-slate-600">Yes. Every tool on Free PDF Suite — merge, split, rotate, compress, unlock, sign, type on PDF, Word to PDF, PDF to Word and JPG to PDF — is completely free with no sign-up, no watermarks and no daily limits. The site is supported by advertising, which keeps the tools free for everyone.</p>
+          <p class="mt-2.5 text-slate-600">Yes. All fourteen tools on Free PDF Suite — merge, split, rotate, compress, unlock, protect, sign, page numbers, watermark, type on PDF and every converter — are completely free with no sign-up, no forced watermarks and no daily limits. The site is supported by advertising, which keeps the tools free for everyone.</p>
         </details>
         <details class="faq border-b border-slate-200 py-4">
           <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Are my PDF files uploaded to a server?</summary>
