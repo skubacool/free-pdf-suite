@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-  const { PDFDocument, StandardFonts, rgb } = PDFLib;
+  const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
 
   const fmtBytes = (n) => {
     if (!Number.isFinite(n)) return '';
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!el) return;
     el.textContent = msg;
     el.className = 'mt-4 text-sm font-medium ' +
-      (kind === 'error' ? 'text-red-700' : kind === 'success' ? 'text-emerald-700' : 'text-muted');
+      (kind === 'error' ? 'text-red-700' : kind === 'success' ? 'text-emerald-700' : 'text-slate-500');
   };
 
   const results = {}; // tool -> { blob, filename }
@@ -102,19 +102,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadPdfJs = (data, password) =>
     pdfjsLib.getDocument({ data: data.slice(0), password }).promise;
 
-  // ------------------------------------------------------------ tab routing
-  const TOOLS = ['merge', 'compress', 'unlock', 'sign', 'type', 'word2pdf', 'pdf2word'];
-  const activate = (tool) => {
-    if (!TOOLS.includes(tool)) tool = 'merge';
-    $$('.panel').forEach((p) => p.classList.add('hidden'));
-    $(`#panel-${tool}`).classList.remove('hidden');
-    $$('.navbtn').forEach((b) => {
-      b.classList.toggle('active-tool', b.dataset.tool === tool);
-    });
-    history.replaceState(null, '', `#${tool}`);
+  // ----------------------------------------------------------- view routing
+  // Home shows the tool-card grid; picking a tool swaps to the tool view with
+  // a "← All tools" breadcrumb. Deep links like #split still work.
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'sign', 'type', 'word2pdf', 'pdf2word', 'img2pdf'];
+  const activate = (view, scroll = true) => {
+    const isTool = TOOLS.includes(view);
+    $('#home-view').classList.toggle('hidden', isTool);
+    $('#tool-view').classList.toggle('hidden', !isTool);
+    if (isTool) {
+      $$('.panel').forEach((p) => p.classList.add('hidden'));
+      $(`#panel-${view}`).classList.remove('hidden');
+    }
+    history.replaceState(null, '', isTool ? `#${view}` : location.pathname + location.search);
+    if (scroll) window.scrollTo(0, 0);
   };
-  $$('.navbtn').forEach((b) => b.addEventListener('click', () => activate(b.dataset.tool)));
-  activate(location.hash.replace('#', '') || 'merge');
+  $$('[data-tool]').forEach((b) => b.addEventListener('click', () => activate(b.dataset.tool)));
+  $$('[data-home]').forEach((b) => b.addEventListener('click', () => activate('home')));
+  activate(location.hash.replace('#', '') || 'home', false);
   $('#year').textContent = new Date().getFullYear();
 
   // ================================================================= MERGE
@@ -124,13 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ul.innerHTML = '';
     mergeState.files.forEach((f, i) => {
       const li = document.createElement('li');
-      li.className = 'flex items-center gap-2 bg-paper border border-line rounded-full px-4 py-2 text-sm';
+      li.className = 'flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm';
       li.innerHTML = `<span class="font-medium truncate">${escapeHtml(f.name)}</span>
-        <span class="text-muted whitespace-nowrap">${fmtBytes(f.size)}</span>
+        <span class="text-slate-400 whitespace-nowrap">${fmtBytes(f.size)}</span>
         <span class="ml-auto flex gap-1">
-          <button data-act="up" data-i="${i}" class="border border-line rounded-full px-2.5 py-0.5 hover:bg-cream" title="Move up">↑</button>
-          <button data-act="down" data-i="${i}" class="border border-line rounded-full px-2.5 py-0.5 hover:bg-cream" title="Move down">↓</button>
-          <button data-act="rm" data-i="${i}" class="border border-red-200 text-red-700 rounded-full px-2.5 py-0.5 hover:bg-red-50" title="Remove">✕</button>
+          <button data-act="up" data-i="${i}" class="border border-slate-300 rounded-lg px-2.5 py-0.5 hover:bg-white" title="Move up">↑</button>
+          <button data-act="down" data-i="${i}" class="border border-slate-300 rounded-lg px-2.5 py-0.5 hover:bg-white" title="Move down">↓</button>
+          <button data-act="rm" data-i="${i}" class="border border-red-200 text-red-700 rounded-lg px-2.5 py-0.5 hover:bg-red-50" title="Remove">✕</button>
         </span>`;
       ul.appendChild(li);
     });
@@ -329,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
   padCtx.lineWidth = 2.5;
   padCtx.lineCap = 'round';
   padCtx.lineJoin = 'round';
-  padCtx.strokeStyle = '#1c1b17';
+  padCtx.strokeStyle = '#1e293b';
   let drawing = false;
   const padPos = (e) => {
     const r = pad.getBoundingClientRect();
@@ -445,9 +450,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ul.innerHTML = '';
     typeState.items.forEach((it, i) => {
       const li = document.createElement('li');
-      li.className = 'flex items-center gap-2 bg-paper border border-line rounded-full px-4 py-1.5';
+      li.className = 'flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-1.5';
       li.innerHTML = `<span class="truncate">“${escapeHtml(it.text)}” — page ${it.page}, ${it.size}pt</span>
-        <button data-i="${i}" class="ml-auto border border-red-200 text-red-700 rounded-full px-2.5 py-0.5 hover:bg-red-50">✕</button>`;
+        <button data-i="${i}" class="ml-auto border border-red-200 text-red-700 rounded-lg px-2.5 py-0.5 hover:bg-red-50">✕</button>`;
       ul.appendChild(li);
     });
     $('#btn-type').disabled = typeState.items.length === 0;
@@ -710,6 +715,200 @@ document.addEventListener('DOMContentLoaded', () => {
         'error');
     } finally {
       btn.disabled = false;
+    }
+  });
+
+  // ================================================================= SPLIT
+  const splitState = { file: null, pageCount: 0 };
+  // "1-3, 5, 8" -> sorted unique page numbers, or null if invalid/out of range
+  const parseRanges = (str, max) => {
+    const picked = new Set();
+    if (!str.trim()) return null;
+    for (const part of str.split(',')) {
+      const m = /^\s*(\d+)\s*(?:-\s*(\d+)\s*)?$/.exec(part);
+      if (!m) return null;
+      let a = +m[1];
+      let b = m[2] ? +m[2] : a;
+      if (a > b) [a, b] = [b, a];
+      if (a < 1 || b > max) return null;
+      for (let i = a; i <= b; i++) picked.add(i);
+    }
+    return [...picked].sort((x, y) => x - y);
+  };
+  setupDropzone('split', async ([f]) => {
+    hideResult('split');
+    try {
+      setStatus('split', 'Reading PDF…');
+      const doc = await PDFDocument.load(await f.arrayBuffer());
+      splitState.file = f;
+      splitState.pageCount = doc.getPageCount();
+      $('#picked-split').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${splitState.pageCount} pages`;
+      $('#btn-split').disabled = false;
+      setStatus('split', '');
+    } catch (err) {
+      splitState.file = null;
+      $('#btn-split').disabled = true;
+      setStatus('split',
+        `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`,
+        'error');
+    }
+  });
+  $('#btn-split').addEventListener('click', async () => {
+    const f = splitState.file;
+    if (!f) return;
+    const btn = $('#btn-split');
+    btn.disabled = true;
+    hideResult('split');
+    try {
+      const picked = parseRanges($('#range-split').value, splitState.pageCount);
+      if (!picked) throw new Error(`Enter a valid page range between 1 and ${splitState.pageCount}, e.g. 1-3, 5.`);
+      const mode = $('input[name="mode-split"]:checked').value;
+      const keep = mode === 'extract'
+        ? picked
+        : Array.from({ length: splitState.pageCount }, (_, i) => i + 1).filter((p) => !picked.includes(p));
+      if (!keep.length) throw new Error('Nothing left to save — removing those pages would empty the document.');
+      setStatus('split', `Building PDF with ${keep.length} page${keep.length > 1 ? 's' : ''}…`);
+      const src = await PDFDocument.load(await f.arrayBuffer());
+      const out = await PDFDocument.create();
+      const pages = await out.copyPages(src, keep.map((p) => p - 1));
+      pages.forEach((p) => out.addPage(p));
+      const bytes = await out.save({ useObjectStreams: true });
+      showResult('split', bytes, `${baseName(f.name)}_${mode === 'extract' ? 'extracted' : 'trimmed'}.pdf`, 'application/pdf',
+        `${keep.length} of ${splitState.pageCount} pages kept · ${fmtBytes(bytes.length)}`);
+    } catch (err) {
+      setStatus('split', `❌ ${err.message || err}`, 'error');
+    } finally {
+      btn.disabled = !splitState.file;
+    }
+  });
+
+  // ================================================================ ROTATE
+  const rotateState = { file: null, pageCount: 0 };
+  setupDropzone('rotate', async ([f]) => {
+    hideResult('rotate');
+    try {
+      setStatus('rotate', 'Reading PDF…');
+      const doc = await PDFDocument.load(await f.arrayBuffer());
+      rotateState.file = f;
+      rotateState.pageCount = doc.getPageCount();
+      $('#picked-rotate').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${rotateState.pageCount} pages`;
+      $('#btn-rotate').disabled = false;
+      setStatus('rotate', '');
+    } catch (err) {
+      rotateState.file = null;
+      $('#btn-rotate').disabled = true;
+      setStatus('rotate',
+        `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`,
+        'error');
+    }
+  });
+  $('#btn-rotate').addEventListener('click', async () => {
+    const f = rotateState.file;
+    if (!f) return;
+    const btn = $('#btn-rotate');
+    btn.disabled = true;
+    hideResult('rotate');
+    try {
+      const rangeStr = $('#range-rotate').value;
+      const targets = rangeStr.trim()
+        ? parseRanges(rangeStr, rotateState.pageCount)
+        : Array.from({ length: rotateState.pageCount }, (_, i) => i + 1);
+      if (!targets) throw new Error(`Enter a valid page range between 1 and ${rotateState.pageCount}, or leave it empty for all pages.`);
+      const delta = +$('#angle-rotate').value;
+      setStatus('rotate', `Rotating ${targets.length} page${targets.length > 1 ? 's' : ''}…`);
+      const doc = await PDFDocument.load(await f.arrayBuffer());
+      for (const p of targets) {
+        const page = doc.getPage(p - 1);
+        page.setRotation(degrees((page.getRotation().angle + delta) % 360));
+      }
+      const bytes = await doc.save();
+      showResult('rotate', bytes, `${baseName(f.name)}_rotated.pdf`, 'application/pdf');
+    } catch (err) {
+      setStatus('rotate', `❌ ${err.message || err}`, 'error');
+    } finally {
+      btn.disabled = !rotateState.file;
+    }
+  });
+
+  // ============================================================ JPG TO PDF
+  const i2pState = { files: [] };
+  const renderI2pList = () => {
+    const ul = $('#files-img2pdf');
+    ul.innerHTML = '';
+    i2pState.files.forEach((f, i) => {
+      const li = document.createElement('li');
+      li.className = 'flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm';
+      li.innerHTML = `<span class="font-medium truncate">${escapeHtml(f.name)}</span>
+        <span class="text-slate-400 whitespace-nowrap">${fmtBytes(f.size)}</span>
+        <span class="ml-auto flex gap-1">
+          <button data-act="up" data-i="${i}" class="border border-slate-300 rounded-lg px-2.5 py-0.5 hover:bg-white" title="Move up">↑</button>
+          <button data-act="down" data-i="${i}" class="border border-slate-300 rounded-lg px-2.5 py-0.5 hover:bg-white" title="Move down">↓</button>
+          <button data-act="rm" data-i="${i}" class="border border-red-200 text-red-700 rounded-lg px-2.5 py-0.5 hover:bg-red-50" title="Remove">✕</button>
+        </span>`;
+      ul.appendChild(li);
+    });
+    $('#btn-img2pdf').disabled = i2pState.files.length === 0;
+  };
+  $('#files-img2pdf').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    const i = +btn.dataset.i;
+    const act = btn.dataset.act;
+    if (act === 'rm') i2pState.files.splice(i, 1);
+    if (act === 'up' && i > 0) [i2pState.files[i - 1], i2pState.files[i]] = [i2pState.files[i], i2pState.files[i - 1]];
+    if (act === 'down' && i < i2pState.files.length - 1)
+      [i2pState.files[i + 1], i2pState.files[i]] = [i2pState.files[i], i2pState.files[i + 1]];
+    renderI2pList();
+  });
+  setupDropzone('img2pdf', (files) => {
+    const imgs = files.filter((f) => /\.(jpe?g|png)$/i.test(f.name) || ['image/jpeg', 'image/png'].includes(f.type));
+    if (!imgs.length) {
+      setStatus('img2pdf', '❌ Please choose JPG or PNG images.', 'error');
+      return;
+    }
+    i2pState.files.push(...imgs);
+    hideResult('img2pdf');
+    setStatus('img2pdf', '');
+    renderI2pList();
+  });
+  $('#btn-img2pdf').addEventListener('click', async () => {
+    const btn = $('#btn-img2pdf');
+    btn.disabled = true;
+    hideResult('img2pdf');
+    try {
+      const mode = $('#size-img2pdf').value;
+      const A4 = [595.28, 841.89];
+      const MARGIN = 36;
+      const out = await PDFDocument.create();
+      for (let i = 0; i < i2pState.files.length; i++) {
+        const f = i2pState.files[i];
+        setStatus('img2pdf', `Adding image ${i + 1} of ${i2pState.files.length}: ${f.name}…`);
+        const data = await f.arrayBuffer();
+        const isPng = f.type === 'image/png' || /\.png$/i.test(f.name);
+        let img;
+        try {
+          img = isPng ? await out.embedPng(data) : await out.embedJpg(data);
+        } catch {
+          throw new Error(`"${f.name}" could not be read — please use standard JPG or PNG images.`);
+        }
+        if (mode === 'fit') {
+          const page = out.addPage([img.width, img.height]);
+          page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        } else {
+          const page = out.addPage(A4);
+          const scale = Math.min((A4[0] - MARGIN * 2) / img.width, (A4[1] - MARGIN * 2) / img.height);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          page.drawImage(img, { x: (A4[0] - w) / 2, y: (A4[1] - h) / 2, width: w, height: h });
+        }
+      }
+      const bytes = await out.save({ useObjectStreams: true });
+      showResult('img2pdf', bytes, 'images.pdf', 'application/pdf',
+        `images.pdf · ${i2pState.files.length} page${i2pState.files.length > 1 ? 's' : ''} · ${fmtBytes(bytes.length)}`);
+    } catch (err) {
+      setStatus('img2pdf', `❌ ${err.message || err}`, 'error');
+    } finally {
+      btn.disabled = i2pState.files.length === 0;
     }
   });
 });

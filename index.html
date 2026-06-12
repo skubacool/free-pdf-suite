@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Free PDF Suite — Merge, Compress, Unlock, Sign &amp; Convert PDF Online (100% Private)</title>
-  <meta name="description" content="Free online PDF tools that run 100% in your browser: merge PDF, compress PDF, unlock password-protected PDF, sign PDF, type on PDF, Word to PDF and PDF to Word. No uploads — your files never leave your device." />
-  <meta name="keywords" content="free pdf tools, merge pdf, compress pdf, unlock pdf, remove pdf password, sign pdf online, type on pdf, word to pdf, pdf to word, private pdf editor" />
+  <title>Free PDF Tools — Merge, Split, Compress, Convert, Sign &amp; Unlock PDF Online (100% Private)</title>
+  <meta name="description" content="Free online PDF tools for work and study: merge, split, rotate, compress, unlock, sign, type on PDF, Word to PDF, PDF to Word and JPG to PDF. 100% private — files never leave your device." />
+  <meta name="keywords" content="free pdf tools, merge pdf, split pdf, rotate pdf, compress pdf, unlock pdf, sign pdf online, type on pdf, word to pdf, pdf to word, jpg to pdf, private pdf editor" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://skubacool.github.io/free-pdf-suite/" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Free PDF Suite — Private, In-Browser PDF Tools" />
-  <meta property="og:description" content="Merge, compress, unlock, sign and convert PDFs for free. 100% client-side: files never leave your device." />
+  <meta property="og:description" content="Merge, split, compress, unlock, sign and convert PDFs for free. 100% client-side: files never leave your device." />
   <meta property="og:url" content="https://skubacool.github.io/free-pdf-suite/" />
   <meta property="og:site_name" content="Free PDF Suite" />
   <!-- Twitter -->
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Free PDF Suite — Private, In-Browser PDF Tools" />
-  <meta name="twitter:description" content="Merge, compress, unlock, sign and convert PDFs for free — without uploading anything." />
+  <meta name="twitter:description" content="Merge, split, compress, unlock, sign and convert PDFs for free — without uploading anything." />
 
   <!-- Structured data: WebApplication -->
   <script type="application/ld+json">
@@ -30,7 +30,7 @@
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Any (Web Browser)",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "featureList": "Merge PDF, Compress PDF, Unlock PDF, Sign PDF, Type on PDF, Word to PDF, PDF to Word",
+    "featureList": "Merge PDF, Split PDF, Rotate PDF, Compress PDF, Unlock PDF, Sign PDF, Type on PDF, Word to PDF, PDF to Word, JPG to PDF",
     "description": "Free client-side PDF utilities. All processing happens locally in your browser; files are never uploaded to any server."
   }
   </script>
@@ -44,12 +44,17 @@
       {
         "@type": "Question",
         "name": "Are these online PDF tools really free?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every tool on Free PDF Suite — merge, compress, unlock, sign, type on PDF, Word to PDF and PDF to Word — is completely free with no sign-up, no watermarks and no daily limits. The site is supported by advertising." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every tool on Free PDF Suite — merge, split, rotate, compress, unlock, sign, type on PDF, Word to PDF, PDF to Word and JPG to PDF — is completely free with no sign-up, no watermarks and no daily limits. The site is supported by advertising." }
       },
       {
         "@type": "Question",
         "name": "Are my PDF files uploaded to a server?",
         "acceptedAnswer": { "@type": "Answer", "text": "No. All processing happens locally inside your web browser using JavaScript and WebAssembly-grade libraries. Your documents are never transmitted over the network, which makes the suite suitable for confidential contracts, invoices and personal records." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I split a PDF or extract only certain pages?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Open the Split PDF tool, type a page range such as 1-3, 5, 8 and choose whether to extract those pages into a new PDF or remove them from the document. The Rotate PDF tool fixes sideways or upside-down scans, and JPG to PDF combines photos into a single PDF." }
       },
       {
         "@type": "Question",
@@ -85,10 +90,10 @@
   }
   </script>
 
-  <!-- Typography: Fraunces (editorial display serif) + Inter (UI sans) -->
+  <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -96,74 +101,40 @@
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            paper:  '#F6F4EE',   // warm ivory canvas
-            cream:  '#FCFBF7',   // raised surfaces
-            ink:    '#1C1B17',   // near-black warm ink
-            muted:  '#6F6A5E',   // secondary text
-            line:   '#E5E0D4',   // hairline borders
-            accent: '#BC5727',   // terracotta
-            accentsoft: '#F3E7DC'
-          },
-          fontFamily: {
-            sans:  ['Inter','ui-sans-serif','system-ui','sans-serif'],
-            serif: ['Fraunces','Georgia','serif']
-          },
-          letterSpacing: { caps: '0.18em' }
+          colors: { brand: { 50:'#EFF6FF', 100:'#DBEAFE', 600:'#2563EB', 700:'#1D4ED8' } },
+          fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','Segoe UI','sans-serif'] }
         }
       }
     }
   </script>
   <style>
-    ::selection { background:#BC5727; color:#FCFBF7; }
-    html { scroll-behavior: smooth; }
+    ::selection { background:#2563EB; color:#fff; }
 
-    .eyebrow { font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; font-weight:600; }
-
-    /* Ad placeholders — present but quiet */
-    .ad-box { border:1px solid #E5E0D4; background:#FCFBF7; position:relative; }
+    /* Ad placeholders — visible, clearly labeled, unobtrusive */
+    .ad-box { border:1px solid #E2E8F0; background:#F8FAFC; position:relative; }
     .ad-box::before { content:'Advertisement'; position:absolute; top:.5rem; left:50%; transform:translateX(-50%);
-      font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:#A39D8E; }
+      font-size:.6rem; letter-spacing:.15em; text-transform:uppercase; color:#94A3B8; }
 
-    .dropzone { transition: background .3s ease, border-color .3s ease; }
-    .dropzone.dragover { border-color:#BC5727; background:#F3E7DC; }
+    .dropzone { transition: background .25s ease, border-color .25s ease; }
+    .dropzone:hover { border-color:#93C5FD; background:#EFF6FF; }
+    .dropzone.dragover { border-color:#2563EB; background:#DBEAFE; }
 
-    #app canvas.preview-canvas { max-width:100%; height:auto; display:block; cursor:crosshair; }
+    #tool-view canvas.preview-canvas { max-width:100%; height:auto; display:block; cursor:crosshair; }
     .place-marker { position:absolute; transform:translate(-50%,-50%); pointer-events:none; }
 
-    /* Numbered tool index */
-    .navbtn { transition: color .25s ease, transform .25s ease; }
-    .navbtn:hover { transform: translateX(4px); }
-    .navbtn .num { color:#A39D8E; transition: color .25s ease; }
-    .navbtn.active-tool { color:#1C1B17; }
-    .navbtn.active-tool .num { color:#BC5727; }
-    .navbtn.active-tool .label { font-family:Fraunces,Georgia,serif; font-style:italic; font-weight:500; font-size:1.06em; }
+    .toolcard { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .toolcard:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(15,23,42,.10); border-color:#2563EB; }
 
-    /* Marquee */
-    .marquee { overflow:hidden; }
-    .marquee-track { display:flex; width:max-content; animation: marquee 30s linear infinite; }
-    .marquee:hover .marquee-track { animation-play-state: paused; }
-    @keyframes marquee { to { transform: translateX(-50%); } }
-
-    /* Scroll reveal */
-    .reveal { opacity:0; transform:translateY(16px); transition:opacity .8s cubic-bezier(.2,.6,.2,1), transform .8s cubic-bezier(.2,.6,.2,1); }
-    .reveal.revealed { opacity:1; transform:none; }
-
-    /* FAQ */
-    details.faq summary::-webkit-details-marker { display:none; }
-    details.faq summary::after { content:'+'; font-family:Fraunces,Georgia,serif; font-size:1.5rem; font-weight:300;
-      color:#BC5727; transition: transform .3s ease; line-height:1; }
-    details.faq[open] summary::after { transform: rotate(45deg); }
-
-    .btn { transition: transform .2s ease, background-color .2s ease, color .2s ease, box-shadow .2s ease; }
-    .btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(28,27,23,.12); }
+    .btn { transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease; }
+    .btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(15,23,42,.15); }
     .btn:not(:disabled):active { transform: translateY(0); }
 
+    details.faq summary::-webkit-details-marker { display:none; }
+    details.faq summary::after { content:'+'; font-size:1.4rem; font-weight:300; color:#2563EB; transition: transform .25s ease; line-height:1; }
+    details.faq[open] summary::after { transform: rotate(45deg); }
+
     @media (prefers-reduced-motion: reduce) {
-      .reveal { opacity:1; transform:none; transition:none; }
-      .marquee-track { animation:none; }
-      .navbtn:hover, .btn:hover { transform:none; }
-      html { scroll-behavior:auto; }
+      .toolcard:hover, .btn:hover { transform:none; }
     }
   </style>
 
@@ -176,399 +147,582 @@
   <script type="module" src="./nhost.js"></script>
 </head>
 
-<body class="bg-paper text-ink font-sans antialiased">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
 
   <!-- ================= HEADER ================= -->
-  <header class="sticky top-0 z-40 bg-paper/85 backdrop-blur border-b border-line">
-    <div class="max-w-6xl mx-auto px-5 py-4 flex flex-wrap items-center gap-5">
-      <a href="./" class="font-serif text-2xl tracking-tight">
-        Free PDF <em class="italic text-accent">Suite</em>
-      </a>
-      <nav class="hidden md:flex gap-6 eyebrow text-muted ml-4" id="topnav">
-        <button data-tool="merge"    class="navbtn hover:text-ink">Merge</button>
-        <button data-tool="compress" class="navbtn hover:text-ink">Compress</button>
-        <button data-tool="unlock"   class="navbtn hover:text-ink">Unlock</button>
-        <button data-tool="sign"     class="navbtn hover:text-ink">Sign</button>
-        <button data-tool="type"     class="navbtn hover:text-ink">Type</button>
-        <button data-tool="word2pdf" class="navbtn hover:text-ink">Word→PDF</button>
-        <button data-tool="pdf2word" class="navbtn hover:text-ink">PDF→Word</button>
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 py-3 flex flex-wrap items-center gap-4">
+      <button data-home class="flex items-center gap-2.5 font-extrabold text-lg">
+        <span class="inline-flex w-9 h-9 items-center justify-center rounded-xl bg-brand-600 text-white text-xl">📄</span>
+        Free PDF Suite
+      </button>
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
+        <button data-tool="merge"    class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Merge</button>
+        <button data-tool="split"    class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Split</button>
+        <button data-tool="compress" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Compress</button>
+        <button data-tool="sign"     class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Sign</button>
+        <button data-tool="word2pdf" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Word to PDF</button>
+        <button data-home class="px-3 py-1.5 rounded-lg text-brand-600 hover:bg-brand-50 font-semibold">All Tools</button>
       </nav>
-      <div class="ml-auto hidden sm:flex items-center gap-2 text-xs font-medium text-ink border border-line rounded-full px-4 py-1.5 bg-cream">
-        <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-60"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>
-        Files never leave your device
+      <div class="ml-auto hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3.5 py-1.5">
+        🔒 Files never leave your device
       </div>
     </div>
 
     <!-- ADVERTISEMENT SLOT -->
-    <div class="max-w-6xl mx-auto px-5 pb-4">
+    <div class="max-w-6xl mx-auto px-5 pb-3">
       <div id="ad-header" class="ad-box rounded-xl h-[90px]" aria-label="Advertisement"></div>
     </div>
   </header>
 
-  <!-- ================= HERO ================= -->
-  <section class="border-b border-line">
-    <div class="max-w-6xl mx-auto px-5 pt-16 pb-14 md:pt-24 md:pb-20">
-      <p class="eyebrow text-muted reveal">Free · Private · Runs entirely in your browser</p>
-      <h1 class="font-serif font-light text-[2.6rem] leading-[1.05] md:text-7xl mt-5 max-w-4xl reveal">
-        Every PDF tool you need.<br />
-        <em class="italic text-accent">None of the uploads.</em>
-      </h1>
-      <p class="mt-7 max-w-xl text-muted text-lg leading-relaxed reveal">
-        Merge, compress, unlock, sign and convert PDF files in seconds.
-        There is no server, no queue and no account — just your browser, working for you.
-      </p>
-      <div class="mt-9 flex flex-wrap items-center gap-4 reveal">
-        <a href="#app" class="btn inline-block bg-ink text-cream rounded-full px-7 py-3.5 font-medium">Open the toolkit ↓</a>
-        <div class="flex items-center gap-3 border border-line bg-cream rounded-full px-5 py-3">
-          <span class="text-xl">🛡️</span>
-          <div class="text-sm leading-tight">
-            <span class="font-semibold">100% Secure &amp; Private</span><br />
-            <span class="text-muted">Files Never Leave Your Device</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <main class="max-w-6xl mx-auto px-5">
 
-  <!-- ================= MARQUEE ================= -->
-  <div class="marquee border-b border-line bg-cream py-3 select-none" aria-hidden="true">
-    <div class="marquee-track font-serif italic text-muted text-lg">
-      <span class="whitespace-nowrap pr-2">Merge&ensp;✦&ensp;Compress&ensp;✦&ensp;Unlock&ensp;✦&ensp;Sign&ensp;✦&ensp;Type on PDF&ensp;✦&ensp;Word to PDF&ensp;✦&ensp;PDF to Word&ensp;✦&ensp;Free forever&ensp;✦&ensp;No uploads&ensp;✦&ensp;</span>
-      <span class="whitespace-nowrap pr-2">Merge&ensp;✦&ensp;Compress&ensp;✦&ensp;Unlock&ensp;✦&ensp;Sign&ensp;✦&ensp;Type on PDF&ensp;✦&ensp;Word to PDF&ensp;✦&ensp;PDF to Word&ensp;✦&ensp;Free forever&ensp;✦&ensp;No uploads&ensp;✦&ensp;</span>
-    </div>
-  </div>
+    <!-- ================= HOME VIEW ================= -->
+    <div id="home-view">
 
-  <!-- ================= APP ================= -->
-  <main id="app" class="max-w-6xl mx-auto px-5 py-12 grid grid-cols-1 lg:grid-cols-[230px_minmax(0,1fr)_300px] gap-10">
-
-    <!-- Tool index -->
-    <aside class="reveal">
-      <div class="lg:sticky lg:top-[180px]">
-        <div class="eyebrow text-muted pb-4 border-b border-line">Index</div>
-        <div class="grid" id="sidenav">
-          <button data-tool="merge"    class="navbtn text-left py-3 border-b border-line flex items-baseline gap-3 text-muted"><span class="num font-serif text-sm">01</span><span class="label">Merge PDF</span></button>
-          <button data-tool="compress" class="navbtn text-left py-3 border-b border-line flex items-baseline gap-3 text-muted"><span class="num font-serif text-sm">02</span><span class="label">Compress PDF</span></button>
-          <button data-tool="unlock"   class="navbtn text-left py-3 border-b border-line flex items-baseline gap-3 text-muted"><span class="num font-serif text-sm">03</span><span class="label">Unlock PDF</span></button>
-          <button data-tool="sign"     class="navbtn text-left py-3 border-b border-line flex items-baseline gap-3 text-muted"><span class="num font-serif text-sm">04</span><span class="label">Sign PDF</span></button>
-          <button data-tool="type"     class="navbtn text-left py-3 border-b border-line flex items-baseline gap-3 text-muted"><span class="num font-serif text-sm">05</span><span class="label">Type on PDF</span></button>
-          <button data-tool="word2pdf" class="navbtn text-left py-3 border-b border-line flex items-baseline gap-3 text-muted"><span class="num font-serif text-sm">06</span><span class="label">Word → PDF</span></button>
-          <button data-tool="pdf2word" class="navbtn text-left py-3 border-b border-line flex items-baseline gap-3 text-muted"><span class="num font-serif text-sm">07</span><span class="label">PDF → Word</span></button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Tool panels -->
-    <section class="min-w-0 reveal">
-
-      <!-- ============ MERGE ============ -->
-      <div id="panel-merge" class="panel bg-cream rounded-[28px] border border-line p-7 md:p-9">
-        <p class="eyebrow text-accent">01 — Combine</p>
-        <h2 class="font-serif text-3xl md:text-4xl mt-2">Merge PDF files</h2>
-        <p class="text-muted mt-3 leading-relaxed">Combine multiple PDFs into a single document. Reorder files before merging.</p>
-        <div id="dz-merge" class="dropzone mt-7 border border-dashed border-line bg-paper rounded-2xl p-10 text-center cursor-pointer">
-          <div class="font-serif italic text-2xl text-muted">Drop PDF files here</div>
-          <p class="text-sm text-muted mt-2">or click to browse — select two or more files</p>
-          <input type="file" id="file-merge" accept="application/pdf,.pdf" multiple class="hidden" />
-        </div>
-        <ul id="files-merge" class="mt-5 grid gap-2"></ul>
-        <button id="btn-merge" class="btn mt-7 bg-ink text-cream font-medium px-8 py-3.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed" disabled>Merge PDFs</button>
-        <p id="status-merge" class="mt-4 text-sm font-medium"></p>
-        <div id="res-merge" class="hidden mt-7 border-t border-line pt-7">
-          <div class="flex flex-wrap items-center gap-5">
-            <button id="dl-merge" class="btn bg-accent text-cream font-medium px-8 py-3.5 rounded-full">⬇ Download File</button>
-            <span class="text-sm text-muted" id="info-merge"></span>
-          </div>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-6" aria-label="Advertisement"></div>
-        </div>
-      </div>
-
-      <!-- ============ COMPRESS ============ -->
-      <div id="panel-compress" class="panel hidden bg-cream rounded-[28px] border border-line p-7 md:p-9">
-        <p class="eyebrow text-accent">02 — Reduce</p>
-        <h2 class="font-serif text-3xl md:text-4xl mt-2">Compress PDF</h2>
-        <p class="text-muted mt-3 leading-relaxed">Shrink large PDFs by re-encoding pages as optimized images. Ideal for scans and email attachments.</p>
-        <div id="dz-compress" class="dropzone mt-7 border border-dashed border-line bg-paper rounded-2xl p-10 text-center cursor-pointer">
-          <div class="font-serif italic text-2xl text-muted">Drop a PDF here</div>
-          <p class="text-sm text-muted mt-2">or click to browse</p>
-          <input type="file" id="file-compress" accept="application/pdf,.pdf" class="hidden" />
-        </div>
-        <p id="picked-compress" class="mt-4 text-sm text-muted"></p>
-        <label class="block mt-5 eyebrow text-muted">Compression level</label>
-        <select id="quality-compress" class="mt-2 border border-line rounded-full px-5 py-2.5 bg-paper text-sm">
-          <option value="extreme">Extreme — smallest file, lower quality</option>
-          <option value="balanced" selected>Balanced — recommended</option>
-          <option value="light">Light — best quality, larger file</option>
-        </select>
-        <p class="mt-3 text-xs text-muted">Note: compressed output is image-based — text will no longer be selectable.</p>
-        <button id="btn-compress" class="btn mt-7 bg-ink text-cream font-medium px-8 py-3.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed" disabled>Compress PDF</button>
-        <p id="status-compress" class="mt-4 text-sm font-medium"></p>
-        <div id="res-compress" class="hidden mt-7 border-t border-line pt-7">
-          <div class="flex flex-wrap items-center gap-5">
-            <button id="dl-compress" class="btn bg-accent text-cream font-medium px-8 py-3.5 rounded-full">⬇ Download File</button>
-            <span class="text-sm text-muted" id="info-compress"></span>
-          </div>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-6" aria-label="Advertisement"></div>
-        </div>
-      </div>
-
-      <!-- ============ UNLOCK ============ -->
-      <div id="panel-unlock" class="panel hidden bg-cream rounded-[28px] border border-line p-7 md:p-9">
-        <p class="eyebrow text-accent">03 — Open</p>
-        <h2 class="font-serif text-3xl md:text-4xl mt-2">Unlock PDF</h2>
-        <p class="text-muted mt-3 leading-relaxed">Remove the password from a PDF you own. Decryption happens entirely in your browser — the file and password are never sent anywhere.</p>
-        <div id="dz-unlock" class="dropzone mt-7 border border-dashed border-line bg-paper rounded-2xl p-10 text-center cursor-pointer">
-          <div class="font-serif italic text-2xl text-muted">Drop a protected PDF here</div>
-          <p class="text-sm text-muted mt-2">or click to browse</p>
-          <input type="file" id="file-unlock" accept="application/pdf,.pdf" class="hidden" />
-        </div>
-        <p id="picked-unlock" class="mt-4 text-sm text-muted"></p>
-        <label class="block mt-5 eyebrow text-muted">Password — leave empty if the PDF opens without one</label>
-        <input type="password" id="pw-unlock" class="mt-2 border border-line rounded-full px-5 py-2.5 w-full max-w-sm bg-paper text-sm" placeholder="Document password" autocomplete="off" />
-        <p class="mt-3 text-xs text-muted">Only unlock documents you own or are authorized to modify. Output pages are re-rendered, so text becomes image-based.</p>
-        <button id="btn-unlock" class="btn mt-7 bg-ink text-cream font-medium px-8 py-3.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed" disabled>Unlock PDF</button>
-        <p id="status-unlock" class="mt-4 text-sm font-medium"></p>
-        <div id="res-unlock" class="hidden mt-7 border-t border-line pt-7">
-          <div class="flex flex-wrap items-center gap-5">
-            <button id="dl-unlock" class="btn bg-accent text-cream font-medium px-8 py-3.5 rounded-full">⬇ Download File</button>
-            <span class="text-sm text-muted" id="info-unlock"></span>
-          </div>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-6" aria-label="Advertisement"></div>
-        </div>
-      </div>
-
-      <!-- ============ SIGN ============ -->
-      <div id="panel-sign" class="panel hidden bg-cream rounded-[28px] border border-line p-7 md:p-9">
-        <p class="eyebrow text-accent">04 — Approve</p>
-        <h2 class="font-serif text-3xl md:text-4xl mt-2">Sign PDF</h2>
-        <p class="text-muted mt-3 leading-relaxed">Draw your signature, then click on the page preview to place it. Embedded locally — perfect for contracts and approvals.</p>
-        <div id="dz-sign" class="dropzone mt-7 border border-dashed border-line bg-paper rounded-2xl p-10 text-center cursor-pointer">
-          <div class="font-serif italic text-2xl text-muted">Drop a PDF here</div>
-          <p class="text-sm text-muted mt-2">or click to browse</p>
-          <input type="file" id="file-sign" accept="application/pdf,.pdf" class="hidden" />
-        </div>
-        <p id="picked-sign" class="mt-4 text-sm text-muted"></p>
-
-        <div id="work-sign" class="hidden mt-7 grid gap-7 md:grid-cols-2">
+      <!-- Hero -->
+      <section class="text-center pt-12 pb-10">
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight">
+          All the PDF tools you need<br class="hidden md:block" />
+          for <span class="text-brand-600">work and study</span>
+        </h1>
+        <p class="mt-4 max-w-2xl mx-auto text-slate-600 text-lg">
+          Merge, split, compress, convert and sign PDF documents in seconds.
+          Free, no sign-up, no watermarks.
+        </p>
+        <div class="mt-6 inline-flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-3.5 text-left">
+          <span class="text-2xl">🛡️</span>
           <div>
-            <div class="eyebrow text-muted mb-2">1 — Draw your signature</div>
-            <canvas id="sigpad" width="500" height="200" class="border border-line rounded-2xl bg-white w-full touch-none"></canvas>
-            <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
-              <button id="sig-clear" class="btn border border-line rounded-full px-4 py-1.5 hover:bg-paper">Clear</button>
-              <label class="flex items-center gap-2 text-muted">Size:
-                <input type="range" id="sig-width" min="10" max="60" value="30" class="accent-[#BC5727]" /> <span id="sig-width-val">30%</span> of page width
-              </label>
-            </div>
-          </div>
-          <div>
-            <div class="eyebrow text-muted mb-2">2 — Click the page to place it
-              <label class="ml-2 normal-case tracking-normal font-normal text-xs">Page:
-                <input type="number" id="page-sign" min="1" value="1" class="w-16 border border-line rounded-full px-3 py-1 bg-paper" />
-                <span id="pages-sign"></span>
-              </label>
-            </div>
-            <div class="relative inline-block border border-line rounded-2xl overflow-hidden bg-white" id="wrap-sign">
-              <canvas id="preview-sign" class="preview-canvas"></canvas>
-            </div>
+            <div class="font-bold text-emerald-800">100% Secure &amp; Private</div>
+            <div class="text-sm text-emerald-700">Files Never Leave Your Device — everything runs in your browser.</div>
           </div>
         </div>
 
-        <button id="btn-sign" class="btn mt-7 bg-ink text-cream font-medium px-8 py-3.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed" disabled>Apply Signature &amp; Generate PDF</button>
-        <p id="status-sign" class="mt-4 text-sm font-medium"></p>
-        <div id="res-sign" class="hidden mt-7 border-t border-line pt-7">
-          <div class="flex flex-wrap items-center gap-5">
-            <button id="dl-sign" class="btn bg-accent text-cream font-medium px-8 py-3.5 rounded-full">⬇ Download File</button>
-            <span class="text-sm text-muted" id="info-sign"></span>
+        <!-- How it works -->
+        <div class="mt-10 grid sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-sm">
+          <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+            <span class="w-7 h-7 shrink-0 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">1</span>
+            <span class="text-slate-700 font-medium">Choose a tool below</span>
           </div>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-6" aria-label="Advertisement"></div>
-        </div>
-      </div>
-
-      <!-- ============ TYPE ON PDF ============ -->
-      <div id="panel-type" class="panel hidden bg-cream rounded-[28px] border border-line p-7 md:p-9">
-        <p class="eyebrow text-accent">05 — Annotate</p>
-        <h2 class="font-serif text-3xl md:text-4xl mt-2">Type on PDF</h2>
-        <p class="text-muted mt-3 leading-relaxed">Add text anywhere on a PDF — fill forms, add notes or dates. Click the preview to place each text item.</p>
-        <div id="dz-type" class="dropzone mt-7 border border-dashed border-line bg-paper rounded-2xl p-10 text-center cursor-pointer">
-          <div class="font-serif italic text-2xl text-muted">Drop a PDF here</div>
-          <p class="text-sm text-muted mt-2">or click to browse</p>
-          <input type="file" id="file-type" accept="application/pdf,.pdf" class="hidden" />
-        </div>
-        <p id="picked-type" class="mt-4 text-sm text-muted"></p>
-
-        <div id="work-type" class="hidden mt-7">
-          <div class="flex flex-wrap items-end gap-4 text-sm">
-            <label class="eyebrow text-muted">Text<br/>
-              <input type="text" id="text-input" class="mt-1.5 border border-line rounded-full px-5 py-2.5 w-64 bg-paper text-sm normal-case tracking-normal font-normal" placeholder="Type text, then click the page" />
-            </label>
-            <label class="eyebrow text-muted">Size<br/>
-              <input type="number" id="text-size" min="6" max="72" value="14" class="mt-1.5 border border-line rounded-full px-3 py-2.5 w-20 bg-paper text-sm" />
-            </label>
-            <label class="eyebrow text-muted">Color<br/>
-              <input type="color" id="text-color" value="#1C1B17" class="mt-1.5 border border-line rounded-xl h-10 w-14 bg-paper" />
-            </label>
-            <label class="eyebrow text-muted">Page<br/>
-              <input type="number" id="page-type" min="1" value="1" class="mt-1.5 border border-line rounded-full px-3 py-2.5 w-20 bg-paper text-sm" />
-            </label>
-            <span id="pages-type" class="text-muted pb-3"></span>
+          <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+            <span class="w-7 h-7 shrink-0 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">2</span>
+            <span class="text-slate-700 font-medium">Drop in your file</span>
           </div>
-          <div class="relative inline-block border border-line rounded-2xl overflow-hidden bg-white mt-5" id="wrap-type">
-            <canvas id="preview-type" class="preview-canvas"></canvas>
+          <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+            <span class="w-7 h-7 shrink-0 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">3</span>
+            <span class="text-slate-700 font-medium">Download the result</span>
           </div>
-          <ul id="items-type" class="mt-4 grid gap-1.5 text-sm"></ul>
+        </div>
+      </section>
+
+      <!-- Tool grid -->
+      <section class="pb-10">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Organize</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="merge" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
+            <div class="font-bold mt-3">Merge PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Combine several PDFs into one document.</p>
+          </button>
+          <button data-tool="split" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">✂️</span>
+            <div class="font-bold mt-3">Split PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Extract the pages you need, or remove the ones you don't.</p>
+          </button>
+          <button data-tool="rotate" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔄</span>
+            <div class="font-bold mt-3">Rotate PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Fix sideways or upside-down pages and scans.</p>
+          </button>
         </div>
 
-        <button id="btn-type" class="btn mt-7 bg-ink text-cream font-medium px-8 py-3.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed" disabled>Apply Text &amp; Generate PDF</button>
-        <p id="status-type" class="mt-4 text-sm font-medium"></p>
-        <div id="res-type" class="hidden mt-7 border-t border-line pt-7">
-          <div class="flex flex-wrap items-center gap-5">
-            <button id="dl-type" class="btn bg-accent text-cream font-medium px-8 py-3.5 rounded-full">⬇ Download File</button>
-            <span class="text-sm text-muted" id="info-type"></span>
-          </div>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-6" aria-label="Advertisement"></div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">Convert</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="word2pdf" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">📝</span>
+            <div class="font-bold mt-3">Word to PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Turn a .docx document into a shareable PDF.</p>
+          </button>
+          <button data-tool="pdf2word" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📃</span>
+            <div class="font-bold mt-3">PDF to Word</div>
+            <p class="text-sm text-slate-500 mt-1">Extract PDF text into an editable Word file.</p>
+          </button>
+          <button data-tool="img2pdf" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">JPG to PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Combine photos and scans into a single PDF.</p>
+          </button>
         </div>
-      </div>
 
-      <!-- ============ WORD -> PDF ============ -->
-      <div id="panel-word2pdf" class="panel hidden bg-cream rounded-[28px] border border-line p-7 md:p-9">
-        <p class="eyebrow text-accent">06 — Convert</p>
-        <h2 class="font-serif text-3xl md:text-4xl mt-2">Word to PDF</h2>
-        <p class="text-muted mt-3 leading-relaxed">Convert a .docx document into a clean, shareable PDF. Headings, paragraphs and lists are preserved.</p>
-        <div id="dz-word2pdf" class="dropzone mt-7 border border-dashed border-line bg-paper rounded-2xl p-10 text-center cursor-pointer">
-          <div class="font-serif italic text-2xl text-muted">Drop a .docx file here</div>
-          <p class="text-sm text-muted mt-2">or click to browse</p>
-          <input type="file" id="file-word2pdf" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" />
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">Edit &amp; Sign</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="sign" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">✍️</span>
+            <div class="font-bold mt-3">Sign PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Draw your signature and place it on any page.</p>
+          </button>
+          <button data-tool="type" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">⌨️</span>
+            <div class="font-bold mt-3">Type on PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Fill forms and add text, dates or notes anywhere.</p>
+          </button>
         </div>
-        <p id="picked-word2pdf" class="mt-4 text-sm text-muted"></p>
-        <button id="btn-word2pdf" class="btn mt-7 bg-ink text-cream font-medium px-8 py-3.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed" disabled>Convert to PDF</button>
-        <p id="status-word2pdf" class="mt-4 text-sm font-medium"></p>
-        <div id="res-word2pdf" class="hidden mt-7 border-t border-line pt-7">
-          <div class="flex flex-wrap items-center gap-5">
-            <button id="dl-word2pdf" class="btn bg-accent text-cream font-medium px-8 py-3.5 rounded-full">⬇ Download File</button>
-            <span class="text-sm text-muted" id="info-word2pdf"></span>
-          </div>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-6" aria-label="Advertisement"></div>
-        </div>
-      </div>
 
-      <!-- ============ PDF -> WORD ============ -->
-      <div id="panel-pdf2word" class="panel hidden bg-cream rounded-[28px] border border-line p-7 md:p-9">
-        <p class="eyebrow text-accent">07 — Extract</p>
-        <h2 class="font-serif text-3xl md:text-4xl mt-2">PDF to Word</h2>
-        <p class="text-muted mt-3 leading-relaxed">Extract the full text of a PDF into an editable Word document (.doc).</p>
-        <div id="dz-pdf2word" class="dropzone mt-7 border border-dashed border-line bg-paper rounded-2xl p-10 text-center cursor-pointer">
-          <div class="font-serif italic text-2xl text-muted">Drop a PDF here</div>
-          <p class="text-sm text-muted mt-2">or click to browse</p>
-          <input type="file" id="file-pdf2word" accept="application/pdf,.pdf" class="hidden" />
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">Optimize &amp; Secure</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="compress" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
+            <div class="font-bold mt-3">Compress PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Shrink large files for email and uploads.</p>
+          </button>
+          <button data-tool="unlock" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">🔓</span>
+            <div class="font-bold mt-3">Unlock PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Remove the password from a PDF you own.</p>
+          </button>
         </div>
-        <p id="picked-pdf2word" class="mt-4 text-sm text-muted"></p>
-        <button id="btn-pdf2word" class="btn mt-7 bg-ink text-cream font-medium px-8 py-3.5 rounded-full disabled:opacity-30 disabled:cursor-not-allowed" disabled>Convert to Word</button>
-        <p id="status-pdf2word" class="mt-4 text-sm font-medium"></p>
-        <div id="res-pdf2word" class="hidden mt-7 border-t border-line pt-7">
-          <div class="flex flex-wrap items-center gap-5">
-            <button id="dl-pdf2word" class="btn bg-accent text-cream font-medium px-8 py-3.5 rounded-full">⬇ Download File</button>
-            <span class="text-sm text-muted" id="info-pdf2word"></span>
-          </div>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-6" aria-label="Advertisement"></div>
-        </div>
-      </div>
+      </section>
 
-      <!-- Trust strip -->
-      <div class="mt-12 grid sm:grid-cols-3 border-t border-line">
-        <div class="pt-6 pr-6 sm:border-r border-line">
-          <div class="font-serif italic text-2xl">Fast</div>
-          <p class="text-muted text-sm mt-2 leading-relaxed">No upload, no queue — processing starts instantly on your device.</p>
-        </div>
-        <div class="pt-6 sm:px-6 sm:border-r border-line">
-          <div class="font-serif italic text-2xl">Private</div>
-          <p class="text-muted text-sm mt-2 leading-relaxed">Your files never leave your device. Nothing is stored, ever.</p>
-        </div>
-        <div class="pt-6 sm:pl-6">
-          <div class="font-serif italic text-2xl">Free</div>
-          <p class="text-muted text-sm mt-2 leading-relaxed">No sign-up, no watermarks, no limits. Supported by ads.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Right rail ad -->
-    <aside class="hidden lg:block reveal">
       <!-- ADVERTISEMENT SLOT -->
-      <div id="ad-sidebar" class="ad-box rounded-2xl h-[600px] sticky top-[180px]" aria-label="Advertisement"></div>
-    </aside>
+      <div class="pb-10">
+        <div id="ad-home" class="ad-box rounded-xl h-[100px]" aria-label="Advertisement"></div>
+      </div>
+    </div>
+
+    <!-- ================= TOOL VIEW ================= -->
+    <div id="tool-view" class="hidden py-8">
+      <button data-home class="btn inline-flex items-center gap-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-full px-4 py-2 hover:text-slate-900 mb-5">← All tools</button>
+
+      <div class="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start">
+        <section class="min-w-0">
+
+          <!-- ============ MERGE ============ -->
+          <div id="panel-merge" class="panel bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Merge PDF</h2>
+                <p class="text-slate-500 text-sm">Combine several PDFs into one. Reorder files before merging.</p>
+              </div>
+            </div>
+            <div id="dz-merge" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop PDF files here or click to browse</p>
+              <p class="text-sm text-slate-500">Select two or more PDF files</p>
+              <input type="file" id="file-merge" accept="application/pdf,.pdf" multiple class="hidden" />
+            </div>
+            <ul id="files-merge" class="mt-4 grid gap-2"></ul>
+            <button id="btn-merge" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Merge PDFs</button>
+            <p id="status-merge" class="mt-4 text-sm font-medium"></p>
+            <div id="res-merge" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-merge" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-merge"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ SPLIT ============ -->
+          <div id="panel-split" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">✂️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Split PDF</h2>
+                <p class="text-slate-500 text-sm">Extract the pages you need into a new PDF, or remove pages you don't want.</p>
+              </div>
+            </div>
+            <div id="dz-split" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-split" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-split" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 grid gap-4 max-w-md">
+              <label class="text-sm font-semibold">Pages <span class="font-normal text-slate-500">(e.g. 1-3, 5, 8)</span>
+                <input type="text" id="range-split" class="mt-1.5 w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="1-3, 5, 8" />
+              </label>
+              <div class="flex flex-wrap gap-4 text-sm font-medium">
+                <label class="flex items-center gap-2"><input type="radio" name="mode-split" value="extract" checked class="accent-[#2563EB]" /> Keep only these pages</label>
+                <label class="flex items-center gap-2"><input type="radio" name="mode-split" value="remove" class="accent-[#2563EB]" /> Remove these pages</label>
+              </div>
+            </div>
+            <button id="btn-split" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Split PDF</button>
+            <p id="status-split" class="mt-4 text-sm font-medium"></p>
+            <div id="res-split" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-split" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-split"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ ROTATE ============ -->
+          <div id="panel-rotate" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔄</span>
+              <div>
+                <h2 class="text-2xl font-bold">Rotate PDF</h2>
+                <p class="text-slate-500 text-sm">Fix sideways or upside-down pages — all pages or just the ones you pick.</p>
+              </div>
+            </div>
+            <div id="dz-rotate" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-rotate" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-rotate" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 grid gap-4 max-w-md">
+              <label class="text-sm font-semibold">Rotation
+                <select id="angle-rotate" class="mt-1.5 w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="90" selected>90° clockwise →</option>
+                  <option value="270">90° counter-clockwise ←</option>
+                  <option value="180">180° (upside down)</option>
+                </select>
+              </label>
+              <label class="text-sm font-semibold">Pages <span class="font-normal text-slate-500">(leave empty for all pages)</span>
+                <input type="text" id="range-rotate" class="mt-1.5 w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="e.g. 2, 4-6 — or empty for all" />
+              </label>
+            </div>
+            <button id="btn-rotate" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Rotate PDF</button>
+            <p id="status-rotate" class="mt-4 text-sm font-medium"></p>
+            <div id="res-rotate" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-rotate" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-rotate"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ COMPRESS ============ -->
+          <div id="panel-compress" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Compress PDF</h2>
+                <p class="text-slate-500 text-sm">Shrink large PDFs for email and uploads. Ideal for scans.</p>
+              </div>
+            </div>
+            <div id="dz-compress" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-compress" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-compress" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">Compression level</label>
+            <select id="quality-compress" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="extreme">Extreme — smallest file, lower quality</option>
+              <option value="balanced" selected>Balanced — recommended</option>
+              <option value="light">Light — best quality, larger file</option>
+            </select>
+            <p class="mt-2 text-xs text-slate-500">Note: compressed output is image-based — text will no longer be selectable.</p>
+            <button id="btn-compress" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Compress PDF</button>
+            <p id="status-compress" class="mt-4 text-sm font-medium"></p>
+            <div id="res-compress" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-compress" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-compress"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ UNLOCK ============ -->
+          <div id="panel-unlock" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">🔓</span>
+              <div>
+                <h2 class="text-2xl font-bold">Unlock PDF</h2>
+                <p class="text-slate-500 text-sm">Remove the password from a PDF you own — decrypted locally, never sent anywhere.</p>
+              </div>
+            </div>
+            <div id="dz-unlock" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a protected PDF here or click to browse</p>
+              <input type="file" id="file-unlock" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-unlock" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">Password <span class="font-normal text-slate-500">(leave empty if the PDF opens without one)</span></label>
+            <input type="password" id="pw-unlock" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="Document password" autocomplete="off" />
+            <p class="mt-2 text-xs text-slate-500">⚠️ Only unlock documents you own or are authorized to modify. Output pages are re-rendered, so text becomes image-based.</p>
+            <button id="btn-unlock" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Unlock PDF</button>
+            <p id="status-unlock" class="mt-4 text-sm font-medium"></p>
+            <div id="res-unlock" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-unlock" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-unlock"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ SIGN ============ -->
+          <div id="panel-sign" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">✍️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Sign PDF</h2>
+                <p class="text-slate-500 text-sm">Draw your signature, then click on the page preview to place it.</p>
+              </div>
+            </div>
+            <div id="dz-sign" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-sign" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-sign" class="mt-4 text-sm text-slate-600"></p>
+
+            <div id="work-sign" class="hidden mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <div class="text-sm font-semibold mb-1.5">1 — Draw your signature</div>
+                <canvas id="sigpad" width="500" height="200" class="border-2 border-slate-300 rounded-xl bg-white w-full touch-none"></canvas>
+                <div class="mt-2.5 flex flex-wrap items-center gap-3 text-sm">
+                  <button id="sig-clear" class="btn border border-slate-300 rounded-lg px-3.5 py-1.5 hover:bg-slate-100">Clear</button>
+                  <label class="flex items-center gap-2 text-slate-600">Size:
+                    <input type="range" id="sig-width" min="10" max="60" value="30" class="accent-[#2563EB]" /> <span id="sig-width-val">30%</span> of page width
+                  </label>
+                </div>
+              </div>
+              <div>
+                <div class="text-sm font-semibold mb-1.5">2 — Click the page to place it
+                  <label class="ml-2 font-normal text-xs">Page:
+                    <input type="number" id="page-sign" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                    <span id="pages-sign" class="text-slate-500"></span>
+                  </label>
+                </div>
+                <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-sign">
+                  <canvas id="preview-sign" class="preview-canvas"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <button id="btn-sign" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply Signature &amp; Generate PDF</button>
+            <p id="status-sign" class="mt-4 text-sm font-medium"></p>
+            <div id="res-sign" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-sign" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-sign"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ TYPE ON PDF ============ -->
+          <div id="panel-type" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">⌨️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Type on PDF</h2>
+                <p class="text-slate-500 text-sm">Fill forms and add text, dates or notes. Click the preview to place each text item.</p>
+              </div>
+            </div>
+            <div id="dz-type" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-type" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-type" class="mt-4 text-sm text-slate-600"></p>
+
+            <div id="work-type" class="hidden mt-6">
+              <div class="flex flex-wrap items-end gap-3 text-sm">
+                <label class="font-semibold">Text<br/>
+                  <input type="text" id="text-input" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-64" placeholder="Type text, then click the page" />
+                </label>
+                <label class="font-semibold">Size<br/>
+                  <input type="number" id="text-size" min="6" max="72" value="14" class="mt-1.5 border border-slate-300 rounded-xl px-3 py-2.5 w-20" />
+                </label>
+                <label class="font-semibold">Color<br/>
+                  <input type="color" id="text-color" value="#111827" class="mt-1.5 border border-slate-300 rounded-xl h-10 w-14" />
+                </label>
+                <label class="font-semibold">Page<br/>
+                  <input type="number" id="page-type" min="1" value="1" class="mt-1.5 border border-slate-300 rounded-xl px-3 py-2.5 w-20" />
+                </label>
+                <span id="pages-type" class="text-slate-500 pb-3"></span>
+              </div>
+              <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white mt-4" id="wrap-type">
+                <canvas id="preview-type" class="preview-canvas"></canvas>
+              </div>
+              <ul id="items-type" class="mt-3 grid gap-1.5 text-sm"></ul>
+            </div>
+
+            <button id="btn-type" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply Text &amp; Generate PDF</button>
+            <p id="status-type" class="mt-4 text-sm font-medium"></p>
+            <div id="res-type" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-type" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-type"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ WORD TO PDF ============ -->
+          <div id="panel-word2pdf" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">📝</span>
+              <div>
+                <h2 class="text-2xl font-bold">Word to PDF</h2>
+                <p class="text-slate-500 text-sm">Convert a .docx document into a clean, shareable PDF.</p>
+              </div>
+            </div>
+            <div id="dz-word2pdf" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a .docx file here or click to browse</p>
+              <input type="file" id="file-word2pdf" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" />
+            </div>
+            <p id="picked-word2pdf" class="mt-4 text-sm text-slate-600"></p>
+            <button id="btn-word2pdf" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Convert to PDF</button>
+            <p id="status-word2pdf" class="mt-4 text-sm font-medium"></p>
+            <div id="res-word2pdf" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-word2pdf" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-word2pdf"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ PDF TO WORD ============ -->
+          <div id="panel-pdf2word" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📃</span>
+              <div>
+                <h2 class="text-2xl font-bold">PDF to Word</h2>
+                <p class="text-slate-500 text-sm">Extract the full text of a PDF into an editable Word document (.doc).</p>
+              </div>
+            </div>
+            <div id="dz-pdf2word" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-pdf2word" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-pdf2word" class="mt-4 text-sm text-slate-600"></p>
+            <button id="btn-pdf2word" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Convert to Word</button>
+            <p id="status-pdf2word" class="mt-4 text-sm font-medium"></p>
+            <div id="res-pdf2word" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-pdf2word" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-pdf2word"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ JPG TO PDF ============ -->
+          <div id="panel-img2pdf" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🖼️</span>
+              <div>
+                <h2 class="text-2xl font-bold">JPG to PDF</h2>
+                <p class="text-slate-500 text-sm">Combine photos and scans (JPG or PNG) into a single PDF. Reorder before converting.</p>
+              </div>
+            </div>
+            <div id="dz-img2pdf" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop JPG or PNG images here or click to browse</p>
+              <p class="text-sm text-slate-500">One image per page, in the order you choose</p>
+              <input type="file" id="file-img2pdf" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple class="hidden" />
+            </div>
+            <ul id="files-img2pdf" class="mt-4 grid gap-2"></ul>
+            <label class="block mt-5 text-sm font-semibold">Page size</label>
+            <select id="size-img2pdf" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="a4" selected>A4 — image centered on the page</option>
+              <option value="fit">Fit to image — page matches each photo</option>
+            </select>
+            <button id="btn-img2pdf" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Create PDF</button>
+            <p id="status-img2pdf" class="mt-4 text-sm font-medium"></p>
+            <div id="res-img2pdf" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-img2pdf" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-img2pdf"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box rounded-xl h-[250px] w-full max-w-[336px] mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right rail -->
+        <aside class="hidden lg:block">
+          <!-- ADVERTISEMENT SLOT -->
+          <div id="ad-sidebar" class="ad-box rounded-2xl h-[600px] sticky top-[170px]" aria-label="Advertisement"></div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ================= TRUST ================= -->
+    <section class="grid sm:grid-cols-3 gap-4 text-sm pb-12">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5"><div class="text-2xl">⚡</div><div class="font-bold mt-1.5">Fast</div><div class="text-slate-500 mt-0.5">No upload, no queue — processing starts instantly on your device.</div></div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5"><div class="text-2xl">🛡️</div><div class="font-bold mt-1.5">Private</div><div class="text-slate-500 mt-0.5">Your files never leave your device. Nothing is stored, ever.</div></div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5"><div class="text-2xl">💸</div><div class="font-bold mt-1.5">Free</div><div class="text-slate-500 mt-0.5">No sign-up, no watermarks, no limits. Supported by ads.</div></div>
+    </section>
   </main>
 
   <!-- ================= FAQ (SEO) ================= -->
-  <section id="faq" class="border-t border-line">
-    <div class="max-w-3xl mx-auto px-5 py-16">
-      <p class="eyebrow text-accent text-center reveal">Questions</p>
-      <h2 class="font-serif font-light text-4xl md:text-5xl text-center mt-3 reveal">Frequently asked, <em class="italic">honestly answered</em></h2>
-      <div class="mt-10 border-t border-line reveal">
-        <details class="faq border-b border-line py-5" open>
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">Are these online PDF tools really free?</summary>
-          <p class="mt-3 text-muted leading-relaxed">Yes. Every tool on Free PDF Suite — merge PDF, compress PDF, unlock PDF, sign PDF, type on PDF, Word to PDF and PDF to Word — is completely free with no sign-up, no watermarks and no daily limits. The site is supported by advertising, which keeps the tools free for everyone.</p>
+  <section id="faq" class="bg-white border-t border-slate-200">
+    <div class="max-w-3xl mx-auto px-5 py-14">
+      <h2 class="text-3xl font-extrabold text-center">Frequently Asked Questions</h2>
+      <p class="text-center text-slate-500 mt-2">Everything you need to know about our free, private PDF tools.</p>
+      <div class="mt-8 border-t border-slate-200">
+        <details class="faq border-b border-slate-200 py-4" open>
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Are these online PDF tools really free?</summary>
+          <p class="mt-2.5 text-slate-600">Yes. Every tool on Free PDF Suite — merge, split, rotate, compress, unlock, sign, type on PDF, Word to PDF, PDF to Word and JPG to PDF — is completely free with no sign-up, no watermarks and no daily limits. The site is supported by advertising, which keeps the tools free for everyone.</p>
         </details>
-        <details class="faq border-b border-line py-5">
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">Are my PDF files uploaded to a server?</summary>
-          <p class="mt-3 text-muted leading-relaxed">No. All processing happens locally inside your web browser using modern JavaScript libraries. Your documents are never transmitted over the network — there is no server-side processing at all. That makes Free PDF Suite suitable for confidential contracts, invoices, medical records and personal documents.</p>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Are my PDF files uploaded to a server?</summary>
+          <p class="mt-2.5 text-slate-600">No. All processing happens locally inside your web browser using modern JavaScript libraries. Your documents are never transmitted over the network — there is no server-side processing at all. That makes Free PDF Suite suitable for confidential contracts, invoices, medical records and personal documents.</p>
         </details>
-        <details class="faq border-b border-line py-5">
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">How do I unlock a password-protected PDF?</summary>
-          <p class="mt-3 text-muted leading-relaxed">Open the <strong class="text-ink">Unlock PDF</strong> tool, select your file and enter the document password if one is required to open it. The tool decrypts the file locally in your browser and produces an unlocked copy you can save, print and share. Please only unlock documents that you own or are explicitly authorized to modify.</p>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Can I split a PDF or extract only certain pages?</summary>
+          <p class="mt-2.5 text-slate-600">Yes. Open the <strong>Split PDF</strong> tool, type a page range such as <em>1-3, 5, 8</em> and choose whether to extract those pages into a new PDF or remove them from the document. The <strong>Rotate PDF</strong> tool fixes sideways or upside-down scans, and <strong>JPG to PDF</strong> combines photos into a single PDF.</p>
         </details>
-        <details class="faq border-b border-line py-5">
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">Can I sign a PDF online without Adobe Acrobat?</summary>
-          <p class="mt-3 text-muted leading-relaxed">Yes. The <strong class="text-ink">Sign PDF</strong> tool lets you draw your signature with a mouse, trackpad or touchscreen, then click anywhere on the page preview to place it. The signature image is embedded directly into the PDF on your device — no account and no software installation required.</p>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">How do I unlock a password-protected PDF?</summary>
+          <p class="mt-2.5 text-slate-600">Open the <strong>Unlock PDF</strong> tool, select your file and enter the document password if one is required to open it. The tool decrypts the file locally in your browser and produces an unlocked copy you can save, print and share. Please only unlock documents that you own or are explicitly authorized to modify.</p>
         </details>
-        <details class="faq border-b border-line py-5">
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">How does the PDF compressor reduce file size?</summary>
-          <p class="mt-3 text-muted leading-relaxed">The compressor re-renders each page and re-encodes it as an optimized JPEG image at your chosen quality level. This typically shrinks scanned and image-heavy PDFs by 50–90%. Because the output is image-based, text in the compressed file is no longer selectable — choose the "Light" level if visual quality matters most.</p>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Can I sign a PDF online without Adobe Acrobat?</summary>
+          <p class="mt-2.5 text-slate-600">Yes. The <strong>Sign PDF</strong> tool lets you draw your signature with a mouse, trackpad or touchscreen, then click anywhere on the page preview to place it. The signature image is embedded directly into the PDF on your device — no account and no software installation required.</p>
         </details>
-        <details class="faq border-b border-line py-5">
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">How accurate are Word to PDF and PDF to Word conversions?</summary>
-          <p class="mt-3 text-muted leading-relaxed">Word to PDF preserves headings, paragraphs and bullet lists with clean typography. PDF to Word extracts the complete text content into an editable document. Because conversion runs entirely on your device, very complex layouts, tables and embedded graphics may be simplified.</p>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">How does the PDF compressor reduce file size?</summary>
+          <p class="mt-2.5 text-slate-600">The compressor re-renders each page and re-encodes it as an optimized JPEG image at your chosen quality level. This typically shrinks scanned and image-heavy PDFs by 50–90%. Because the output is image-based, text in the compressed file is no longer selectable — choose the "Light" level if visual quality matters most.</p>
         </details>
-        <details class="faq border-b border-line py-5">
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">Is there a file size limit?</summary>
-          <p class="mt-3 text-muted leading-relaxed">There is no hard limit imposed by the site. Because processing happens in your browser, the practical limit depends on your device's available memory — files up to roughly 100&nbsp;MB work well on most modern computers and phones.</p>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">How accurate are Word to PDF and PDF to Word conversions?</summary>
+          <p class="mt-2.5 text-slate-600">Word to PDF preserves headings, paragraphs and bullet lists with clean typography. PDF to Word extracts the complete text content into an editable document. Because conversion runs entirely on your device, very complex layouts, tables and embedded graphics may be simplified.</p>
         </details>
-        <details class="faq border-b border-line py-5">
-          <summary class="flex items-center justify-between gap-4 cursor-pointer font-serif text-xl">Which browsers and devices are supported?</summary>
-          <p class="mt-3 text-muted leading-relaxed">Free PDF Suite works in all modern browsers — Chrome, Edge, Firefox and Safari — on Windows, macOS, Linux, Android and iOS. No installation, plug-in or browser extension is needed.</p>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Is there a file size limit?</summary>
+          <p class="mt-2.5 text-slate-600">There is no hard limit imposed by the site. Because processing happens in your browser, the practical limit depends on your device's available memory — files up to roughly 100&nbsp;MB work well on most modern computers and phones.</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Which browsers and devices are supported?</summary>
+          <p class="mt-2.5 text-slate-600">Free PDF Suite works in all modern browsers — Chrome, Edge, Firefox and Safari — on Windows, macOS, Linux, Android and iOS. No installation, plug-in or browser extension is needed.</p>
         </details>
       </div>
     </div>
   </section>
 
   <!-- ================= FOOTER ================= -->
-  <footer class="border-t border-line bg-cream">
-    <div class="max-w-6xl mx-auto px-5 py-14">
-      <p class="font-serif font-light text-3xl md:text-4xl max-w-2xl reveal">Fast. Private. Free.<br/><em class="italic text-muted">The way utilities should be.</em></p>
-      <div class="mt-10 pt-6 border-t border-line flex flex-col md:flex-row items-start md:items-center gap-4 justify-between text-sm text-muted">
-        <div>© <span id="year"></span> Free PDF Suite</div>
-        <div class="flex items-center gap-2">
-          <span class="relative flex h-2 w-2"><span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>
-          100% Secure &amp; Private: Files Never Leave Your Device
-        </div>
-      </div>
+  <footer class="bg-white border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center gap-4 justify-between text-sm text-slate-500">
+      <div>© <span id="year"></span> Free PDF Suite — Free, private, in-browser PDF tools.</div>
+      <div class="flex items-center gap-2 font-semibold text-emerald-700">🛡️ 100% Secure &amp; Private: Files Never Leave Your Device</div>
     </div>
   </footer>
 
-  <!-- Scroll reveal -->
-  <script>
-    (() => {
-      const els = document.querySelectorAll('.reveal');
-      if (!('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('revealed')); return; }
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('revealed'); io.unobserve(en.target); } });
-      }, { threshold: 0.12 });
-      els.forEach(e => io.observe(e));
-    })();
-  </script>
 </body>
 </html>
