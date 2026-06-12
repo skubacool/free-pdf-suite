@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = $(`#status-${tool}`);
     if (!el) return;
     el.textContent = msg;
-    el.className = 'mt-3 text-sm font-medium ' +
-      (kind === 'error' ? 'text-red-600' : kind === 'success' ? 'text-emerald-600' : 'text-slate-600');
+    el.className = 'mt-4 text-sm font-medium ' +
+      (kind === 'error' ? 'text-red-700' : kind === 'success' ? 'text-emerald-700' : 'text-muted');
   };
 
   const results = {}; // tool -> { blob, filename }
@@ -109,9 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('.panel').forEach((p) => p.classList.add('hidden'));
     $(`#panel-${tool}`).classList.remove('hidden');
     $$('.navbtn').forEach((b) => {
-      const on = b.dataset.tool === tool;
-      b.classList.toggle('bg-brand-50', on);
-      b.classList.toggle('text-brand-700', on);
+      b.classList.toggle('active-tool', b.dataset.tool === tool);
     });
     history.replaceState(null, '', `#${tool}`);
   };
@@ -126,13 +124,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ul.innerHTML = '';
     mergeState.files.forEach((f, i) => {
       const li = document.createElement('li');
-      li.className = 'flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm';
-      li.innerHTML = `<span class="font-semibold truncate">${escapeHtml(f.name)}</span>
-        <span class="text-slate-400 whitespace-nowrap">${fmtBytes(f.size)}</span>
+      li.className = 'flex items-center gap-2 bg-paper border border-line rounded-full px-4 py-2 text-sm';
+      li.innerHTML = `<span class="font-medium truncate">${escapeHtml(f.name)}</span>
+        <span class="text-muted whitespace-nowrap">${fmtBytes(f.size)}</span>
         <span class="ml-auto flex gap-1">
-          <button data-act="up" data-i="${i}" class="border border-slate-300 rounded-lg px-2 py-0.5 hover:bg-white" title="Move up">↑</button>
-          <button data-act="down" data-i="${i}" class="border border-slate-300 rounded-lg px-2 py-0.5 hover:bg-white" title="Move down">↓</button>
-          <button data-act="rm" data-i="${i}" class="border border-red-200 text-red-600 rounded-lg px-2 py-0.5 hover:bg-red-50" title="Remove">✕</button>
+          <button data-act="up" data-i="${i}" class="border border-line rounded-full px-2.5 py-0.5 hover:bg-cream" title="Move up">↑</button>
+          <button data-act="down" data-i="${i}" class="border border-line rounded-full px-2.5 py-0.5 hover:bg-cream" title="Move down">↓</button>
+          <button data-act="rm" data-i="${i}" class="border border-red-200 text-red-700 rounded-full px-2.5 py-0.5 hover:bg-red-50" title="Remove">✕</button>
         </span>`;
       ul.appendChild(li);
     });
@@ -331,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
   padCtx.lineWidth = 2.5;
   padCtx.lineCap = 'round';
   padCtx.lineJoin = 'round';
-  padCtx.strokeStyle = '#1e293b';
+  padCtx.strokeStyle = '#1c1b17';
   let drawing = false;
   const padPos = (e) => {
     const r = pad.getBoundingClientRect();
@@ -447,9 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ul.innerHTML = '';
     typeState.items.forEach((it, i) => {
       const li = document.createElement('li');
-      li.className = 'flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5';
+      li.className = 'flex items-center gap-2 bg-paper border border-line rounded-full px-4 py-1.5';
       li.innerHTML = `<span class="truncate">“${escapeHtml(it.text)}” — page ${it.page}, ${it.size}pt</span>
-        <button data-i="${i}" class="ml-auto border border-red-200 text-red-600 rounded-lg px-2 py-0.5 hover:bg-red-50">✕</button>`;
+        <button data-i="${i}" class="ml-auto border border-red-200 text-red-700 rounded-full px-2.5 py-0.5 hover:bg-red-50">✕</button>`;
       ul.appendChild(li);
     });
     $('#btn-type').disabled = typeState.items.length === 0;
