@@ -145,6 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   $$('[data-tool]').forEach((b) => b.addEventListener('click', () => activate(b.dataset.tool)));
   $$('[data-home]').forEach((b) => b.addEventListener('click', () => activate('home')));
+
+  // Close the language dropdown when clicking outside it.
+  document.addEventListener('click', (e) => {
+    $$('details.lang-switch[open]').forEach((d) => {
+      if (!d.contains(e.target)) d.removeAttribute('open');
+    });
+  });
   activate(location.hash.replace('#', '') || DEDICATED_TOOL || 'home', false);
   if ($('#year')) $('#year').textContent = new Date().getFullYear();
 
