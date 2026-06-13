@@ -76,6 +76,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Tiny Noto Sans Thai subset (only the glyphs for the language switcher) -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&text=%E0%B9%84%E0%B8%97%E0%B8%A2&display=swap" rel="stylesheet" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -143,8 +145,13 @@
         <a href="../sign-pdf/"     class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Sign</a>
         <a href="../" class="px-3 py-1.5 rounded-lg text-brand-600 hover:bg-brand-50 font-semibold">All Tools</a>
       </nav>
-      <div class="ml-auto hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3.5 py-1.5">
-        🔒 Files never leave your device
+      <div class="ml-auto flex items-center gap-2.5">
+        <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3.5 py-1.5">
+          🔒 Files never leave your device
+        </div>
+        <a href="../th/" lang="th" hreflang="th" title="ภาษาไทย" class="flex items-center gap-1.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-full px-3.5 py-1.5 hover:bg-slate-100 hover:border-slate-300" style="font-family:'Noto Sans Thai',Inter,sans-serif">
+          🌐 ไทย
+        </a>
       </div>
     </div>
 
