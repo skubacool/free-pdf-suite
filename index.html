@@ -15,8 +15,12 @@
   <meta property="og:description" content="Merge, split, compress, unlock, sign and convert PDFs for free. 100% client-side: files never leave your device." />
   <meta property="og:url" content="https://skubacool.github.io/free-pdf-suite/" />
   <meta property="og:site_name" content="Free PDF Suite" />
+  <meta property="og:image" content="https://skubacool.github.io/free-pdf-suite/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <!-- Twitter -->
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://skubacool.github.io/free-pdf-suite/og-image.png" />
   <meta name="twitter:title" content="Free PDF Suite — Private, In-Browser PDF Tools" />
   <meta name="twitter:description" content="Merge, split, compress, unlock, sign and convert PDFs for free — without uploading anything." />
 
@@ -90,6 +94,16 @@
   }
   </script>
 
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+
+  <!-- Language alternates -->
+  <link rel="alternate" hreflang="en" href="https://skubacool.github.io/free-pdf-suite/" />
+  <link rel="alternate" hreflang="th" href="https://skubacool.github.io/free-pdf-suite/th/" />
+  <link rel="alternate" hreflang="x-default" href="https://skubacool.github.io/free-pdf-suite/" />
+
   <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -121,6 +135,15 @@
     .ad-frame-top    { min-height:90px;  width:100%; }
     .ad-frame-side   { width:300px;      min-height:600px; }
     .ad-frame-inline { min-height:250px; width:100%; }
+
+    /* Pre-AdSense: ad containers are fully hidden so the site never shows
+       empty boxes. Flip <body data-ads="off"> to "on" when real ad code is
+       inserted — the reserved frames above then prevent layout shift. */
+    body[data-ads="off"] .ad-box { display:none; }
+    body[data-ads="off"] aside:has(.ad-box) { display:none; }
+    @media (min-width:1024px) {
+      body[data-ads="off"] .ad-layout { grid-template-columns: minmax(0,1fr); }
+    }
 
     .dropzone { transition: background .25s ease, border-color .25s ease; }
     .dropzone:hover { border-color:#93C5FD; background:#EFF6FF; }
@@ -156,7 +179,7 @@
   <script type="module" src="./nhost.js"></script>
 </head>
 
-<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-ads="off">
 
   <!-- ================= HEADER ================= -->
   <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
@@ -172,6 +195,7 @@
         <a href="sign-pdf/"     class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Sign</a>
         <button data-tool="word2pdf" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Word to PDF</button>
         <button data-home class="px-3 py-1.5 rounded-lg text-brand-600 hover:bg-brand-50 font-semibold">All Tools</button>
+        <a href="th/" lang="th" hreflang="th" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100">ไทย</a>
       </nav>
       <div class="ml-auto hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3.5 py-1.5">
         🔒 Files never leave your device
@@ -325,7 +349,7 @@
     <div id="tool-view" class="hidden py-8">
       <button data-home class="btn inline-flex items-center gap-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-full px-4 py-2 hover:text-slate-900 mb-5">← All tools</button>
 
-      <div class="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start">
+      <div class="ad-layout grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start">
         <section class="min-w-0">
 
           <!-- ============ MERGE ============ -->

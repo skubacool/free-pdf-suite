@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เครื่องมือ PDF ออนไลน์ฟรี — รวมไฟล์ แยกหน้า บีบอัด แปลงไฟล์ และเซ็นเอกสาร (เป็นส่วนตัว 100%)</title>
+  <meta name="description" content="เครื่องมือ PDF ฟรีสำหรับงานออฟฟิศและการเรียน: รวมไฟล์ แยกหน้า หมุนหน้า บีบอัดไฟล์ ปลดล็อก ใส่รหัสผ่าน เซ็นเอกสาร ใส่ลายน้ำ ใส่เลขหน้า แปลง Word และรูปภาพ — ทุกอย่างทำงานในเบราว์เซอร์ ไฟล์ไม่ถูกอัปโหลดไปที่ใด" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://skubacool.github.io/free-pdf-suite/th/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="เครื่องมือ PDF ออนไลน์ฟรี — เป็นส่วนตัว 100% ไฟล์ไม่ถูกอัปโหลด" />
+  <meta property="og:description" content="รวมไฟล์ แยกหน้า บีบอัด แปลงไฟล์ และเซ็นเอกสาร PDF ฟรี — ทุกอย่างทำงานในเบราว์เซอร์ของคุณ" />
+  <meta property="og:url" content="https://skubacool.github.io/free-pdf-suite/th/" />
+  <meta property="og:site_name" content="Free PDF Suite" />
+  <meta property="og:locale" content="th_TH" />
+  <meta property="og:image" content="https://skubacool.github.io/free-pdf-suite/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://skubacool.github.io/free-pdf-suite/og-image.png" />
+
+  <!-- Language alternates -->
+  <link rel="alternate" hreflang="en" href="https://skubacool.github.io/free-pdf-suite/" />
+  <link rel="alternate" hreflang="th" href="https://skubacool.github.io/free-pdf-suite/th/" />
+  <link rel="alternate" hreflang="x-default" href="https://skubacool.github.io/free-pdf-suite/" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Free PDF Suite — เครื่องมือ PDF ฟรี",
+    "url": "https://skubacool.github.io/free-pdf-suite/th/",
+    "inLanguage": "th",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any (Web Browser)",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "THB" },
+    "featureList": "รวม PDF, แยก PDF, หมุน PDF, บีบอัด PDF, ปลดล็อก PDF, ใส่รหัสผ่าน PDF, เซ็น PDF, พิมพ์ข้อความบน PDF, ใส่เลขหน้า, ใส่ลายน้ำ, Word เป็น PDF, PDF เป็น Word, JPG เป็น PDF, PDF เป็น JPG",
+    "description": "เครื่องมือ PDF ฟรี ทำงานในเบราว์เซอร์ทั้งหมด ไฟล์ไม่ถูกอัปโหลดไปยังเซิร์ฟเวอร์ใด ๆ"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "inLanguage": "th",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "เครื่องมือ PDF เหล่านี้ฟรีจริงหรือไม่?",
+        "acceptedAnswer": { "@type": "Answer", "text": "ฟรีจริงทั้งหมด เครื่องมือทั้ง 14 ตัว — รวมไฟล์ แยกหน้า หมุน บีบอัด ปลดล็อก ใส่รหัสผ่าน เซ็นเอกสาร ใส่เลขหน้า ใส่ลายน้ำ พิมพ์ข้อความ และตัวแปลงไฟล์ทุกตัว — ใช้งานได้โดยไม่ต้องสมัครสมาชิก ไม่มีลายน้ำบังคับ และไม่จำกัดจำนวนครั้งต่อวัน เว็บไซต์อยู่ได้ด้วยรายได้จากโฆษณา" }
+      },
+      {
+        "@type": "Question",
+        "name": "ไฟล์ PDF ของฉันถูกอัปโหลดขึ้นเซิร์ฟเวอร์หรือไม่?",
+        "acceptedAnswer": { "@type": "Answer", "text": "ไม่ถูกอัปโหลด การประมวลผลทั้งหมดเกิดขึ้นในเบราว์เซอร์ของคุณด้วยไลบรารี JavaScript ที่ทำงานในเครื่อง เอกสารของคุณไม่ถูกส่งผ่านเครือข่ายเลย จึงเหมาะกับสัญญา เอกสารการเงิน และข้อมูลส่วนบุคคลที่เป็นความลับ" }
+      },
+      {
+        "@type": "Question",
+        "name": "แยกไฟล์ PDF หรือดึงเฉพาะบางหน้าได้หรือไม่?",
+        "acceptedAnswer": { "@type": "Answer", "text": "ได้ เปิดเครื่องมือแยก PDF แล้วพิมพ์ช่วงหน้า เช่น 1-3, 5, 8 จากนั้นเลือกว่าจะเก็บเฉพาะหน้าเหล่านั้นเป็นไฟล์ใหม่ หรือลบหน้าเหล่านั้นออกจากเอกสาร เครื่องมือหมุน PDF ช่วยแก้หน้าสแกนที่เอียงหรือกลับหัว และ JPG เป็น PDF รวมรูปถ่ายเป็นไฟล์เดียว" }
+      },
+      {
+        "@type": "Question",
+        "name": "ปลดล็อกไฟล์ PDF ที่มีรหัสผ่านได้อย่างไร?",
+        "acceptedAnswer": { "@type": "Answer", "text": "เปิดเครื่องมือปลดล็อก PDF เลือกไฟล์ แล้วใส่รหัสผ่านของเอกสารหากจำเป็น ไฟล์จะถูกถอดรหัสในเบราว์เซอร์ของคุณและได้สำเนาที่ปลดล็อกแล้ว โปรดใช้กับเอกสารของคุณเองหรือที่ได้รับอนุญาตเท่านั้น" }
+      },
+      {
+        "@type": "Question",
+        "name": "เซ็นเอกสาร PDF ออนไลน์โดยไม่ใช้ Adobe Acrobat ได้หรือไม่?",
+        "acceptedAnswer": { "@type": "Answer", "text": "ได้ เครื่องมือเซ็น PDF ให้คุณวาดลายเซ็นด้วยเมาส์หรือหน้าจอสัมผัส พิมพ์ชื่อเป็นลายเซ็น หรืออัปโหลดรูปลายเซ็นที่สแกนไว้ แล้วคลิกบนตัวอย่างหน้าเอกสารเพื่อวางตำแหน่ง ลายเซ็นถูกฝังลงในไฟล์บนเครื่องของคุณเอง" }
+      },
+      {
+        "@type": "Question",
+        "name": "การบีบอัด PDF ลดขนาดไฟล์ได้อย่างไร?",
+        "acceptedAnswer": { "@type": "Answer", "text": "ระบบจะเรนเดอร์แต่ละหน้าใหม่และบันทึกเป็นรูปภาพที่ปรับคุณภาพตามระดับที่คุณเลือก ไฟล์สแกนมักเล็กลง 50–90% ข้อแลกเปลี่ยนคือไฟล์ผลลัพธ์เป็นรูปภาพ จึงเลือกคัดลอกข้อความไม่ได้ — เลือกระดับ เบา หากต้องการคุณภาพสูงสุด" }
+      },
+      {
+        "@type": "Question",
+        "name": "แปลง Word เป็น PDF และ PDF เป็น Word ได้แม่นยำแค่ไหน?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Word เป็น PDF จะคงหัวข้อ ย่อหน้า และรายการไว้ในรูปแบบที่อ่านง่าย ส่วน PDF เป็น Word จะดึงข้อความทั้งหมดออกมาเป็นไฟล์ที่แก้ไขได้ เลย์เอาต์ที่ซับซ้อนมาก ตาราง และกราฟิกอาจถูกทำให้เรียบง่ายลง เพราะการแปลงทำงานบนเครื่องของคุณทั้งหมด" }
+      },
+      {
+        "@type": "Question",
+        "name": "มีขนาดไฟล์สูงสุดหรือไม่?",
+        "acceptedAnswer": { "@type": "Answer", "text": "เว็บไซต์ไม่ได้จำกัดขนาดไฟล์ เพราะประมวลผลในเบราว์เซอร์ ขีดจำกัดจริงขึ้นกับหน่วยความจำของเครื่อง — ไฟล์ขนาดประมาณ 100 MB ใช้งานได้ดีบนคอมพิวเตอร์และมือถือรุ่นใหม่ทั่วไป" }
+      },
+      {
+        "@type": "Question",
+        "name": "รองรับเบราว์เซอร์และอุปกรณ์ใดบ้าง?",
+        "acceptedAnswer": { "@type": "Answer", "text": "ใช้ได้กับเบราว์เซอร์รุ่นใหม่ทุกตัว — Chrome, Edge, Firefox และ Safari — บน Windows, macOS, Linux, Android และ iOS โดยไม่ต้องติดตั้งโปรแกรมหรือส่วนขยายใด ๆ" }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: { 50:'#EFF6FF', 100:'#DBEAFE', 600:'#2563EB', 700:'#1D4ED8' } },
+          fontFamily: { sans: ['Inter','Noto Sans Thai','ui-sans-serif','system-ui','Segoe UI','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::selection { background:#2563EB; color:#fff; }
+    .ad-box { border:1px solid #E2E8F0; background:#F8FAFC; position:relative; }
+    .ad-box::before { content:'โฆษณา'; position:absolute; top:.5rem; left:50%; transform:translateX(-50%);
+      font-size:.6rem; letter-spacing:.15em; text-transform:uppercase; color:#94A3B8; }
+    .ad-frame-top    { min-height:90px;  width:100%; }
+    .ad-frame-side   { width:300px;      min-height:600px; }
+    .ad-frame-inline { min-height:250px; width:100%; }
+    body[data-ads="off"] .ad-box { display:none; }
+    body[data-ads="off"] aside:has(.ad-box) { display:none; }
+    @media (min-width:1024px) {
+      body[data-ads="off"] .ad-layout { grid-template-columns: minmax(0,1fr); }
+    }
+    .dropzone { transition: background .25s ease, border-color .25s ease; }
+    .dropzone:hover { border-color:#93C5FD; background:#EFF6FF; }
+    .dropzone.dragover { border-color:#2563EB; background:#DBEAFE; }
+    #tool-view canvas.preview-canvas { max-width:100%; height:auto; display:block; cursor:crosshair; }
+    .place-marker { position:absolute; transform:translate(-50%,-50%); pointer-events:none; }
+    .toolcard { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .toolcard:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(15,23,42,.10); border-color:#2563EB; }
+    .btn { transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease; }
+    .btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(15,23,42,.15); }
+    .btn:not(:disabled):active { transform: translateY(0); }
+    details.faq summary::-webkit-details-marker { display:none; }
+    details.faq summary::after { content:'+'; font-size:1.4rem; font-weight:300; color:#2563EB; transition: transform .25s ease; line-height:1; }
+    details.faq[open] summary::after { transform: rotate(45deg); }
+    @media (prefers-reduced-motion: reduce) { .toolcard:hover, .btn:hover { transform:none; } }
+  </style>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+  <script defer src="../app.js"></script>
+  <script type="module" src="../nhost.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-ads="off">
+
+  <!-- ================= ส่วนหัว ================= -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 py-3 flex flex-wrap items-center gap-4">
+      <button data-home class="flex items-center gap-2.5 font-extrabold text-lg">
+        <span class="inline-flex w-9 h-9 items-center justify-center rounded-xl bg-brand-600 text-white text-xl">📄</span>
+        Free PDF Suite
+      </button>
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
+        <button data-tool="merge"    class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">รวมไฟล์</button>
+        <button data-tool="split"    class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">แยกหน้า</button>
+        <button data-tool="compress" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">บีบอัด</button>
+        <button data-tool="sign"     class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">เซ็นเอกสาร</button>
+        <button data-home class="px-3 py-1.5 rounded-lg text-brand-600 hover:bg-brand-50 font-semibold">เครื่องมือทั้งหมด</button>
+        <a href="../" lang="en" hreflang="en" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100">English</a>
+      </nav>
+      <div class="ml-auto hidden sm:flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3.5 py-1.5">
+        🔒 ไฟล์ไม่ออกจากเครื่องของคุณ
+      </div>
+    </div>
+
+    <!-- ADVERTISEMENT SLOT -->
+    <div class="max-w-6xl mx-auto px-5 pb-3">
+      <div id="ad-header" class="ad-box ad-frame-top rounded-xl" aria-label="Advertisement"></div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-5">
+
+    <!-- ================= หน้าหลัก ================= -->
+    <div id="home-view">
+
+      <section class="text-center pt-12 pb-10">
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
+          เครื่องมือ PDF ครบทุกอย่าง<br class="hidden md:block" />
+          สำหรับ<span class="text-brand-600">งานและการเรียน</span>
+        </h1>
+        <p class="mt-4 max-w-2xl mx-auto text-slate-600 text-lg">
+          รวมไฟล์ แยกหน้า บีบอัด แปลงไฟล์ และเซ็นเอกสาร PDF ได้ในไม่กี่วินาที
+          ฟรี ไม่ต้องสมัครสมาชิก ไม่มีลายน้ำ
+        </p>
+        <div class="mt-6 inline-flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-3.5 text-left">
+          <span class="text-2xl">🛡️</span>
+          <div>
+            <div class="font-bold text-emerald-800">ปลอดภัยและเป็นส่วนตัว 100%</div>
+            <div class="text-sm text-emerald-700">ไฟล์ไม่ออกจากเครื่องของคุณ — ทุกอย่างประมวลผลในเบราว์เซอร์</div>
+          </div>
+        </div>
+
+        <div class="mt-10 grid sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-sm">
+          <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+            <span class="w-7 h-7 shrink-0 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">1</span>
+            <span class="text-slate-700 font-medium">เลือกเครื่องมือด้านล่าง</span>
+          </div>
+          <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+            <span class="w-7 h-7 shrink-0 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">2</span>
+            <span class="text-slate-700 font-medium">ลากไฟล์ของคุณมาวาง</span>
+          </div>
+          <div class="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+            <span class="w-7 h-7 shrink-0 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">3</span>
+            <span class="text-slate-700 font-medium">ดาวน์โหลดผลลัพธ์</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pb-10">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">จัดระเบียบเอกสาร</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="merge" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
+            <div class="font-bold mt-3">รวม PDF</div>
+            <p class="text-sm text-slate-500 mt-1">รวมไฟล์ PDF หลายไฟล์เป็นเอกสารเดียว</p>
+          </button>
+          <button data-tool="split" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">✂️</span>
+            <div class="font-bold mt-3">แยก PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงเฉพาะหน้าที่ต้องการ หรือลบหน้าที่ไม่ใช้</p>
+          </button>
+          <button data-tool="rotate" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔄</span>
+            <div class="font-bold mt-3">หมุน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แก้หน้าที่เอียงหรือกลับหัวจากการสแกน</p>
+          </button>
+        </div>
+
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">แปลงไฟล์</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="word2pdf" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">📝</span>
+            <div class="font-bold mt-3">Word เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงเอกสาร .docx เป็น PDF พร้อมแชร์</p>
+          </button>
+          <button data-tool="pdf2word" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📃</span>
+            <div class="font-bold mt-3">PDF เป็น Word</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงข้อความจาก PDF ไปแก้ไขต่อใน Word</p>
+          </button>
+          <button data-tool="img2pdf" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">JPG เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">รวมรูปถ่ายและภาพสแกนเป็น PDF ไฟล์เดียว</p>
+          </button>
+          <button data-tool="pdf2jpg" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">📸</span>
+            <div class="font-bold mt-3">PDF เป็น JPG</div>
+            <p class="text-sm text-slate-500 mt-1">บันทึกทุกหน้าเป็นรูปภาพคุณภาพสูง</p>
+          </button>
+        </div>
+
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">แก้ไขและเซ็นเอกสาร</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="sign" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">✍️</span>
+            <div class="font-bold mt-3">เซ็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">วาด พิมพ์ หรืออัปโหลดลายเซ็น แล้ววางบนเอกสาร</p>
+          </button>
+          <button data-tool="type" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">⌨️</span>
+            <div class="font-bold mt-3">พิมพ์ข้อความบน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">กรอกฟอร์ม เพิ่มข้อความ วันที่ หรือโน้ต (รองรับภาษาไทย)</p>
+          </button>
+          <button data-tool="pagenum" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔢</span>
+            <div class="font-bold mt-3">ใส่เลขหน้า</div>
+            <p class="text-sm text-slate-500 mt-1">ประทับเลขหน้าทุกหน้า เลือกตำแหน่งได้</p>
+          </button>
+          <button data-tool="watermark" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">💧</span>
+            <div class="font-bold mt-3">ใส่ลายน้ำ</div>
+            <p class="text-sm text-slate-500 mt-1">ประทับคำว่า "ลับ" "ฉบับร่าง" หรือข้อความใดก็ได้</p>
+          </button>
+        </div>
+
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">ลดขนาดและความปลอดภัย</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button data-tool="compress" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
+            <div class="font-bold mt-3">บีบอัด PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ลดขนาดไฟล์ใหญ่สำหรับส่งอีเมล</p>
+          </button>
+          <button data-tool="unlock" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">🔓</span>
+            <div class="font-bold mt-3">ปลดล็อก PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ถอดรหัสผ่านออกจากไฟล์ของคุณเอง</p>
+          </button>
+          <button data-tool="protect" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-red-50 text-2xl">🔐</span>
+            <div class="font-bold mt-3">ใส่รหัสผ่าน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ตั้งรหัสผ่านเพื่อความเป็นส่วนตัวของเอกสาร</p>
+          </button>
+          <!-- ADVERTISEMENT SLOT -->
+          <div class="ad-box rounded-2xl min-h-[140px]" aria-label="Advertisement"></div>
+        </div>
+      </section>
+
+      <!-- ADVERTISEMENT SLOT -->
+      <div class="pb-10">
+        <div id="ad-home" class="ad-box rounded-xl h-[100px]" aria-label="Advertisement"></div>
+      </div>
+    </div>
+
+    <!-- ================= มุมมองเครื่องมือ ================= -->
+    <div id="tool-view" class="hidden py-8">
+      <button data-home class="btn inline-flex items-center gap-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-full px-4 py-2 hover:text-slate-900 mb-5">← เครื่องมือทั้งหมด</button>
+
+      <div class="ad-layout grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start">
+        <section class="min-w-0">
+
+          <!-- ============ รวม PDF ============ -->
+          <div id="panel-merge" class="panel bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
+              <div>
+                <h2 class="text-2xl font-bold">รวม PDF</h2>
+                <p class="text-slate-500 text-sm">รวมไฟล์ PDF หลายไฟล์เป็นไฟล์เดียว จัดลำดับไฟล์ก่อนรวมได้</p>
+              </div>
+            </div>
+            <div id="dz-merge" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <p class="text-sm text-slate-500">เลือกไฟล์ PDF ตั้งแต่ 2 ไฟล์ขึ้นไป</p>
+              <input type="file" id="file-merge" accept="application/pdf,.pdf" multiple class="hidden" />
+            </div>
+            <ul id="files-merge" class="mt-4 grid gap-2"></ul>
+            <button id="btn-merge" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>รวมไฟล์ PDF</button>
+            <p id="status-merge" class="mt-4 text-sm font-medium"></p>
+            <div id="res-merge" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-merge" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์ที่รวมแล้ว</button>
+                <span class="text-sm text-slate-600" id="info-merge"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ แยก PDF ============ -->
+          <div id="panel-split" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">✂️</span>
+              <div>
+                <h2 class="text-2xl font-bold">แยก PDF</h2>
+                <p class="text-slate-500 text-sm">ดึงหน้าที่ต้องการเป็นไฟล์ใหม่ หรือลบหน้าที่ไม่ต้องการออก</p>
+              </div>
+            </div>
+            <div id="dz-split" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-split" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-split" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 grid gap-4 max-w-md">
+              <label class="text-sm font-semibold">หน้า <span class="font-normal text-slate-500">(เช่น 1-3, 5, 8)</span>
+                <input type="text" id="range-split" class="mt-1.5 w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="1-3, 5, 8" />
+              </label>
+              <div class="flex flex-wrap gap-4 text-sm font-medium">
+                <label class="flex items-center gap-2"><input type="radio" name="mode-split" value="extract" checked class="accent-[#2563EB]" /> เก็บเฉพาะหน้าเหล่านี้</label>
+                <label class="flex items-center gap-2"><input type="radio" name="mode-split" value="remove" class="accent-[#2563EB]" /> ลบหน้าเหล่านี้</label>
+              </div>
+            </div>
+            <button id="btn-split" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>แยก PDF</button>
+            <p id="status-split" class="mt-4 text-sm font-medium"></p>
+            <div id="res-split" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-split" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์ที่แยกแล้ว</button>
+                <span class="text-sm text-slate-600" id="info-split"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ หมุน PDF ============ -->
+          <div id="panel-rotate" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔄</span>
+              <div>
+                <h2 class="text-2xl font-bold">หมุน PDF</h2>
+                <p class="text-slate-500 text-sm">แก้หน้าที่เอียงหรือกลับหัว — ทุกหน้าหรือเฉพาะหน้าที่เลือก</p>
+              </div>
+            </div>
+            <div id="dz-rotate" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-rotate" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-rotate" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 grid gap-4 max-w-md">
+              <label class="text-sm font-semibold">การหมุน
+                <select id="angle-rotate" class="mt-1.5 w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="90" selected>หมุน 90° ตามเข็มนาฬิกา →</option>
+                  <option value="270">หมุน 90° ทวนเข็มนาฬิกา ←</option>
+                  <option value="180">หมุน 180° (กลับหัว)</option>
+                </select>
+              </label>
+              <label class="text-sm font-semibold">หน้า <span class="font-normal text-slate-500">(เว้นว่าง = ทุกหน้า)</span>
+                <input type="text" id="range-rotate" class="mt-1.5 w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="เช่น 2, 4-6 — หรือเว้นว่างเพื่อหมุนทุกหน้า" />
+              </label>
+            </div>
+            <button id="btn-rotate" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>หมุน PDF</button>
+            <p id="status-rotate" class="mt-4 text-sm font-medium"></p>
+            <div id="res-rotate" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-rotate" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-rotate"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ บีบอัด PDF ============ -->
+          <div id="panel-compress" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
+              <div>
+                <h2 class="text-2xl font-bold">บีบอัด PDF</h2>
+                <p class="text-slate-500 text-sm">ลดขนาดไฟล์ PDF สำหรับส่งอีเมลหรืออัปโหลด เหมาะกับไฟล์สแกน</p>
+              </div>
+            </div>
+            <div id="dz-compress" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-compress" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-compress" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">ระดับการบีบอัด</label>
+            <select id="quality-compress" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="extreme">สูงสุด — ไฟล์เล็กที่สุด คุณภาพลดลง</option>
+              <option value="balanced" selected>สมดุล — แนะนำ</option>
+              <option value="light">เบา — คุณภาพดีที่สุด ไฟล์ใหญ่กว่า</option>
+            </select>
+            <p class="mt-2 text-xs text-slate-500">หมายเหตุ: ไฟล์ที่บีบอัดจะกลายเป็นรูปภาพ — จะไม่สามารถเลือกคัดลอกข้อความได้</p>
+            <button id="btn-compress" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>บีบอัด PDF</button>
+            <p id="status-compress" class="mt-4 text-sm font-medium"></p>
+            <div id="res-compress" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-compress" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์ที่บีบอัดแล้ว</button>
+                <span class="text-sm text-slate-600" id="info-compress"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ ปลดล็อก PDF ============ -->
+          <div id="panel-unlock" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">🔓</span>
+              <div>
+                <h2 class="text-2xl font-bold">ปลดล็อก PDF</h2>
+                <p class="text-slate-500 text-sm">ถอดรหัสผ่านออกจากไฟล์ของคุณเอง — ถอดรหัสในเครื่อง ไม่ส่งไปที่ใด</p>
+              </div>
+            </div>
+            <div id="dz-unlock" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่มีรหัสผ่านที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-unlock" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-unlock" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">รหัสผ่าน <span class="font-normal text-slate-500">(เว้นว่างหากเปิดไฟล์ได้โดยไม่ต้องใช้รหัสผ่าน)</span></label>
+            <input type="password" id="pw-unlock" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="รหัสผ่านของเอกสาร" autocomplete="off" />
+            <p class="mt-2 text-xs text-slate-500">⚠️ โปรดใช้กับเอกสารของคุณเองหรือที่ได้รับอนุญาตเท่านั้น หน้าผลลัพธ์จะถูกแปลงเป็นรูปภาพ</p>
+            <button id="btn-unlock" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ปลดล็อก PDF</button>
+            <p id="status-unlock" class="mt-4 text-sm font-medium"></p>
+            <div id="res-unlock" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-unlock" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-unlock"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ เซ็น PDF ============ -->
+          <div id="panel-sign" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">✍️</span>
+              <div>
+                <h2 class="text-2xl font-bold">เซ็น PDF</h2>
+                <p class="text-slate-500 text-sm">วาด พิมพ์ หรืออัปโหลดลายเซ็น แล้วคลิกบนตัวอย่างหน้าเพื่อวางตำแหน่ง</p>
+              </div>
+            </div>
+            <div id="dz-sign" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-sign" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-sign" class="mt-4 text-sm text-slate-600"></p>
+
+            <div id="work-sign" class="hidden mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <div class="text-sm font-semibold mb-1.5">1 — สร้างลายเซ็นของคุณ</div>
+                <div class="flex gap-1.5 mb-2.5" id="sig-modes">
+                  <button data-sigmode="draw" class="sigmode btn text-sm rounded-lg px-3.5 py-1.5 border border-brand-600 bg-brand-50 text-brand-700 font-semibold">✏️ วาด</button>
+                  <button data-sigmode="type" class="sigmode btn text-sm rounded-lg px-3.5 py-1.5 border border-slate-300 hover:bg-slate-100">⌨️ พิมพ์</button>
+                  <button data-sigmode="upload" class="sigmode btn text-sm rounded-lg px-3.5 py-1.5 border border-slate-300 hover:bg-slate-100">🖼️ อัปโหลด</button>
+                </div>
+                <canvas id="sigpad" width="500" height="200" class="border-2 border-slate-300 rounded-xl bg-white w-full touch-none"></canvas>
+                <div id="sig-type-box" class="hidden">
+                  <input type="text" id="sig-type-text" class="border-2 border-slate-300 rounded-xl px-4 py-3 w-full text-2xl" style="font-family:'Segoe Script','Brush Script MT','Lucida Handwriting',cursive" placeholder="พิมพ์ชื่อของคุณ" />
+                </div>
+                <div id="sig-upload-box" class="hidden border-2 border-dashed border-slate-300 rounded-xl p-6 text-center text-sm text-slate-500">
+                  <label class="cursor-pointer font-semibold text-brand-600 hover:underline">เลือกรูปลายเซ็น (PNG หรือ JPG)
+                    <input type="file" id="sig-upload-input" accept="image/png,image/jpeg" class="hidden" />
+                  </label>
+                  <div id="sig-upload-preview" class="mt-3"></div>
+                </div>
+                <div class="mt-2.5 flex flex-wrap items-center gap-3 text-sm">
+                  <button id="sig-clear" class="btn border border-slate-300 rounded-lg px-3.5 py-1.5 hover:bg-slate-100">ล้าง</button>
+                  <label class="flex items-center gap-2 text-slate-600">ขนาด:
+                    <input type="range" id="sig-width" min="10" max="60" value="30" class="accent-[#2563EB]" /> <span id="sig-width-val">30%</span> ของความกว้างหน้า
+                  </label>
+                </div>
+              </div>
+              <div>
+                <div class="text-sm font-semibold mb-1.5">2 — คลิกบนหน้าเพื่อวางลายเซ็น
+                  <label class="ml-2 font-normal text-xs">หน้า:
+                    <input type="number" id="page-sign" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                    <span id="pages-sign" class="text-slate-500"></span>
+                  </label>
+                </div>
+                <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-sign">
+                  <canvas id="preview-sign" class="preview-canvas"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <button id="btn-sign" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ใส่ลายเซ็นและสร้าง PDF</button>
+            <p id="status-sign" class="mt-4 text-sm font-medium"></p>
+            <div id="res-sign" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-sign" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์ที่เซ็นแล้ว</button>
+                <span class="text-sm text-slate-600" id="info-sign"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ พิมพ์ข้อความบน PDF ============ -->
+          <div id="panel-type" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">⌨️</span>
+              <div>
+                <h2 class="text-2xl font-bold">พิมพ์ข้อความบน PDF</h2>
+                <p class="text-slate-500 text-sm">กรอกฟอร์ม เพิ่มข้อความ วันที่ หรือโน้ต (รองรับภาษาไทย) — คลิกบนตัวอย่างหน้าเพื่อวางข้อความ</p>
+              </div>
+            </div>
+            <div id="dz-type" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-type" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-type" class="mt-4 text-sm text-slate-600"></p>
+
+            <div id="work-type" class="hidden mt-6">
+              <div class="flex flex-wrap items-end gap-3 text-sm">
+                <label class="font-semibold">ข้อความ<br/>
+                  <input type="text" id="text-input" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-64" placeholder="พิมพ์ข้อความ แล้วคลิกบนหน้า" />
+                </label>
+                <label class="font-semibold">ขนาด<br/>
+                  <input type="number" id="text-size" min="6" max="72" value="14" class="mt-1.5 border border-slate-300 rounded-xl px-3 py-2.5 w-20" />
+                </label>
+                <label class="font-semibold">สี<br/>
+                  <input type="color" id="text-color" value="#111827" class="mt-1.5 border border-slate-300 rounded-xl h-10 w-14" />
+                </label>
+                <label class="font-semibold">หน้า<br/>
+                  <input type="number" id="page-type" min="1" value="1" class="mt-1.5 border border-slate-300 rounded-xl px-3 py-2.5 w-20" />
+                </label>
+                <span id="pages-type" class="text-slate-500 pb-3"></span>
+              </div>
+              <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white mt-4" id="wrap-type">
+                <canvas id="preview-type" class="preview-canvas"></canvas>
+              </div>
+              <ul id="items-type" class="mt-3 grid gap-1.5 text-sm"></ul>
+            </div>
+
+            <button id="btn-type" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ใส่ข้อความและสร้าง PDF</button>
+            <p id="status-type" class="mt-4 text-sm font-medium"></p>
+            <div id="res-type" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-type" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-type"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ Word เป็น PDF ============ -->
+          <div id="panel-word2pdf" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">📝</span>
+              <div>
+                <h2 class="text-2xl font-bold">Word เป็น PDF</h2>
+                <p class="text-slate-500 text-sm">แปลงเอกสาร .docx เป็นไฟล์ PDF ที่สะอาดพร้อมแชร์ (รองรับภาษาไทย)</p>
+              </div>
+            </div>
+            <div id="dz-word2pdf" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ .docx ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-word2pdf" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" />
+            </div>
+            <p id="picked-word2pdf" class="mt-4 text-sm text-slate-600"></p>
+            <button id="btn-word2pdf" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>แปลงเป็น PDF</button>
+            <p id="status-word2pdf" class="mt-4 text-sm font-medium"></p>
+            <div id="res-word2pdf" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-word2pdf" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-word2pdf"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ PDF เป็น Word ============ -->
+          <div id="panel-pdf2word" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📃</span>
+              <div>
+                <h2 class="text-2xl font-bold">PDF เป็น Word</h2>
+                <p class="text-slate-500 text-sm">ดึงข้อความทั้งหมดจาก PDF เป็นเอกสาร Word ที่แก้ไขได้ (.doc)</p>
+              </div>
+            </div>
+            <div id="dz-pdf2word" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-pdf2word" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-pdf2word" class="mt-4 text-sm text-slate-600"></p>
+            <button id="btn-pdf2word" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>แปลงเป็น Word</button>
+            <p id="status-pdf2word" class="mt-4 text-sm font-medium"></p>
+            <div id="res-pdf2word" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-pdf2word" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-pdf2word"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ JPG เป็น PDF ============ -->
+          <div id="panel-img2pdf" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🖼️</span>
+              <div>
+                <h2 class="text-2xl font-bold">JPG เป็น PDF</h2>
+                <p class="text-slate-500 text-sm">รวมรูปถ่ายและภาพสแกน (JPG หรือ PNG) เป็น PDF ไฟล์เดียว จัดลำดับก่อนแปลงได้</p>
+              </div>
+            </div>
+            <div id="dz-img2pdf" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางรูป JPG หรือ PNG ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <p class="text-sm text-slate-500">หนึ่งรูปต่อหนึ่งหน้า ตามลำดับที่คุณเลือก</p>
+              <input type="file" id="file-img2pdf" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple class="hidden" />
+            </div>
+            <ul id="files-img2pdf" class="mt-4 grid gap-2"></ul>
+            <label class="block mt-5 text-sm font-semibold">ขนาดหน้า</label>
+            <select id="size-img2pdf" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="a4" selected>A4 — จัดรูปไว้กึ่งกลางหน้า</option>
+              <option value="fit">พอดีรูป — หน้ากระดาษเท่าขนาดรูป</option>
+            </select>
+            <button id="btn-img2pdf" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>สร้าง PDF</button>
+            <p id="status-img2pdf" class="mt-4 text-sm font-medium"></p>
+            <div id="res-img2pdf" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-img2pdf" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-img2pdf"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ PDF เป็น JPG ============ -->
+          <div id="panel-pdf2jpg" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">📸</span>
+              <div>
+                <h2 class="text-2xl font-bold">PDF เป็น JPG</h2>
+                <p class="text-slate-500 text-sm">บันทึกทุกหน้าเป็นรูปภาพคุณภาพสูง หลายหน้าจะดาวน์โหลดเป็นไฟล์ ZIP เดียว</p>
+              </div>
+            </div>
+            <div id="dz-pdf2jpg" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-pdf2jpg" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-pdf2jpg" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">คุณภาพรูป</label>
+            <select id="quality-pdf2jpg" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="high" selected>สูง — คมชัด ไฟล์ใหญ่กว่า</option>
+              <option value="medium">กลาง — ไฟล์เล็กกว่า</option>
+            </select>
+            <button id="btn-pdf2jpg" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>แปลงเป็น JPG</button>
+            <p id="status-pdf2jpg" class="mt-4 text-sm font-medium"></p>
+            <div id="res-pdf2jpg" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-pdf2jpg" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-pdf2jpg"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ ใส่เลขหน้า ============ -->
+          <div id="panel-pagenum" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔢</span>
+              <div>
+                <h2 class="text-2xl font-bold">ใส่เลขหน้า</h2>
+                <p class="text-slate-500 text-sm">ประทับเลขหน้าทุกหน้า — เหมาะกับรายงาน วิทยานิพนธ์ และสัญญา</p>
+              </div>
+            </div>
+            <div id="dz-pagenum" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-pagenum" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-pagenum" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 flex flex-wrap gap-4">
+              <label class="text-sm font-semibold">ตำแหน่ง
+                <select id="pos-pagenum" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="bottom-center" selected>ล่างกลาง</option>
+                  <option value="bottom-right">ล่างขวา</option>
+                  <option value="bottom-left">ล่างซ้าย</option>
+                  <option value="top-right">บนขวา</option>
+                </select>
+              </label>
+              <label class="text-sm font-semibold">รูปแบบ
+                <select id="fmt-pagenum" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="n" selected>1, 2, 3 …</option>
+                  <option value="pageofn">Page 1 of N</option>
+                </select>
+              </label>
+            </div>
+            <button id="btn-pagenum" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ใส่เลขหน้า</button>
+            <p id="status-pagenum" class="mt-4 text-sm font-medium"></p>
+            <div id="res-pagenum" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-pagenum" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-pagenum"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ ใส่ลายน้ำ ============ -->
+          <div id="panel-watermark" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">💧</span>
+              <div>
+                <h2 class="text-2xl font-bold">ใส่ลายน้ำ</h2>
+                <p class="text-slate-500 text-sm">ประทับข้อความเช่น "ลับ" หรือ "ฉบับร่าง" ทแยงมุมบนทุกหน้า (รองรับภาษาไทย)</p>
+              </div>
+            </div>
+            <div id="dz-watermark" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-watermark" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-watermark" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 flex flex-wrap items-end gap-4">
+              <label class="text-sm font-semibold">ข้อความลายน้ำ
+                <input type="text" id="text-watermark" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 w-64" placeholder="เช่น ลับ หรือ ฉบับร่าง" value="ลับ" />
+              </label>
+              <label class="text-sm font-semibold">ความเข้ม
+                <span class="mt-1.5 flex items-center gap-2 font-normal">
+                  <input type="range" id="opacity-watermark" min="10" max="60" value="25" class="accent-[#2563EB]" />
+                  <span id="opacity-val" class="text-slate-500 text-sm w-10">25%</span>
+                </span>
+              </label>
+            </div>
+            <button id="btn-watermark" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ใส่ลายน้ำ</button>
+            <p id="status-watermark" class="mt-4 text-sm font-medium"></p>
+            <div id="res-watermark" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-watermark" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-watermark"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ ใส่รหัสผ่าน ============ -->
+          <div id="panel-protect" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-red-50 text-2xl">🔐</span>
+              <div>
+                <h2 class="text-2xl font-bold">ใส่รหัสผ่าน PDF</h2>
+                <p class="text-slate-500 text-sm">ตั้งรหัสผ่านให้เอกสารเพื่อให้เปิดได้เฉพาะคนที่คุณไว้ใจ — เข้ารหัสในเบราว์เซอร์ของคุณ</p>
+              </div>
+            </div>
+            <div id="dz-protect" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">วางไฟล์ PDF ที่นี่ หรือคลิกเพื่อเลือกไฟล์</p>
+              <input type="file" id="file-protect" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-protect" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">รหัสผ่าน</label>
+            <input type="password" id="pw-protect" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="ตั้งรหัสผ่าน (อย่างน้อย 4 ตัวอักษร)" autocomplete="new-password" />
+            <p class="mt-2 text-xs text-slate-500">⚠️ โปรดจำรหัสผ่านนี้ — หากลืมจะไม่สามารถกู้คืนไฟล์ได้</p>
+            <button id="btn-protect" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ใส่รหัสผ่าน</button>
+            <p id="status-protect" class="mt-4 text-sm font-medium"></p>
+            <div id="res-protect" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-protect" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ ดาวน์โหลดไฟล์</button>
+                <span class="text-sm text-slate-600" id="info-protect"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- แถบโฆษณาด้านข้าง -->
+        <aside class="hidden lg:block">
+          <!-- ADVERTISEMENT SLOT -->
+          <div id="ad-sidebar" class="ad-box ad-frame-side rounded-2xl sticky top-[170px]" aria-label="Advertisement"></div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ================= จุดเด่น ================= -->
+    <section class="grid sm:grid-cols-3 gap-4 text-sm pb-12">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5"><div class="text-2xl">⚡</div><div class="font-bold mt-1.5">เร็ว</div><div class="text-slate-500 mt-0.5">ไม่ต้องอัปโหลด ไม่ต้องรอคิว — เริ่มประมวลผลทันทีบนเครื่องของคุณ</div></div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5"><div class="text-2xl">🛡️</div><div class="font-bold mt-1.5">เป็นส่วนตัว</div><div class="text-slate-500 mt-0.5">ไฟล์ไม่ออกจากเครื่องของคุณ ไม่มีการเก็บข้อมูลใด ๆ</div></div>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5"><div class="text-2xl">💸</div><div class="font-bold mt-1.5">ฟรี</div><div class="text-slate-500 mt-0.5">ไม่ต้องสมัครสมาชิก ไม่มีลายน้ำ ไม่จำกัดจำนวนครั้ง อยู่ได้ด้วยโฆษณา</div></div>
+    </section>
+  </main>
+
+  <!-- ================= คำถามที่พบบ่อย ================= -->
+  <section id="faq" class="bg-white border-t border-slate-200">
+    <div class="max-w-3xl mx-auto px-5 py-14">
+      <h2 class="text-3xl font-extrabold text-center">คำถามที่พบบ่อย</h2>
+      <p class="text-center text-slate-500 mt-2">ทุกเรื่องที่ควรรู้เกี่ยวกับเครื่องมือ PDF ฟรีที่เป็นส่วนตัวของเรา</p>
+      <div class="mt-8 border-t border-slate-200">
+        <details class="faq border-b border-slate-200 py-4" open>
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">เครื่องมือ PDF เหล่านี้ฟรีจริงหรือไม่?</summary>
+          <p class="mt-2.5 text-slate-600">ฟรีจริงทั้งหมด เครื่องมือทั้ง 14 ตัว — รวมไฟล์ แยกหน้า หมุน บีบอัด ปลดล็อก ใส่รหัสผ่าน เซ็นเอกสาร ใส่เลขหน้า ใส่ลายน้ำ พิมพ์ข้อความ และตัวแปลงไฟล์ทุกตัว — ใช้งานได้โดยไม่ต้องสมัครสมาชิก ไม่มีลายน้ำบังคับ และไม่จำกัดจำนวนครั้งต่อวัน เว็บไซต์อยู่ได้ด้วยรายได้จากโฆษณา ซึ่งทำให้เครื่องมือฟรีสำหรับทุกคน</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">ไฟล์ PDF ของฉันถูกอัปโหลดขึ้นเซิร์ฟเวอร์หรือไม่?</summary>
+          <p class="mt-2.5 text-slate-600">ไม่ถูกอัปโหลด การประมวลผลทั้งหมดเกิดขึ้นในเบราว์เซอร์ของคุณด้วยไลบรารี JavaScript สมัยใหม่ที่ทำงานในเครื่อง เอกสารของคุณไม่ถูกส่งผ่านเครือข่ายเลย — ไม่มีการประมวลผลฝั่งเซิร์ฟเวอร์ใด ๆ ทั้งสิ้น จึงเหมาะกับสัญญา ใบแจ้งหนี้ เอกสารการแพทย์ และข้อมูลส่วนบุคคลที่เป็นความลับ</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">แยกไฟล์ PDF หรือดึงเฉพาะบางหน้าได้หรือไม่?</summary>
+          <p class="mt-2.5 text-slate-600">ได้ เปิดเครื่องมือ <strong>แยก PDF</strong> แล้วพิมพ์ช่วงหน้า เช่น <em>1-3, 5, 8</em> จากนั้นเลือกว่าจะเก็บเฉพาะหน้าเหล่านั้นเป็นไฟล์ใหม่ หรือลบหน้าเหล่านั้นออกจากเอกสาร เครื่องมือ <strong>หมุน PDF</strong> ช่วยแก้หน้าสแกนที่เอียงหรือกลับหัว และ <strong>JPG เป็น PDF</strong> รวมรูปถ่ายเป็นไฟล์ PDF เดียว</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">ปลดล็อกไฟล์ PDF ที่มีรหัสผ่านได้อย่างไร?</summary>
+          <p class="mt-2.5 text-slate-600">เปิดเครื่องมือ <strong>ปลดล็อก PDF</strong> เลือกไฟล์ แล้วใส่รหัสผ่านของเอกสารหากจำเป็นต้องใช้ในการเปิด ไฟล์จะถูกถอดรหัสในเบราว์เซอร์ของคุณและได้สำเนาที่ปลดล็อกแล้วสำหรับบันทึก พิมพ์ หรือแชร์ โปรดใช้กับเอกสารของคุณเองหรือที่ได้รับอนุญาตให้แก้ไขเท่านั้น</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">เซ็นเอกสาร PDF ออนไลน์โดยไม่ใช้ Adobe Acrobat ได้หรือไม่?</summary>
+          <p class="mt-2.5 text-slate-600">ได้ เครื่องมือ <strong>เซ็น PDF</strong> ให้คุณวาดลายเซ็นด้วยเมาส์ ทัชแพด หรือหน้าจอสัมผัส พิมพ์ชื่อเป็นลายเซ็นแบบตัวเขียน หรืออัปโหลดรูปลายเซ็นจริงที่สแกนไว้ แล้วคลิกบนตัวอย่างหน้าเอกสารเพื่อวางตำแหน่ง ลายเซ็นถูกฝังลงในไฟล์ PDF บนเครื่องของคุณเอง — ไม่ต้องสมัครบัญชีหรือติดตั้งโปรแกรมใด ๆ</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">การบีบอัด PDF ลดขนาดไฟล์ได้อย่างไร?</summary>
+          <p class="mt-2.5 text-slate-600">ระบบจะเรนเดอร์แต่ละหน้าใหม่และบันทึกเป็นรูปภาพ JPEG ที่ปรับคุณภาพตามระดับที่คุณเลือก ไฟล์สแกนและไฟล์ที่มีรูปภาพมากมักเล็กลง 50–90% ข้อแลกเปลี่ยนคือไฟล์ผลลัพธ์เป็นรูปภาพ จึงไม่สามารถเลือกคัดลอกข้อความได้ — เลือกระดับ "เบา" หากคุณภาพของภาพสำคัญที่สุด</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">แปลง Word เป็น PDF และ PDF เป็น Word ได้แม่นยำแค่ไหน?</summary>
+          <p class="mt-2.5 text-slate-600">Word เป็น PDF จะคงหัวข้อ ย่อหน้า และรายการแบบจุดไว้ในรูปแบบตัวอักษรที่อ่านง่าย ส่วน PDF เป็น Word จะดึงข้อความทั้งหมดออกมาเป็นเอกสารที่แก้ไขได้ เนื่องจากการแปลงทำงานบนเครื่องของคุณทั้งหมด เลย์เอาต์ที่ซับซ้อนมาก ตาราง และกราฟิกฝังตัวอาจถูกทำให้เรียบง่ายลง</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">มีขนาดไฟล์สูงสุดหรือไม่?</summary>
+          <p class="mt-2.5 text-slate-600">เว็บไซต์ไม่ได้กำหนดขนาดไฟล์สูงสุด เพราะการประมวลผลเกิดขึ้นในเบราว์เซอร์ ขีดจำกัดจริงจึงขึ้นกับหน่วยความจำของอุปกรณ์ — ไฟล์ขนาดประมาณ 100&nbsp;MB ใช้งานได้ดีบนคอมพิวเตอร์และโทรศัพท์รุ่นใหม่ส่วนใหญ่</p>
+        </details>
+        <details class="faq border-b border-slate-200 py-4">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">รองรับเบราว์เซอร์และอุปกรณ์ใดบ้าง?</summary>
+          <p class="mt-2.5 text-slate-600">Free PDF Suite ใช้ได้กับเบราว์เซอร์รุ่นใหม่ทุกตัว — Chrome, Edge, Firefox และ Safari — บน Windows, macOS, Linux, Android และ iOS โดยไม่ต้องติดตั้งโปรแกรม ปลั๊กอิน หรือส่วนขยายใด ๆ</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ส่วนท้าย ================= -->
+  <footer class="bg-white border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center gap-4 justify-between text-sm text-slate-500">
+      <div>© <span id="year"></span> Free PDF Suite — เครื่องมือ PDF ฟรี ทำงานในเบราว์เซอร์</div>
+      <nav class="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <a href="../merge-pdf/" class="hover:text-slate-900">Merge PDF</a>
+        <a href="../split-pdf/" class="hover:text-slate-900">Split PDF</a>
+        <a href="../compress-pdf/" class="hover:text-slate-900">Compress PDF</a>
+        <a href="../sign-pdf/" class="hover:text-slate-900">Sign PDF</a>
+        <a href="../privacy-policy/" class="font-semibold hover:text-slate-900">นโยบายความเป็นส่วนตัว</a>
+      </nav>
+      <div class="flex items-center gap-2 font-semibold text-emerald-700">🛡️ ไฟล์ไม่ออกจากเครื่องของคุณ</div>
+    </div>
+  </footer>
+
+</body>
+</html>

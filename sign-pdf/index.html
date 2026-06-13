@@ -13,7 +13,11 @@
   <meta property="og:description" content="Draw, type, or upload your signature to sign PDFs directly in your browser. Files never leave your device." />
   <meta property="og:url" content="https://skubacool.github.io/free-pdf-suite/sign-pdf/" />
   <meta property="og:site_name" content="Free PDF Suite" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://skubacool.github.io/free-pdf-suite/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://skubacool.github.io/free-pdf-suite/og-image.png" />
   <meta name="twitter:title" content="Sign PDF Online Free - 100% Private Local E-Sign Tool" />
   <meta name="twitter:description" content="Sign PDFs in your browser. Files never leave your device." />
 
@@ -69,6 +73,11 @@
   }
   </script>
 
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -92,6 +101,15 @@
     .ad-frame-top    { min-height:90px;  width:100%; }
     .ad-frame-side   { width:300px;      min-height:600px; }
     .ad-frame-inline { min-height:250px; width:100%; }
+
+    /* Pre-AdSense: ad containers are fully hidden so the site never shows
+       empty boxes. Flip <body data-ads="off"> to "on" when real ad code is
+       inserted - the reserved frames above then prevent layout shift. */
+    body[data-ads="off"] .ad-box { display:none; }
+    body[data-ads="off"] aside:has(.ad-box) { display:none; }
+    @media (min-width:1024px) {
+      body[data-ads="off"] .ad-layout { grid-template-columns: minmax(0,1fr); }
+    }
     .dropzone { transition: background .25s ease, border-color .25s ease; }
     .dropzone:hover { border-color:#93C5FD; background:#EFF6FF; }
     .dropzone.dragover { border-color:#2563EB; background:#DBEAFE; }
@@ -115,7 +133,7 @@
   <script type="module" src="../nhost.js"></script>
 </head>
 
-<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-default-tool="sign">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-ads="off" data-default-tool="sign">
 
   <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
     <div class="max-w-6xl mx-auto px-5 py-3 flex flex-wrap items-center gap-4">
@@ -153,7 +171,7 @@
         signed document. Every step runs locally on your device — the file is never uploaded.
       </p>
 
-      <div class="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start mt-6">
+      <div class="ad-layout grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start mt-6">
         <section class="min-w-0">
 
           <!-- ============ MERGE ============ -->
