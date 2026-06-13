@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://skubacool.github.io/free-pdf-suite/sitemap.xml
+Sitemap: https://upmypdf.com/sitemap.xml

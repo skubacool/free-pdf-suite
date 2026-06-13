@@ -1,6 +1,6 @@
 # Free PDF Suite
 
-**Live site:** https://skubacool.github.io/free-pdf-suite/
+**Live site:** https://upmypdf.com/
 
 A free, ad-monetized, 100% client-side PDF utility suite aimed at office workers,
 students and clerks. All processing runs in the visitor's browser — zero server
