@@ -46,6 +46,56 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://upmypdf.com/rotate-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/unlock-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/protect-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/type-on-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/add-page-numbers/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/watermark-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/word-to-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/pdf-to-word/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/jpg-to-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/pdf-to-jpg/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://upmypdf.com/privacy-policy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
