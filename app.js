@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -1244,4 +1244,150 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = !protState.file;
     }
   });
+
+  // ========================================================== DELETE PAGES
+  // Self-guarded: only initializes on pages that contain its panel.
+  if ($('#dz-delete')) {
+    const delState = { file: null, pageCount: 0 };
+    setupDropzone('delete', async ([f]) => {
+      hideResult('delete');
+      try {
+        setStatus('delete', 'Reading PDF…');
+        const doc = await PDFDocument.load(await f.arrayBuffer());
+        delState.file = f;
+        delState.pageCount = doc.getPageCount();
+        $('#picked-delete').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${delState.pageCount} pages`;
+        $('#btn-delete').disabled = false;
+        setStatus('delete', '');
+      } catch (err) {
+        delState.file = null;
+        $('#btn-delete').disabled = true;
+        setStatus('delete', `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
+      }
+    });
+    $('#btn-delete').addEventListener('click', async () => {
+      const f = delState.file;
+      if (!f) return;
+      const btn = $('#btn-delete');
+      btn.disabled = true;
+      hideResult('delete');
+      try {
+        const picked = parseRanges($('#range-delete').value, delState.pageCount);
+        if (!picked) throw new Error(`Enter valid pages between 1 and ${delState.pageCount}, e.g. 2, 5-7.`);
+        const keep = Array.from({ length: delState.pageCount }, (_, i) => i + 1).filter((p) => !picked.includes(p));
+        if (!keep.length) throw new Error('That would delete every page — nothing would be left to save.');
+        setStatus('delete', `Removing ${picked.length} page${picked.length > 1 ? 's' : ''}…`);
+        const src = await PDFDocument.load(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        (await out.copyPages(src, keep.map((p) => p - 1))).forEach((p) => out.addPage(p));
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('delete', bytes, `${baseName(f.name)}_pages_removed.pdf`, 'application/pdf',
+          `${picked.length} removed · ${keep.length} of ${delState.pageCount} pages kept · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('delete', `❌ ${err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !delState.file;
+      }
+    });
+  }
+
+  // ====================================================== ORGANIZE / REORDER
+  if ($('#dz-organize')) {
+    const orgState = { file: null };
+    const wrap = $('#thumbs-organize');
+    const updateOrgReady = () => {
+      $('#btn-organize').disabled = !(orgState.file && wrap.querySelectorAll('.thumb').length > 0);
+    };
+    setupDropzone('organize', async ([f]) => {
+      hideResult('organize');
+      try {
+        setStatus('organize', 'Rendering page thumbnails…');
+        orgState.file = f;
+        const src = await loadPdfJs(await f.arrayBuffer());
+        wrap.innerHTML = '';
+        for (let i = 1; i <= src.numPages; i++) {
+          setStatus('organize', `Rendering page ${i} of ${src.numPages}…`);
+          const page = await src.getPage(i);
+          const vp = page.getViewport({ scale: 0.4 });
+          const c = document.createElement('canvas');
+          c.width = Math.ceil(vp.width);
+          c.height = Math.ceil(vp.height);
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          const div = document.createElement('div');
+          div.className = 'thumb relative border border-slate-200 rounded-lg bg-white p-1 cursor-move';
+          div.draggable = true;
+          div.dataset.page = i - 1;
+          c.className = 'w-full h-auto rounded pointer-events-none';
+          div.appendChild(c);
+          const tag = document.createElement('div');
+          tag.className = 'absolute bottom-1 left-1 text-[10px] font-bold text-white bg-slate-900/70 rounded px-1.5 py-0.5 pointer-events-none';
+          tag.textContent = i;
+          div.appendChild(tag);
+          const rm = document.createElement('button');
+          rm.type = 'button';
+          rm.className = 'absolute top-1 right-1 w-5 h-5 flex items-center justify-center text-xs bg-white border border-red-200 text-red-600 rounded-full hover:bg-red-50';
+          rm.textContent = '✕';
+          rm.addEventListener('click', () => {
+            if (wrap.querySelectorAll('.thumb').length > 1) { div.remove(); updateOrgReady(); }
+            else setStatus('organize', 'At least one page must remain.', 'error');
+          });
+          div.appendChild(rm);
+          wrap.appendChild(div);
+        }
+        $('#work-organize').classList.remove('hidden');
+        $('#picked-organize').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${src.numPages} pages. Drag to reorder, ✕ to remove.`;
+        setStatus('organize', '');
+        updateOrgReady();
+      } catch (err) {
+        setStatus('organize', `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
+      }
+    });
+    // HTML5 drag-and-drop reordering
+    let dragEl = null;
+    wrap.addEventListener('dragstart', (e) => {
+      const t = e.target.closest('.thumb');
+      if (!t) return;
+      dragEl = t;
+      t.classList.add('opacity-40');
+    });
+    wrap.addEventListener('dragend', () => {
+      if (dragEl) dragEl.classList.remove('opacity-40');
+      dragEl = null;
+    });
+    wrap.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const t = e.target.closest('.thumb');
+      if (!t || t === dragEl) return;
+      const r = t.getBoundingClientRect();
+      const after = (e.clientY < r.top + r.height / 2) ? false : true;
+      // primarily horizontal grid: decide by x when on same row
+      const afterX = (e.clientX - r.left) > r.width / 2;
+      wrap.insertBefore(dragEl, afterX ? t.nextSibling : t);
+    });
+    $('#btn-organize').addEventListener('click', async () => {
+      const f = orgState.file;
+      if (!f) return;
+      const btn = $('#btn-organize');
+      btn.disabled = true;
+      hideResult('organize');
+      try {
+        const order = [...wrap.querySelectorAll('.thumb')].map((d) => +d.dataset.page);
+        if (!order.length) throw new Error('No pages left to save.');
+        setStatus('organize', 'Rebuilding PDF in the new order…');
+        const src = await PDFDocument.load(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        (await out.copyPages(src, order)).forEach((p) => out.addPage(p));
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('organize', bytes, `${baseName(f.name)}_organized.pdf`, 'application/pdf',
+          `${order.length} pages · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('organize', `❌ ${err.message || err}`, 'error');
+      } finally {
+        updateOrgReady();
+      }
+    });
+  }
 });
