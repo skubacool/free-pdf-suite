@@ -772,6 +772,72 @@
             </div>
           </div>
 
+          <!-- ============ CROP PDF ============ -->
+          <div id="panel-crop" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">⬜</span>
+              <div>
+                <h2 class="text-2xl font-bold">Crop PDF</h2>
+                <p class="text-slate-500 text-sm">Trim the margins of every page — set how much to cut from each edge.</p>
+              </div>
+            </div>
+            <div id="dz-crop" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-crop" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-crop" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">Trim from each edge (%)</label>
+            <div class="mt-1.5 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-md">
+              <label class="text-xs font-semibold text-slate-500">Top<input type="number" id="crop-top" min="0" max="45" value="0" class="mt-1 block w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm text-slate-900" /></label>
+              <label class="text-xs font-semibold text-slate-500">Right<input type="number" id="crop-right" min="0" max="45" value="0" class="mt-1 block w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm text-slate-900" /></label>
+              <label class="text-xs font-semibold text-slate-500">Bottom<input type="number" id="crop-bottom" min="0" max="45" value="0" class="mt-1 block w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm text-slate-900" /></label>
+              <label class="text-xs font-semibold text-slate-500">Left<input type="number" id="crop-left" min="0" max="45" value="0" class="mt-1 block w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm text-slate-900" /></label>
+            </div>
+            <button id="btn-crop" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Crop PDF</button>
+            <p id="status-crop" class="mt-4 text-sm font-medium"></p>
+            <div id="res-crop" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-crop" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-crop"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ N-UP ============ -->
+          <div id="panel-nup" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔳</span>
+              <div>
+                <h2 class="text-2xl font-bold">N-up PDF</h2>
+                <p class="text-slate-500 text-sm">Place 2 or 4 pages on each sheet — save paper and make handouts.</p>
+              </div>
+            </div>
+            <div id="dz-nup" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-nup" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-nup" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">Pages per sheet</label>
+            <select id="per-nup" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="2" selected>2 per sheet — A4 landscape</option>
+              <option value="4">4 per sheet — A4 portrait</option>
+            </select>
+            <button id="btn-nup" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Create N-up PDF</button>
+            <p id="status-nup" class="mt-4 text-sm font-medium"></p>
+            <div id="res-nup" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-nup" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-nup"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
           <!-- ============ TECHNICAL GUIDE (unique to this route) ============ -->
           <article class="mt-10 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
             <h2 class="text-2xl font-bold">Legal Compliance of Local Electronic Signatures</h2>

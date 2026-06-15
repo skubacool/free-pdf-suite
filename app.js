@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -1387,6 +1387,102 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus('organize', `❌ ${err.message || err}`, 'error');
       } finally {
         updateOrgReady();
+      }
+    });
+  }
+
+  // ============================================================== CROP PDF
+  if ($('#dz-crop')) {
+    const cropState = { file: null };
+    setupDropzone('crop', ([f]) => {
+      cropState.file = f;
+      $('#picked-crop').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-crop').disabled = false;
+      hideResult('crop');
+      setStatus('crop', '');
+    });
+    $('#btn-crop').addEventListener('click', async () => {
+      const f = cropState.file;
+      if (!f) return;
+      const btn = $('#btn-crop');
+      btn.disabled = true;
+      hideResult('crop');
+      try {
+        const clamp = (v) => Math.min(45, Math.max(0, +v || 0));
+        const T = clamp($('#crop-top').value), R = clamp($('#crop-right').value),
+          B = clamp($('#crop-bottom').value), L = clamp($('#crop-left').value);
+        if (T + B >= 90 || L + R >= 90) throw new Error('Those margins remove too much of the page — reduce them.');
+        if (!T && !R && !B && !L) throw new Error('Enter how much to trim from at least one edge (in %).');
+        setStatus('crop', 'Cropping pages…');
+        const doc = await PDFDocument.load(await f.arrayBuffer());
+        for (const page of doc.getPages()) {
+          const mb = page.getMediaBox();
+          const nx = mb.x + (mb.width * L) / 100;
+          const ny = mb.y + (mb.height * B) / 100;
+          const nw = mb.width * (1 - (L + R) / 100);
+          const nh = mb.height * (1 - (T + B) / 100);
+          page.setCropBox(nx, ny, nw, nh);
+        }
+        const bytes = await doc.save();
+        showResult('crop', bytes, `${baseName(f.name)}_cropped.pdf`, 'application/pdf');
+      } catch (err) {
+        setStatus('crop', `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !cropState.file;
+      }
+    });
+  }
+
+  // ===================================================== N-UP (PAGES/SHEET)
+  if ($('#dz-nup')) {
+    const nupState = { file: null };
+    setupDropzone('nup', ([f]) => {
+      nupState.file = f;
+      $('#picked-nup').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-nup').disabled = false;
+      hideResult('nup');
+      setStatus('nup', '');
+    });
+    $('#btn-nup').addEventListener('click', async () => {
+      const f = nupState.file;
+      if (!f) return;
+      const btn = $('#btn-nup');
+      btn.disabled = true;
+      hideResult('nup');
+      try {
+        const per = +$('#per-nup').value; // 2 or 4
+        const A4P = [595.28, 841.89], A4L = [841.89, 595.28];
+        const size = per === 2 ? A4L : A4P;
+        const cols = 2, rows = per === 2 ? 1 : 2;
+        const M = 18, GAP = 10;
+        setStatus('nup', 'Arranging pages…');
+        const src = await PDFDocument.load(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        const n = src.getPageCount();
+        const cellW = (size[0] - 2 * M - (cols - 1) * GAP) / cols;
+        const cellH = (size[1] - 2 * M - (rows - 1) * GAP) / rows;
+        for (let i = 0; i < n; i += per) {
+          const sheet = out.addPage(size);
+          for (let k = 0; k < per && i + k < n; k++) {
+            const sp = src.getPage(i + k);
+            let emb;
+            try { emb = await out.embedPage(sp); } catch { continue; } // skip blank/contentless pages
+            const sw = sp.getWidth(), sh = sp.getHeight();
+            const scale = Math.min(cellW / sw, cellH / sh);
+            const w = sw * scale, h = sh * scale;
+            const col = k % cols, row = Math.floor(k / cols);
+            const cx = M + col * (cellW + GAP) + (cellW - w) / 2;
+            const cy = size[1] - M - row * (cellH + GAP) - cellH + (cellH - h) / 2;
+            sheet.drawPage(emb, { x: cx, y: cy, width: w, height: h });
+          }
+        }
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('nup', bytes, `${baseName(f.name)}_${per}up.pdf`, 'application/pdf',
+          `${Math.ceil(n / per)} sheets · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('nup', `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !nupState.file;
       }
     });
   }
