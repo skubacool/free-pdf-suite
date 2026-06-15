@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup', 'ocr'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -1483,6 +1483,71 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus('nup', `❌ ${/encrypt/i.test(String(err)) ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
       } finally {
         btn.disabled = !nupState.file;
+      }
+    });
+  }
+
+  // ================================================================== OCR
+  // Extracts text from scanned PDFs with Tesseract.js, loaded on demand.
+  if ($('#dz-ocr')) {
+    const ocrState = { file: null };
+    let tessPromise = null;
+    const loadTesseract = () => {
+      if (window.Tesseract) return Promise.resolve(window.Tesseract);
+      if (!tessPromise) {
+        tessPromise = new Promise((resolve, reject) => {
+          const sc = document.createElement('script');
+          sc.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+          sc.onload = () => (window.Tesseract ? resolve(window.Tesseract) : reject(new Error('OCR engine failed to initialize.')));
+          sc.onerror = () => { tessPromise = null; reject(new Error('Could not load the OCR engine — check your connection and try again.')); };
+          document.head.appendChild(sc);
+        });
+      }
+      return tessPromise;
+    };
+    setupDropzone('ocr', ([f]) => {
+      ocrState.file = f;
+      $('#picked-ocr').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-ocr').disabled = false;
+      hideResult('ocr');
+      setStatus('ocr', '');
+    });
+    $('#btn-ocr').addEventListener('click', async () => {
+      const f = ocrState.file;
+      if (!f) return;
+      const btn = $('#btn-ocr');
+      btn.disabled = true;
+      hideResult('ocr');
+      try {
+        const lang = $('#lang-ocr').value; // eng | tha | eng+tha
+        setStatus('ocr', 'Loading the OCR engine (the first run downloads language data, ~10–20 MB)…');
+        const Tesseract = await loadTesseract();
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        let out = '';
+        for (let i = 1; i <= src.numPages; i++) {
+          const page = await src.getPage(i);
+          const vp = page.getViewport({ scale: 2 });
+          canvas.width = Math.ceil(vp.width);
+          canvas.height = Math.ceil(vp.height);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          setStatus('ocr', `Reading text from page ${i} of ${src.numPages}… (this can take a few seconds per page)`);
+          const { data } = await Tesseract.recognize(canvas, lang);
+          out += `--- Page ${i} ---\n${(data.text || '').trim()}\n\n`;
+        }
+        if (!out.replace(/--- Page \d+ ---/g, '').trim()) {
+          throw new Error('No readable text was found. If this is a photo-only scan, try a clearer, higher-resolution file.');
+        }
+        const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+        showResult('ocr', blob, `${baseName(f.name)}_text.txt`, 'text/plain',
+          `${src.numPages} page${src.numPages > 1 ? 's' : ''} read · ${fmtBytes(blob.size)} of text`);
+      } catch (err) {
+        setStatus('ocr', `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !ocrState.file;
       }
     });
   }

@@ -15,35 +15,35 @@
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8101871352496283"
        crossorigin="anonymous"></script>
-  <title>Sign PDF Online Free - 100% Private Local E-Sign Tool</title>
-  <meta name="description" content="Draw, type, or upload your signature to sign PDFs directly in your browser. Files never leave your device. 100% secure, compliant, and client-side processing." />
+  <title>OCR PDF Online Free — Extract Text from Scanned PDFs</title>
+  <meta name="description" content="Turn scanned PDFs into editable, copyable text with OCR — free, in your browser. English and Thai supported; files never leave your device." />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://upmypdf.com/sign-pdf/" />
+  <link rel="canonical" href="https://upmypdf.com/ocr-pdf/" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Sign PDF Online Free - 100% Private Local E-Sign Tool" />
-  <meta property="og:description" content="Draw, type, or upload your signature to sign PDFs directly in your browser. Files never leave your device." />
-  <meta property="og:url" content="https://upmypdf.com/sign-pdf/" />
+  <meta property="og:title" content="OCR PDF — Extract Text from Scans, Free & Private" />
+  <meta property="og:description" content="Convert scanned PDFs to text with in-browser OCR. English and Thai; nothing uploaded." />
+  <meta property="og:url" content="https://upmypdf.com/ocr-pdf/" />
   <meta property="og:site_name" content="Free PDF Suite" />
   <meta property="og:image" content="https://upmypdf.com/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://upmypdf.com/og-image.png" />
-  <meta name="twitter:title" content="Sign PDF Online Free - 100% Private Local E-Sign Tool" />
-  <meta name="twitter:description" content="Sign PDFs in your browser. Files never leave your device." />
+  <meta name="twitter:title" content="OCR PDF — Extract Text from Scans, Free & Private" />
+  <meta name="twitter:description" content="Convert scanned PDFs to text with in-browser OCR. English and Thai; nothing uploaded." />
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "Sign PDF — Free PDF Suite",
-    "url": "https://upmypdf.com/sign-pdf/",
+    "name": "OCR PDF — Free PDF Suite",
+    "url": "https://upmypdf.com/ocr-pdf/",
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Any (Web Browser)",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "featureList": "Draw signature, Type signature, Upload signature image, Click-to-place positioning, Local client-side processing",
-    "description": "Free in-browser PDF signing tool. Draw, type, or upload a signature and embed it into any PDF locally — the document never leaves the device."
+    "featureList": "OCR scanned PDFs, English and Thai, In-browser Tesseract.js, Plain-text output, Local client-side processing",
+    "description": "Free in-browser OCR tool. Reads text from scanned PDFs on your device with Tesseract.js — nothing is uploaded."
   }
   </script>
   <script type="application/ld+json">
@@ -52,7 +52,7 @@
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Free PDF Suite", "item": "https://upmypdf.com/" },
-      { "@type": "ListItem", "position": 2, "name": "Sign PDF", "item": "https://upmypdf.com/sign-pdf/" }
+      { "@type": "ListItem", "position": 2, "name": "OCR PDF", "item": "https://upmypdf.com/ocr-pdf/" }
     ]
   }
   </script>
@@ -63,23 +63,18 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "Is a signature drawn in the browser legally binding?",
-        "acceptedAnswer": { "@type": "Answer", "text": "In most everyday business contexts, yes. Under the US ESIGN Act and the EU eIDAS regulation, a signature cannot be denied legal effect solely because it is electronic. A drawn or typed signature is classed as a simple electronic signature, which is valid for the large majority of commercial agreements. Certain documents — such as some court filings, notarial acts and government submissions — may require a certificate-based qualified signature instead." }
+        "name": "Is my scanned document uploaded to a server for OCR?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. Recognition runs entirely in your browser with Tesseract.js. Only the open-source OCR engine and language data are downloaded; your document never leaves your device." }
       },
       {
         "@type": "Question",
-        "name": "Does my document or signature ever leave my device?",
-        "acceptedAnswer": { "@type": "Answer", "text": "No. The PDF is read into your browser's memory as an ArrayBuffer, the signature is embedded by JavaScript running locally, and the signed file is assembled on your own machine. There is no upload endpoint anywhere in the application — the only network traffic is the one-time download of the open-source processing libraries." }
+        "name": "Which languages are supported?",
+        "acceptedAnswer": { "@type": "Answer", "text": "English and Thai, individually or together. Choosing the correct language — or both for a mixed document — gives the most accurate results." }
       },
       {
         "@type": "Question",
-        "name": "Should I draw, type, or upload my signature?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Drawing with a mouse, stylus or finger produces the most personal mark and is ideal on touchscreens. Typing your name renders it in a script typeface and is the fastest option on a desktop keyboard. Uploading lets you reuse a scanned image of your real ink signature — a PNG with a transparent background gives the cleanest result." }
-      },
-      {
-        "@type": "Question",
-        "name": "Can several people sign the same PDF?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Sign and download the document, then load the signed copy back into the tool and place the next signature. Because each pass writes a complete new file, you can repeat this for any number of signers, on the same or different devices." }
+        "name": "Why does OCR take longer than the other tools?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Recognising characters from an image is computation-heavy and runs on your own device, so a few seconds per page is normal. The first run also downloads the language data once before it begins." }
       }
     ]
   }
@@ -143,7 +138,7 @@
   <script type="module" src="../nhost.js"></script>
 </head>
 
-<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-ads="off" data-default-tool="sign">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-ads="off" data-default-tool="ocr">
 
   <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
     <div class="max-w-6xl mx-auto px-5 py-3 flex flex-wrap items-center gap-4">
@@ -155,7 +150,7 @@
         <a href="../merge-pdf/"    class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Merge</a>
         <a href="../split-pdf/"    class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Split</a>
         <a href="../compress-pdf/" class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Compress</a>
-        <a href="../sign-pdf/"     class="px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 font-semibold" aria-current="page">Sign</a>
+        <a href="../sign-pdf/"     class="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900">Sign</a>
         <a href="../" class="px-3 py-1.5 rounded-lg text-brand-600 hover:bg-brand-50 font-semibold">All Tools</a>
       </nav>
       <div class="ml-auto flex items-center gap-2.5">
@@ -189,12 +184,11 @@
     <div id="tool-view" class="py-8">
       <nav class="text-sm text-slate-500 mb-4" aria-label="Breadcrumb">
         <a href="../" class="hover:text-slate-900">Home</a> <span class="mx-1">›</span>
-        <span class="text-slate-900 font-medium">Sign PDF</span>
+        <span class="text-slate-900 font-medium">OCR PDF</span>
       </nav>
-      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Sign a PDF Online — Free, Private, In Your Browser</h1>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">OCR a PDF Online — Extract Text from Scans, Free &amp; Private</h1>
       <p class="mt-3 max-w-3xl text-slate-600 text-lg">
-        Draw, type, or upload your signature, click the page preview to place it, and download the
-        signed document. Every step runs locally on your device — the file is never uploaded.
+        Turn a scanned document — a picture of text — into real, copyable text with optical character recognition. English and Thai are supported, and it all runs in your browser.
       </p>
 
       <div class="ad-layout grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 items-start mt-6">
@@ -368,7 +362,7 @@
           </div>
 
           <!-- ============ SIGN (active on this route) ============ -->
-          <div id="panel-sign" class="panel bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+          <div id="panel-sign" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
             <div class="flex items-center gap-3">
               <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">✍️</span>
               <div>
@@ -839,7 +833,7 @@
           </div>
 
           <!-- ============ OCR ============ -->
-          <div id="panel-ocr" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+          <div id="panel-ocr" class="panel bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
             <div class="flex items-center gap-3">
               <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">🔎</span>
               <div>
@@ -872,98 +866,32 @@
             </div>
           </div>
 
-          <!-- ============ TECHNICAL GUIDE (unique to this route) ============ -->
           <article class="mt-10 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-            <h2 class="text-2xl font-bold">Legal Compliance of Local Electronic Signatures</h2>
-            <p class="mt-4 text-slate-600 leading-relaxed">
-              In the United States, the Electronic Signatures in Global and National Commerce Act of 2000
-              (the ESIGN Act, 15 U.S.C. §7001) establishes that a signature, contract, or record may not be
-              denied legal effect, validity, or enforceability solely because it is in electronic form. What the
-              statute actually requires is intent to sign, consent to transact electronically, a clear association
-              between the signature and the record it applies to, and the ability to retain and accurately
-              reproduce the signed record. A signature created in this tool satisfies those mechanics in a direct
-              way: the mark you draw, type, or upload is rendered into the body of the PDF itself, so the
-              association between signature and record is physical rather than referential, and the downloaded
-              file is a complete, self-contained record that either party can retain indefinitely. The Uniform
-              Electronic Transactions Act (UETA), adopted by 49 US states, mirrors these principles at the state
-              level. The same logic extends to most common business paperwork — engagement letters, quotations,
-              purchase orders, internal approvals, and routine commercial agreements between parties who know
-              each other.
-            </p>
-            <p class="mt-4 text-slate-600 leading-relaxed">
-              In the European Union, Regulation (EU) No 910/2014 — better known as eIDAS — defines three tiers of
-              electronic signature: simple (SES), advanced (AdES), and qualified (QES). A signature image placed
-              by this tool is a simple electronic signature. Article 25(1) of eIDAS gives it explicit
-              non-discrimination protection: it cannot be refused as court evidence merely for being electronic.
-              The advanced and qualified tiers add certificate-based identity binding issued through accredited
-              trust service providers, which no purely visual signing tool — local or cloud-based — can confer.
-              Where local processing genuinely changes the compliance picture is data protection: because the
-              document is never transmitted, no third-party processor ever touches it, which simplifies GDPR
-              obligations to essentially nothing. For integrity, the locally assembled file can be fingerprinted
-              with a cryptographic hash (for example SHA-256 via the browser's built-in WebCrypto API); parties
-              who exchange that fingerprint out-of-band can later prove the copy they hold is byte-for-byte
-              unmodified — document integrity without any central server tracking who signed what, and when.
-            </p>
-
-            <h2 class="text-2xl font-bold mt-10">How Browser-Side PDF Signing Works Under the Hood</h2>
-            <p class="mt-4 text-slate-600 leading-relaxed">
-              When you select a file, the browser's File API reads it into an <code class="text-sm bg-slate-100 rounded px-1.5 py-0.5">ArrayBuffer</code> —
-              a raw byte sequence held in volatile memory (RAM) inside the page's sandbox. Nothing is written to
-              any server, because no server participates: the application is static HTML and JavaScript. The
-              <code class="text-sm bg-slate-100 rounded px-1.5 py-0.5">pdf-lib</code> library then parses that
-              buffer into the PDF's internal object graph — the cross-reference table, page tree, font and image
-              resources — entirely in client-side JavaScript. Your signature, whichever way you created it, is
-              normalized to a PNG with a transparent background: the drawing pad exports its canvas directly, a
-              typed name is rasterized from a script typeface onto an offscreen canvas, and an uploaded image is
-              redrawn through a canvas to strip metadata.
-            </p>
-            <p class="mt-4 text-slate-600 leading-relaxed">
-              Embedding is a three-step transform. First, the PNG bytes are registered in the document as an
-              image XObject, preserving the alpha channel so the page shows through around your pen strokes.
-              Second, the click position you chose on the preview is mapped from canvas pixels to PDF user space —
-              a coordinate system measured in points (1/72 inch) with its origin at the bottom-left corner of the
-              page, which is why the tool flips the vertical axis before writing the placement operator. Third,
-              <code class="text-sm bg-slate-100 rounded px-1.5 py-0.5">doc.save()</code> re-serializes the entire
-              object graph into a brand-new binary file: a fresh byte stream with a rebuilt cross-reference table,
-              compiled inside the local sandbox and handed to you as a Blob download. The original file on your
-              disk is never modified, and when you close the tab, the working memory is reclaimed by the browser.
-              The only network traffic in the whole process is the one-time, cacheable download of the open-source
-              libraries themselves — your document bytes never appear in any request.
-            </p>
-
-            <h2 class="text-2xl font-bold mt-10">Drawn Signatures vs Certificate-Based Digital Signatures</h2>
-            <p class="mt-4 text-slate-600 leading-relaxed">
-              It is worth understanding the boundary between a visual electronic signature and a cryptographic
-              digital signature, because the terms are often confused. The signature this tool embeds is the
-              electronic equivalent of ink — appropriate for NDAs, quotes, timesheets, leases, approvals and the
-              everyday paperwork of an office. A certificate-based digital signature (PAdES/QES) additionally
-              binds the signer's verified identity to the document hash through a certificate chain, and is what
-              certain government portals, notarial processes and some cross-border filings demand. If a counterparty
-              or regulator specifically requires a "qualified" or "certificate-based" signature, use a trust
-              service provider for that document; for everything else, a locally embedded signature with a
-              privately exchanged hash gives you legal recognition and complete confidentiality at zero cost.
-            </p>
+            <h2 class="text-2xl font-bold">What OCR Does, and When You Need It</h2>
+            <p class="mt-4 text-slate-600 leading-relaxed">A scanned page or a photographed document is just an image — to a computer it's a grid of pixels, not letters, so you can't select, copy or search the words in it. Optical Character Recognition (OCR) bridges that gap: it analyses the shapes in the image and reconstructs the actual text. That's what lets you lift a quote out of a scanned contract, make an old report searchable, or paste figures from a faxed invoice without retyping them.</p>
+            <p class="mt-4 text-slate-600 leading-relaxed">This is the key difference from the PDF&nbsp;to&nbsp;Word tool: that one extracts an existing text layer and works only on born-digital PDFs, whereas OCR creates a text layer from scratch for documents that never had one.</p>
+            <h2 class="text-2xl font-bold mt-10">How In-Browser OCR Works</h2>
+            <p class="mt-4 text-slate-600 leading-relaxed">First, the <code class="text-sm bg-slate-100 rounded px-1.5 py-0.5">pdf.js</code> engine renders each page of your PDF to a high-resolution image inside the browser. Then <code class="text-sm bg-slate-100 rounded px-1.5 py-0.5">Tesseract.js</code> — a browser build of Google's open-source Tesseract OCR engine — examines that image and recognises the characters, producing plain text that's assembled page by page into a downloadable file.</p>
+            <p class="mt-4 text-slate-600 leading-relaxed">Crucially, this all happens on your own device: your scanned document is never uploaded. The only thing downloaded is the open-source OCR engine and its language data, fetched once on the first run (around 10–20&nbsp;MB) and then cached by your browser for next time.</p>
+            <h2 class="text-2xl font-bold mt-10">Getting the Best Results</h2>
+            <p class="mt-4 text-slate-600 leading-relaxed">OCR accuracy depends heavily on input quality. Use the highest-resolution scan you have, make sure the page is straight and evenly lit, and pick the language that matches the document — choosing English for an English page, Thai for a Thai page, or both for a mixed document. Clean printed text reads very well; faint photocopies, heavy backgrounds and handwriting are much harder and may need a clearer source.</p>
           </article>
 
           <!-- Page FAQ (text fully present in initial markup) -->
           <section class="mt-8">
-            <h2 class="text-2xl font-bold">Sign PDF — Frequently Asked Questions</h2>
+            <h2 class="text-2xl font-bold">OCR PDF — Frequently Asked Questions</h2>
             <div class="mt-4 border-t border-slate-200">
               <details class="faq border-b border-slate-200 py-4" open>
-                <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Is a signature drawn in the browser legally binding?</summary>
-                <p class="mt-2.5 text-slate-600">In most everyday business contexts, yes. Under the US ESIGN Act and the EU eIDAS regulation, a signature cannot be denied legal effect solely because it is electronic. A drawn or typed signature is classed as a simple electronic signature, valid for the large majority of commercial agreements. Certain documents — some court filings, notarial acts and government submissions — may require a certificate-based qualified signature instead.</p>
+                <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Is my scanned document uploaded to a server for OCR?</summary>
+                <p class="mt-2.5 text-slate-600">No. Recognition runs entirely in your browser with Tesseract.js. Only the open-source OCR engine and language data are downloaded; your document never leaves your device.</p>
               </details>
               <details class="faq border-b border-slate-200 py-4">
-                <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Does my document or signature ever leave my device?</summary>
-                <p class="mt-2.5 text-slate-600">No. The PDF is read into your browser's memory as an ArrayBuffer, the signature is embedded by JavaScript running locally, and the signed file is assembled on your own machine. There is no upload endpoint anywhere in the application — the only network traffic is the one-time download of the open-source processing libraries.</p>
+                <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Which languages are supported?</summary>
+                <p class="mt-2.5 text-slate-600">English and Thai, individually or together. Choosing the correct language — or both for a mixed document — gives the most accurate results.</p>
               </details>
               <details class="faq border-b border-slate-200 py-4">
-                <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Should I draw, type, or upload my signature?</summary>
-                <p class="mt-2.5 text-slate-600">Drawing with a mouse, stylus or finger produces the most personal mark and is ideal on touchscreens. Typing your name renders it in a script typeface and is the fastest option on a desktop keyboard. Uploading lets you reuse a scanned image of your real ink signature — a PNG with a transparent background gives the cleanest result.</p>
-              </details>
-              <details class="faq border-b border-slate-200 py-4">
-                <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Can several people sign the same PDF?</summary>
-                <p class="mt-2.5 text-slate-600">Yes. Sign and download the document, then load the signed copy back into the tool and place the next signature. Because each pass writes a complete new file, you can repeat this for any number of signers, on the same or different devices.</p>
+                <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Why does OCR take longer than the other tools?</summary>
+                <p class="mt-2.5 text-slate-600">Recognising characters from an image is computation-heavy and runs on your own device, so a few seconds per page is normal. The first run also downloads the language data once before it begins.</p>
               </details>
             </div>
           </section>
