@@ -859,13 +859,50 @@
               <option value="tha" style="font-family:'Noto Sans Thai',Inter,sans-serif">ไทย (Thai)</option>
               <option value="eng+tha" style="font-family:'Noto Sans Thai',Inter,sans-serif">English + ไทย</option>
             </select>
+            <label class="block mt-4 text-sm font-semibold">Accuracy</label>
+            <select id="dpi-ocr" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="2" selected>Standard (2× DPI) — faster</option>
+              <option value="3">High (3× DPI) — slower, better on small text</option>
+            </select>
             <p class="mt-2 text-xs text-slate-500">Runs in your browser. The first run downloads language data (~10–20 MB); recognition takes a few seconds per page.</p>
             <button id="btn-ocr" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Extract Text (OCR)</button>
             <p id="status-ocr" class="mt-4 text-sm font-medium"></p>
             <div id="res-ocr" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <textarea id="ocr-text" readonly class="w-full h-48 border border-slate-300 rounded-xl p-3 text-sm font-mono bg-slate-50 mb-4" placeholder="Extracted text appears here…"></textarea>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-ocr" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Text</button>
+                <button id="copy-ocr" type="button" class="btn border border-slate-300 rounded-xl px-5 py-3 font-semibold hover:bg-slate-100">📋 Copy to Clipboard</button>
                 <span class="text-sm text-slate-600" id="info-ocr"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ COMPRESS TO SIZE ============ -->
+          <div id="panel-targetsize" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🎯</span>
+              <div>
+                <h2 class="text-2xl font-bold">Compress PDF to Size</h2>
+                <p class="text-slate-500 text-sm">Shrink a PDF to under a target file size — perfect for upload limits.</p>
+              </div>
+            </div>
+            <div id="dz-targetsize" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-targetsize" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-targetsize" class="mt-4 text-sm text-slate-600"></p>
+            <label class="block mt-5 text-sm font-semibold">Target maximum size <span class="font-normal text-slate-500">(MB)</span></label>
+            <input type="number" id="mb-targetsize" min="0.1" step="0.1" value="2" class="mt-1.5 w-40 border border-slate-300 rounded-xl px-4 py-2.5" />
+            <p class="mt-2 text-xs text-slate-500">Runs up to 3 compression passes. Output is image-based, so text is no longer selectable.</p>
+            <button id="btn-targetsize" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Compress to Target</button>
+            <p id="status-targetsize" class="mt-4 text-sm font-medium"></p>
+            <div id="res-targetsize" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-targetsize" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-targetsize"></span>
               </div>
               <!-- ADVERTISEMENT SLOT -->
               <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
@@ -944,6 +981,14 @@
               privately exchanged hash gives you legal recognition and complete confidentiality at zero cost.
             </p>
           </article>
+
+          <section class="mt-8" data-usecases="1">
+            <h2 class="text-2xl font-bold">Popular tasks</h2>
+            <ul class="mt-4 grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm list-disc pl-5">
+              <li><a href="sign-contract-online/" class="text-brand-600 hover:underline">Sign a Contract Online Free — Private E-Signature</a></li>
+              <li><a href="sign-without-acrobat/" class="text-brand-600 hover:underline">Sign a PDF Without Adobe Acrobat — Free & Private</a></li>
+            </ul>
+          </section>
 
           <!-- Page FAQ (text fully present in initial markup) -->
           <section class="mt-8">

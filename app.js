@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup', 'ocr'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -153,6 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   activate(location.hash.replace('#', '') || DEDICATED_TOOL || 'home', false);
+  // Use-case pages may declare a preset (e.g. <body data-preset='{"mb":2}'>) to
+  // pre-fill a tool's options on load.
+  try {
+    const preset = document.body.dataset.preset && JSON.parse(document.body.dataset.preset);
+    if (preset && preset.mb != null && $('#mb-targetsize')) $('#mb-targetsize').value = preset.mb;
+  } catch (_) {}
   if ($('#year')) $('#year').textContent = new Date().getFullYear();
 
   // ================================================================= MERGE
@@ -1488,10 +1494,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================================================================== OCR
-  // Extracts text from scanned PDFs with Tesseract.js, loaded on demand.
+  // Extracts text from scanned PDFs with Tesseract.js, loaded on demand and run
+  // through a dedicated Web Worker that is explicitly terminated after the job.
   if ($('#dz-ocr')) {
     const ocrState = { file: null };
     let tessPromise = null;
+    let ocrWorker = null;
     const loadTesseract = () => {
       if (window.Tesseract) return Promise.resolve(window.Tesseract);
       if (!tessPromise) {
@@ -1505,6 +1513,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return tessPromise;
     };
+    const killWorker = () => {
+      if (ocrWorker) { try { ocrWorker.terminate(); } catch (_) {} ocrWorker = null; }
+    };
+    // Terminate the worker if the user navigates away mid-job (prevents leaks).
+    window.addEventListener('pagehide', killWorker);
+
     setupDropzone('ocr', ([f]) => {
       ocrState.file = f;
       $('#picked-ocr').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
@@ -1512,6 +1526,17 @@ document.addEventListener('DOMContentLoaded', () => {
       hideResult('ocr');
       setStatus('ocr', '');
     });
+    if ($('#copy-ocr')) {
+      $('#copy-ocr').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText($('#ocr-text').value);
+          const b = $('#copy-ocr'); const old = b.textContent;
+          b.textContent = '✓ Copied'; setTimeout(() => (b.textContent = old), 1500);
+        } catch (_) {
+          $('#ocr-text').select(); document.execCommand('copy');
+        }
+      });
+    }
     $('#btn-ocr').addEventListener('click', async () => {
       const f = ocrState.file;
       if (!f) return;
@@ -1519,35 +1544,124 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
       hideResult('ocr');
       try {
-        const lang = $('#lang-ocr').value; // eng | tha | eng+tha
-        setStatus('ocr', 'Loading the OCR engine (the first run downloads language data, ~10–20 MB)…');
+        const lang = $('#lang-ocr').value;             // eng | tha | eng+tha
+        const dpi = +($('#dpi-ocr') ? $('#dpi-ocr').value : 2) || 2;  // 2x or 3x
+        setStatus('ocr', 'Initializing OCR worker (first run downloads language data, ~10–20 MB)…');
         const Tesseract = await loadTesseract();
         const src = await loadPdfJs(await f.arrayBuffer());
+        const total = src.numPages;
+        killWorker();
+        // Dedicated worker with a logger mapping the lifecycle to readable progress.
+        ocrWorker = await Tesseract.createWorker(lang, 1, {
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              setStatus('ocr', `Recognizing text ${Math.round((m.progress || 0) * 100)}% — page ${ocrState._page || 1} of ${total}…`);
+            } else if (m.status) {
+              setStatus('ocr', m.status.charAt(0).toUpperCase() + m.status.slice(1) + '…');
+            }
+          },
+        });
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         let out = '';
-        for (let i = 1; i <= src.numPages; i++) {
+        for (let i = 1; i <= total; i++) {
+          ocrState._page = i;
           const page = await src.getPage(i);
-          const vp = page.getViewport({ scale: 2 });
+          const vp = page.getViewport({ scale: dpi });
           canvas.width = Math.ceil(vp.width);
           canvas.height = Math.ceil(vp.height);
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
-          setStatus('ocr', `Reading text from page ${i} of ${src.numPages}… (this can take a few seconds per page)`);
-          const { data } = await Tesseract.recognize(canvas, lang);
+          const { data } = await ocrWorker.recognize(canvas);
           out += `--- Page ${i} ---\n${(data.text || '').trim()}\n\n`;
         }
         if (!out.replace(/--- Page \d+ ---/g, '').trim()) {
-          throw new Error('No readable text was found. If this is a photo-only scan, try a clearer, higher-resolution file.');
+          throw new Error('No readable text was found. If this is a photo-only scan, try the 3× accuracy setting or a clearer, higher-resolution file.');
         }
+        if ($('#ocr-text')) $('#ocr-text').value = out.trim();
         const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
         showResult('ocr', blob, `${baseName(f.name)}_text.txt`, 'text/plain',
-          `${src.numPages} page${src.numPages > 1 ? 's' : ''} read · ${fmtBytes(blob.size)} of text`);
+          `${total} page${total > 1 ? 's' : ''} read · ${fmtBytes(blob.size)} of text`);
       } catch (err) {
         setStatus('ocr', `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
       } finally {
+        killWorker();   // always release the worker — no lingering background memory
         btn.disabled = !ocrState.file;
+      }
+    });
+  }
+
+  // ===================================================== ADAPTIVE TARGET-SIZE
+  // "Compress to under X MB": iterative rasterize → JPEG re-embed, capped passes.
+  if ($('#dz-targetsize')) {
+    const tsState = { file: null };
+    setupDropzone('targetsize', ([f]) => {
+      tsState.file = f;
+      $('#picked-targetsize').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-targetsize').disabled = false;
+      hideResult('targetsize');
+      setStatus('targetsize', '');
+    });
+    // Up to 3 passes of decreasing scale/quality (spec: cap at 3 loops).
+    const PASSES = [
+      { scale: 2.0, quality: 0.72 },
+      { scale: 1.5, quality: 0.58 },
+      { scale: 1.1, quality: 0.42 },
+    ];
+    const rasterize = async (file, scale, quality) => {
+      const src = await loadPdfJs(await file.arrayBuffer());
+      const out = await PDFDocument.create();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      for (let i = 1; i <= src.numPages; i++) {
+        const page = await src.getPage(i);
+        const vp1 = page.getViewport({ scale: 1 });
+        const vp = page.getViewport({ scale });
+        canvas.width = Math.ceil(vp.width);
+        canvas.height = Math.ceil(vp.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        const jpg = await out.embedJpg(await canvasToJpeg(canvas, quality));
+        const p = out.addPage([vp1.width, vp1.height]);
+        p.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+      }
+      return out.save({ useObjectStreams: true });
+    };
+    $('#btn-targetsize').addEventListener('click', async () => {
+      const f = tsState.file;
+      if (!f) return;
+      const btn = $('#btn-targetsize');
+      btn.disabled = true;
+      hideResult('targetsize');
+      try {
+        const targetMB = parseFloat($('#mb-targetsize').value);
+        if (!(targetMB > 0)) throw new Error('Enter a target size in MB, e.g. 2.');
+        const targetBytes = targetMB * 1024 * 1024;
+        if (f.size <= targetBytes) {
+          showResult('targetsize', f, f.name, 'application/pdf',
+            `Already ${fmtBytes(f.size)} — under your ${targetMB} MB target. No compression needed.`);
+          return;
+        }
+        let best = null;
+        for (let i = 0; i < PASSES.length; i++) {
+          setStatus('targetsize', `Compressing — pass ${i + 1} of ${PASSES.length}…`);
+          const bytes = await rasterize(f, PASSES[i].scale, PASSES[i].quality);
+          if (!best || bytes.length < best.length) best = bytes;
+          if (bytes.length <= targetBytes) { best = bytes; break; }
+        }
+        const met = best.length <= targetBytes;
+        showResult('targetsize', best, `${baseName(f.name)}_under_${targetMB}MB.pdf`, 'application/pdf',
+          met
+            ? `${fmtBytes(f.size)} → ${fmtBytes(best.length)} ✓ under your ${targetMB} MB target.`
+            : `${fmtBytes(f.size)} → ${fmtBytes(best.length)} — smallest achievable in 3 passes (just over ${targetMB} MB).`);
+        if (!met) setStatus('targetsize', `Couldn't reach ${targetMB} MB without heavier quality loss — here is the smallest version.`, 'info');
+      } catch (err) {
+        setStatus('targetsize',
+          `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !tsState.file;
       }
     });
   }
