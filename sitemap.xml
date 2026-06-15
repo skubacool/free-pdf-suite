@@ -186,6 +186,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://upmypdf.com/compress-pdf/under-10mb/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/compress-pdf/under-3mb/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/compress-pdf/under-300kb/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/es/compress-pdf/under-2mb/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://upmypdf.com/pt/compress-pdf/under-2mb/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://upmypdf.com/privacy-policy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
