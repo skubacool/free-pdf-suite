@@ -2467,6 +2467,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ------------------------------------------------------ homepage tool search
+  // Live-filter the tool grid on hub pages so the growing catalogue stays
+  // browsable. Hides category headings whose tools are all filtered out.
+  (() => {
+    const cards = [...document.querySelectorAll('a.toolcard')];
+    if (cards.length <= 8) return;
+    const grids = [...new Set(cards.map((c) => c.parentElement))];
+    const firstGrid = cards[0].parentElement;
+    const anchor = (firstGrid.previousElementSibling && firstGrid.previousElementSibling.tagName === 'H2')
+      ? firstGrid.previousElementSibling : firstGrid;
+    const box = document.createElement('div');
+    box.className = 'mb-5';
+    box.innerHTML = '<input type="search" id="tool-search" placeholder="🔍 Search 29 tools…" aria-label="Search PDF tools" class="w-full border border-slate-300 rounded-xl px-4 py-3" style="max-width:30rem" />';
+    anchor.parentElement.insertBefore(box, anchor);
+    const input = box.querySelector('#tool-search');
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      cards.forEach((c) => { c.style.display = (!q || c.textContent.toLowerCase().includes(q)) ? '' : 'none'; });
+      grids.forEach((g) => {
+        const vis = [...g.querySelectorAll('a.toolcard')].some((c) => c.style.display !== 'none');
+        g.style.display = vis ? '' : 'none';
+        const h = g.previousElementSibling;
+        if (h && h.tagName === 'H2') h.style.display = vis ? '' : 'none';
+      });
+    });
+  })();
+
   // ----------------------------------------------------------------- PWA
   // Register the service worker (offline + installable) and surface an
   // "Install app" button when the browser offers one — a path to repeat daily
