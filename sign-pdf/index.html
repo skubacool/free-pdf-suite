@@ -219,6 +219,7 @@
             <button id="btn-merge" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Merge PDFs</button>
             <p id="status-merge" class="mt-4 text-sm font-medium"></p>
             <div id="res-merge" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-merge" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-merge" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Merged PDF</button>
                 <span class="text-sm text-slate-600" id="info-merge"></span>
@@ -255,6 +256,7 @@
             <button id="btn-split" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Split PDF</button>
             <p id="status-split" class="mt-4 text-sm font-medium"></p>
             <div id="res-split" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-split" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-split" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Split PDF</button>
                 <span class="text-sm text-slate-600" id="info-split"></span>
@@ -294,6 +296,7 @@
             <button id="btn-rotate" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Rotate PDF</button>
             <p id="status-rotate" class="mt-4 text-sm font-medium"></p>
             <div id="res-rotate" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-rotate" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-rotate" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-rotate"></span>
@@ -328,6 +331,7 @@
             <button id="btn-compress" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Compress PDF</button>
             <p id="status-compress" class="mt-4 text-sm font-medium"></p>
             <div id="res-compress" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-compress" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-compress" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Compressed PDF</button>
                 <span class="text-sm text-slate-600" id="info-compress"></span>
@@ -358,6 +362,7 @@
             <button id="btn-unlock" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Unlock PDF</button>
             <p id="status-unlock" class="mt-4 text-sm font-medium"></p>
             <div id="res-unlock" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-unlock" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-unlock" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-unlock"></span>
@@ -424,9 +429,68 @@
             <button id="btn-sign" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply Signature &amp; Generate PDF</button>
             <p id="status-sign" class="mt-4 text-sm font-medium"></p>
             <div id="res-sign" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-sign" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-sign" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Signed PDF</button>
                 <span class="text-sm text-slate-600" id="info-sign"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+          <!-- ============ COMPANY SEAL ============ -->
+          <div id="panel-seal" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🏢</span>
+              <div>
+                <h2 class="text-2xl font-bold">Company Seal</h2>
+                <p class="text-slate-500 text-sm">Upload your corporate seal or stamp image, then click on the page preview to place it exactly where you want.</p>
+              </div>
+            </div>
+            <div id="dz-seal" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-seal" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-seal" class="mt-4 text-sm text-slate-600"></p>
+
+            <div id="work-seal" class="hidden mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <div class="text-sm font-semibold mb-1.5">1 — Upload your seal image</div>
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center text-sm text-slate-500">
+                  <label class="cursor-pointer font-semibold text-brand-600 hover:underline">Choose a seal image (PNG or JPG)
+                    <input type="file" id="seal-img-input" accept="image/png,image/jpeg" class="hidden" />
+                  </label>
+                  <p class="mt-1 text-xs text-slate-400">A transparent PNG works best for round seals and stamps.</p>
+                  <div id="seal-img-preview" class="mt-3"></div>
+                </div>
+                <div class="mt-2.5 flex flex-wrap items-center gap-3 text-sm">
+                  <label class="flex items-center gap-2 text-slate-600">Size:
+                    <input type="range" id="seal-size" min="8" max="50" value="22" class="accent-[#2563EB]" /> <span id="seal-size-val">22%</span> of page width
+                  </label>
+                </div>
+              </div>
+              <div>
+                <div class="text-sm font-semibold mb-1.5">2 — Click the page to place it
+                  <label class="ml-2 font-normal text-xs">Page:
+                    <input type="number" id="page-seal" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                    <span id="pages-seal" class="text-slate-500"></span>
+                  </label>
+                </div>
+                <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-seal">
+                  <canvas id="preview-seal" class="preview-canvas"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <button id="btn-seal" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply Seal &amp; Generate PDF</button>
+            <p id="status-seal" class="mt-4 text-sm font-medium"></p>
+            <div id="res-seal" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-seal" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-seal" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Sealed PDF</button>
+                <span class="text-sm text-slate-600" id="info-seal"></span>
               </div>
               <!-- ADVERTISEMENT SLOT -->
               <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
@@ -474,6 +538,7 @@
             <button id="btn-type" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply Text &amp; Generate PDF</button>
             <p id="status-type" class="mt-4 text-sm font-medium"></p>
             <div id="res-type" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-type" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-type" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-type"></span>
@@ -501,6 +566,7 @@
             <button id="btn-word2pdf" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Convert to PDF</button>
             <p id="status-word2pdf" class="mt-4 text-sm font-medium"></p>
             <div id="res-word2pdf" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-word2pdf" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-word2pdf" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-word2pdf"></span>
@@ -561,6 +627,7 @@
             <button id="btn-img2pdf" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Create PDF</button>
             <p id="status-img2pdf" class="mt-4 text-sm font-medium"></p>
             <div id="res-img2pdf" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-img2pdf" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-img2pdf" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-img2pdf"></span>
@@ -636,6 +703,7 @@
             <button id="btn-pagenum" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Add Page Numbers</button>
             <p id="status-pagenum" class="mt-4 text-sm font-medium"></p>
             <div id="res-pagenum" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-pagenum" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-pagenum" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-pagenum"></span>
@@ -664,6 +732,15 @@
               <label class="text-sm font-semibold">Watermark text
                 <input type="text" id="text-watermark" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 w-64" placeholder="e.g. CONFIDENTIAL" value="CONFIDENTIAL" />
               </label>
+              <label class="text-sm font-semibold">Position
+                <select id="pos-watermark" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5">
+                  <option value="diagonal" selected>Diagonal (center)</option>
+                  <option value="center">Center</option>
+                  <option value="top">Top</option>
+                  <option value="bottom">Bottom</option>
+                  <option value="tile">Tiled (repeat)</option>
+                </select>
+              </label>
               <label class="text-sm font-semibold">Visibility
                 <span class="mt-1.5 flex items-center gap-2 font-normal">
                   <input type="range" id="opacity-watermark" min="10" max="60" value="25" class="accent-[#2563EB]" />
@@ -674,6 +751,7 @@
             <button id="btn-watermark" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Add Watermark</button>
             <p id="status-watermark" class="mt-4 text-sm font-medium"></p>
             <div id="res-watermark" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-watermark" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-watermark" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-watermark"></span>
@@ -733,6 +811,7 @@
             <button id="btn-delete" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Delete Pages</button>
             <p id="status-delete" class="mt-4 text-sm font-medium"></p>
             <div id="res-delete" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-delete" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-delete" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-delete"></span>
@@ -763,6 +842,7 @@
             <button id="btn-organize" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply &amp; Generate PDF</button>
             <p id="status-organize" class="mt-4 text-sm font-medium"></p>
             <div id="res-organize" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-organize" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-organize" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-organize"></span>
@@ -797,6 +877,7 @@
             <button id="btn-crop" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Crop PDF</button>
             <p id="status-crop" class="mt-4 text-sm font-medium"></p>
             <div id="res-crop" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-crop" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-crop" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-crop"></span>
@@ -829,6 +910,7 @@
             <button id="btn-nup" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Create N-up PDF</button>
             <p id="status-nup" class="mt-4 text-sm font-medium"></p>
             <div id="res-nup" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-nup" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-nup" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-nup"></span>
@@ -900,6 +982,7 @@
             <button id="btn-targetsize" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Compress to Target</button>
             <p id="status-targetsize" class="mt-4 text-sm font-medium"></p>
             <div id="res-targetsize" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-targetsize" class="hidden mb-5"></div>
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-targetsize" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
                 <span class="text-sm text-slate-600" id="info-targetsize"></span>

@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     $(`#res-${tool}`).classList.remove('hidden');
     $(`#info-${tool}`).textContent = infoText || `${filename} · ${fmtBytes(blob.size)}`;
     setStatus(tool, '✅ Done! Your file is ready below.', 'success');
+    // Inline preview-before-download: render the produced PDF so users can
+    // verify it before downloading. Gated on a viewable PDF + a preview slot.
+    if (blob.type === 'application/pdf' && $(`#preview-result-${tool}`)) mountResultPreview(tool, blob);
   };
   $$('[id^="dl-"]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -85,8 +88,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const hideResult = (tool) => {
     $(`#res-${tool}`)?.classList.add('hidden');
+    const pv = $(`#preview-result-${tool}`);
+    if (pv) { pv.classList.add('hidden'); pv.innerHTML = ''; }
     delete results[tool];
   };
+
+  // Render a produced PDF inline (with page navigation) so the user can confirm
+  // it looks right before downloading. Best-effort: any failure (e.g. the file
+  // is itself password-protected, as Protect output is) just hides the preview
+  // and never blocks the download. Declared as a hoisted function so showResult
+  // can call it regardless of source order.
+  async function mountResultPreview(tool, blob) {
+    const host = $(`#preview-result-${tool}`);
+    if (!host) return;
+    try {
+      const buf = await blob.arrayBuffer();
+      const doc = await pdfjsLib.getDocument({ data: buf.slice(0) }).promise;
+      const total = doc.numPages;
+      let cur = 1;
+      host.classList.remove('hidden');
+      host.innerHTML =
+        `<div class="text-xs font-semibold text-slate-500 mb-2">👁️ Preview — check this looks right before downloading</div>
+         <div class="relative inline-block border border-slate-200 rounded-xl overflow-hidden bg-white">
+           <canvas class="preview-canvas" style="cursor:default"></canvas>
+         </div>
+         <div class="mt-2 flex items-center gap-3 text-sm">
+           <button type="button" data-prev class="btn border border-slate-300 rounded-lg px-3 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">‹ Prev</button>
+           <span data-label class="text-slate-500"></span>
+           <button type="button" data-next class="btn border border-slate-300 rounded-lg px-3 py-1 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">Next ›</button>
+         </div>`;
+      const canvas = host.querySelector('canvas');
+      const label = host.querySelector('[data-label]');
+      const prev = host.querySelector('[data-prev]');
+      const next = host.querySelector('[data-next]');
+      const draw = async () => {
+        const page = await doc.getPage(cur);
+        const containerW = Math.min(460, host.clientWidth || 460);
+        const vp1 = page.getViewport({ scale: 1 });
+        const scale = (containerW / vp1.width) * (window.devicePixelRatio > 1 ? 1.5 : 1);
+        const vp = page.getViewport({ scale });
+        canvas.width = Math.ceil(vp.width);
+        canvas.height = Math.ceil(vp.height);
+        canvas.style.width = `${containerW}px`;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        label.textContent = `Page ${cur} of ${total}`;
+        prev.disabled = cur <= 1;
+        next.disabled = cur >= total;
+      };
+      prev.addEventListener('click', () => { if (cur > 1) { cur--; draw(); } });
+      next.addEventListener('click', () => { if (cur < total) { cur++; draw(); } });
+      await draw();
+    } catch (_) {
+      host.classList.add('hidden');
+      host.innerHTML = '';
+    }
+  }
 
   const baseName = (name) => name.replace(/\.[^.]+$/, '');
 
@@ -120,6 +179,65 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadPdfJs = (data, password) =>
     pdfjsLib.getDocument({ data: data.slice(0), password }).promise;
 
+  // ---------------------------------------------------- encrypted-PDF support
+  // pdf-lib (1.17.1) cannot decrypt content streams, so an encrypted source —
+  // even one with NO open password (owner-only / permissions encryption) —
+  // makes PDFDocument.load throw "is encrypted". pdf.js *can* open such files
+  // (it auto-tries an empty user password), so when pdf-lib balks we re-open
+  // with pdf.js and rasterize each page into a fresh, unencrypted document the
+  // editing tools can work on. We only surface an error when a real open
+  // password is actually required — matching the rule "no password ⇒ no error".
+  const PW_NEEDED_MSG = 'This PDF needs a password to open — unlock it first.';
+  const rasterizeToDoc = async (src, scale = 2, quality = 0.85) => {
+    const out = await PDFDocument.create();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    for (let i = 1; i <= src.numPages; i++) {
+      const page = await src.getPage(i);
+      const vp1 = page.getViewport({ scale: 1 });
+      const vp = page.getViewport({ scale });
+      canvas.width = Math.ceil(vp.width);
+      canvas.height = Math.ceil(vp.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      const jpg = await out.embedJpg(await canvasToJpeg(canvas, quality));
+      out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+    }
+    return out;
+  };
+  // Load a PDF for pdf-lib editing, transparently decrypting no-password
+  // encryption. Throws PW_NEEDED_MSG only when a real open password is required.
+  const loadPdfForEdit = async (buf) => {
+    try {
+      return await PDFDocument.load(buf.slice(0));
+    } catch (err) {
+      if (!/encrypt/i.test(String(err))) throw err;
+      let src;
+      try {
+        src = await loadPdfJs(buf);
+      } catch (e) {
+        if (e?.name === 'PasswordException') throw new Error(PW_NEEDED_MSG);
+        throw e;
+      }
+      return rasterizeToDoc(src);
+    }
+  };
+  // Page count only — avoids rasterizing just to probe an encrypted file.
+  const readPageCount = async (buf) => {
+    try {
+      return (await PDFDocument.load(buf.slice(0))).getPageCount();
+    } catch (err) {
+      if (!/encrypt/i.test(String(err))) throw err;
+      try {
+        return (await loadPdfJs(buf)).numPages;
+      } catch (e) {
+        if (e?.name === 'PasswordException') throw new Error(PW_NEEDED_MSG);
+        throw e;
+      }
+    }
+  };
+
   // ----------------------------------------------------------- view routing
   // Two page types share this script:
   //  - The homepage hub ("/") has #home-view (card grid) + #tool-view and swaps
@@ -128,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -208,9 +326,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus('merge', `Merging ${i + 1} of ${mergeState.files.length}: ${f.name}…`);
         let src;
         try {
-          src = await PDFDocument.load(await f.arrayBuffer());
+          src = await loadPdfForEdit(await f.arrayBuffer());
         } catch (err) {
-          throw new Error(`"${f.name}" could not be read${/encrypt/i.test(String(err)) ? ' — it is password-protected. Unlock it first.' : '.'}`);
+          const locked = /password/i.test(String(err)) || /encrypt/i.test(String(err));
+          throw new Error(`"${f.name}" could not be read${locked ? ' — it needs a password to open. Unlock it first.' : '.'}`);
         }
         const pages = await out.copyPages(src, src.getPageIndices());
         pages.forEach((p) => out.addPage(p));
@@ -527,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideResult('sign');
     try {
       setStatus('sign', 'Embedding signature…');
-      const doc = await PDFDocument.load(await signState.file.arrayBuffer());
+      const doc = await loadPdfForEdit(await signState.file.arrayBuffer());
       const page = doc.getPage(signState.pageNum - 1);
       const { width: pw, height: ph } = page.getSize();
       const pngBytes = await (await fetch(await signaturePngDataUrl())).arrayBuffer();
@@ -646,7 +765,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideResult('type');
     try {
       setStatus('type', 'Writing text into PDF…');
-      const doc = await PDFDocument.load(await typeState.file.arrayBuffer());
+      const doc = await loadPdfForEdit(await typeState.file.arrayBuffer());
       const needsUnicode = typeState.items.some((it) => hasThai(it.text));
       const font = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
       for (const it of typeState.items) {
@@ -852,9 +971,8 @@ document.addEventListener('DOMContentLoaded', () => {
     hideResult('split');
     try {
       setStatus('split', 'Reading PDF…');
-      const doc = await PDFDocument.load(await f.arrayBuffer());
+      splitState.pageCount = await readPageCount(await f.arrayBuffer());
       splitState.file = f;
-      splitState.pageCount = doc.getPageCount();
       $('#picked-split').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${splitState.pageCount} pages`;
       $('#btn-split').disabled = false;
       setStatus('split', '');
@@ -881,7 +999,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : Array.from({ length: splitState.pageCount }, (_, i) => i + 1).filter((p) => !picked.includes(p));
       if (!keep.length) throw new Error('Nothing left to save — removing those pages would empty the document.');
       setStatus('split', `Building PDF with ${keep.length} page${keep.length > 1 ? 's' : ''}…`);
-      const src = await PDFDocument.load(await f.arrayBuffer());
+      const src = await loadPdfForEdit(await f.arrayBuffer());
       const out = await PDFDocument.create();
       const pages = await out.copyPages(src, keep.map((p) => p - 1));
       pages.forEach((p) => out.addPage(p));
@@ -901,9 +1019,8 @@ document.addEventListener('DOMContentLoaded', () => {
     hideResult('rotate');
     try {
       setStatus('rotate', 'Reading PDF…');
-      const doc = await PDFDocument.load(await f.arrayBuffer());
+      rotateState.pageCount = await readPageCount(await f.arrayBuffer());
       rotateState.file = f;
-      rotateState.pageCount = doc.getPageCount();
       $('#picked-rotate').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${rotateState.pageCount} pages`;
       $('#btn-rotate').disabled = false;
       setStatus('rotate', '');
@@ -929,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!targets) throw new Error(`Enter a valid page range between 1 and ${rotateState.pageCount}, or leave it empty for all pages.`);
       const delta = +$('#angle-rotate').value;
       setStatus('rotate', `Rotating ${targets.length} page${targets.length > 1 ? 's' : ''}…`);
-      const doc = await PDFDocument.load(await f.arrayBuffer());
+      const doc = await loadPdfForEdit(await f.arrayBuffer());
       for (const p of targets) {
         const page = doc.getPage(p - 1);
         page.setRotation(degrees((page.getRotation().angle + delta) % 360));
@@ -1097,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideResult('pagenum');
     try {
       setStatus('pagenum', 'Adding page numbers…');
-      const doc = await PDFDocument.load(await f.arrayBuffer());
+      const doc = await loadPdfForEdit(await f.arrayBuffer());
       const font = await doc.embedFont(StandardFonts.Helvetica);
       const total = doc.getPageCount();
       const fmt = $('#fmt-pagenum').value;
@@ -1150,28 +1267,47 @@ document.addEventListener('DOMContentLoaded', () => {
     hideResult('watermark');
     try {
       setStatus('watermark', 'Stamping watermark…');
-      const doc = await PDFDocument.load(await f.arrayBuffer());
+      const doc = await loadPdfForEdit(await f.arrayBuffer());
       const thai = hasThai(raw);
       const font = thai ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.HelveticaBold);
       const text = thai ? raw : toWinAnsi(raw);
       const opacity = +$('#opacity-watermark').value / 100;
+      const pos = ($('#pos-watermark') && $('#pos-watermark').value) || 'diagonal';
+      const color = rgb(0.55, 0.55, 0.55);
       const cos45 = Math.cos(Math.PI / 4);
       for (const page of doc.getPages()) {
         const { width: pw, height: ph } = page.getSize();
-        const diag = Math.sqrt(pw * pw + ph * ph);
-        // size the text so it spans ~60% of the page diagonal
-        let size = 60;
-        size = Math.max(18, Math.min(110, (size * diag * 0.6) / font.widthOfTextAtSize(text, size)));
-        const tw = font.widthOfTextAtSize(text, size);
-        page.drawText(text, {
-          x: pw / 2 - (tw / 2) * cos45,
-          y: ph / 2 - (tw / 2) * cos45,
-          size,
-          font,
-          color: rgb(0.55, 0.55, 0.55),
-          opacity,
-          rotate: degrees(45),
-        });
+        // Auto-fit: scale a 60pt probe so the text spans a target width in points,
+        // so the watermark always fits the page regardless of its dimensions.
+        const w60 = font.widthOfTextAtSize(text, 60) || 1;
+        const fit = (targetW, max) => Math.max(12, Math.min(max, (60 * targetW) / w60));
+        if (pos === 'tile') {
+          const size = fit(pw * 0.30, 46);
+          const tw = font.widthOfTextAtSize(text, size);
+          const stepX = tw + size * 2.2;
+          const stepY = size * 3.2;
+          for (let yy = -size; yy < ph + stepY; yy += stepY)
+            for (let xx = -tw; xx < pw + tw; xx += stepX)
+              page.drawText(text, { x: xx, y: yy, size, font, color, opacity, rotate: degrees(45) });
+        } else if (pos === 'diagonal') {
+          const diag = Math.sqrt(pw * pw + ph * ph);
+          const size = fit(diag * 0.6, 110);
+          const tw = font.widthOfTextAtSize(text, size);
+          page.drawText(text, {
+            x: pw / 2 - (tw / 2) * cos45,
+            y: ph / 2 - (tw / 2) * cos45,
+            size, font, color, opacity, rotate: degrees(45),
+          });
+        } else {
+          // horizontal placements: center / top / bottom
+          const size = fit(pw * 0.7, 84);
+          const tw = font.widthOfTextAtSize(text, size);
+          const x = (pw - tw) / 2;
+          const y = pos === 'top' ? ph - 44 - size * 0.2
+                  : pos === 'bottom' ? 40
+                  : ph / 2 - size * 0.35;
+          page.drawText(text, { x, y, size, font, color, opacity });
+        }
       }
       const bytes = await doc.save();
       showResult('watermark', bytes, `${baseName(f.name)}_watermarked.pdf`, 'application/pdf');
@@ -1259,9 +1395,8 @@ document.addEventListener('DOMContentLoaded', () => {
       hideResult('delete');
       try {
         setStatus('delete', 'Reading PDF…');
-        const doc = await PDFDocument.load(await f.arrayBuffer());
+        delState.pageCount = await readPageCount(await f.arrayBuffer());
         delState.file = f;
-        delState.pageCount = doc.getPageCount();
         $('#picked-delete').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${delState.pageCount} pages`;
         $('#btn-delete').disabled = false;
         setStatus('delete', '');
@@ -1283,7 +1418,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const keep = Array.from({ length: delState.pageCount }, (_, i) => i + 1).filter((p) => !picked.includes(p));
         if (!keep.length) throw new Error('That would delete every page — nothing would be left to save.');
         setStatus('delete', `Removing ${picked.length} page${picked.length > 1 ? 's' : ''}…`);
-        const src = await PDFDocument.load(await f.arrayBuffer());
+        const src = await loadPdfForEdit(await f.arrayBuffer());
         const out = await PDFDocument.create();
         (await out.copyPages(src, keep.map((p) => p - 1))).forEach((p) => out.addPage(p));
         const bytes = await out.save({ useObjectStreams: true });
@@ -1383,7 +1518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const order = [...wrap.querySelectorAll('.thumb')].map((d) => +d.dataset.page);
         if (!order.length) throw new Error('No pages left to save.');
         setStatus('organize', 'Rebuilding PDF in the new order…');
-        const src = await PDFDocument.load(await f.arrayBuffer());
+        const src = await loadPdfForEdit(await f.arrayBuffer());
         const out = await PDFDocument.create();
         (await out.copyPages(src, order)).forEach((p) => out.addPage(p));
         const bytes = await out.save({ useObjectStreams: true });
@@ -1420,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (T + B >= 90 || L + R >= 90) throw new Error('Those margins remove too much of the page — reduce them.');
         if (!T && !R && !B && !L) throw new Error('Enter how much to trim from at least one edge (in %).');
         setStatus('crop', 'Cropping pages…');
-        const doc = await PDFDocument.load(await f.arrayBuffer());
+        const doc = await loadPdfForEdit(await f.arrayBuffer());
         for (const page of doc.getPages()) {
           const mb = page.getMediaBox();
           const nx = mb.x + (mb.width * L) / 100;
@@ -1462,7 +1597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cols = 2, rows = per === 2 ? 1 : 2;
         const M = 18, GAP = 10;
         setStatus('nup', 'Arranging pages…');
-        const src = await PDFDocument.load(await f.arrayBuffer());
+        const src = await loadPdfForEdit(await f.arrayBuffer());
         const out = await PDFDocument.create();
         const n = src.getPageCount();
         const cellW = (size[0] - 2 * M - (cols - 1) * GAP) / cols;
@@ -1662,6 +1797,119 @@ document.addEventListener('DOMContentLoaded', () => {
           `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
       } finally {
         btn.disabled = !tsState.file;
+      }
+    });
+  }
+
+  // ========================================================== COMPANY SEAL
+  // Stamp a corporate seal / stamp image onto a chosen page at a chosen spot.
+  // Modeled on the Sign tool: render a page preview, click to place, size to fit.
+  if ($('#dz-seal')) {
+    const sealState = { file: null, doc: null, pageNum: 1, placement: null, dataUrl: null, natW: 1, natH: 1 };
+    const updateSealReady = () => {
+      $('#btn-seal').disabled = !(sealState.file && sealState.dataUrl && sealState.placement);
+    };
+    const redrawSealMarker = () => {
+      const wrap = $('#wrap-seal');
+      if (!wrap) return;
+      $$('.place-marker', wrap).forEach((m) => m.remove());
+      if (!sealState.placement || !sealState.dataUrl) return;
+      const canvas = $('#preview-seal');
+      const dispW = (+$('#seal-size').value / 100) * canvas.clientWidth;
+      const dispH = dispW * (sealState.natH / sealState.natW);
+      const m = document.createElement('img');
+      m.src = sealState.dataUrl;
+      m.className = 'place-marker';
+      m.style.width = `${dispW}px`;
+      m.style.height = `${dispH}px`;
+      m.style.left = `${sealState.placement.nx * 100}%`;
+      m.style.top = `${sealState.placement.ny * 100}%`;
+      m.style.opacity = '0.92';
+      wrap.appendChild(m);
+    };
+    $('#seal-size').addEventListener('input', () => {
+      $('#seal-size-val').textContent = `${$('#seal-size').value}%`;
+      redrawSealMarker();
+    });
+    $('#seal-img-input').addEventListener('change', () => {
+      const f = $('#seal-img-input').files[0];
+      if (!f) return;
+      if (!/image\/(png|jpeg)/.test(f.type) && !/\.(png|jpe?g)$/i.test(f.name)) {
+        setStatus('seal', '❌ Please choose a PNG or JPG seal image.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        sealState.dataUrl = reader.result;
+        const img = new Image();
+        img.onload = () => { sealState.natW = img.naturalWidth || 1; sealState.natH = img.naturalHeight || 1; redrawSealMarker(); };
+        img.src = reader.result;
+        $('#seal-img-preview').innerHTML = `<img src="${reader.result}" alt="Seal preview" class="max-h-20 inline-block" />`;
+        updateSealReady();
+      };
+      reader.readAsDataURL(f);
+    });
+    setupDropzone('seal', async ([f]) => {
+      try {
+        sealState.file = f;
+        sealState.placement = null;
+        hideResult('seal');
+        setStatus('seal', 'Loading preview…');
+        sealState.doc = await loadPdfJs(await f.arrayBuffer());
+        sealState.pageNum = 1;
+        $('#page-seal').value = 1;
+        $('#page-seal').max = sealState.doc.numPages;
+        $('#pages-seal').textContent = `/ ${sealState.doc.numPages}`;
+        $('#picked-seal').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+        $('#work-seal').classList.remove('hidden');
+        await renderPreview(sealState, '#preview-seal', '#wrap-seal');
+        redrawSealMarker();
+        setStatus('seal', 'Upload your seal image, then click on the page where it should go.');
+      } catch (err) {
+        setStatus('seal', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      }
+      updateSealReady();
+    });
+    $('#page-seal').addEventListener('change', async () => {
+      if (!sealState.doc) return;
+      sealState.pageNum = Math.min(Math.max(1, +$('#page-seal').value || 1), sealState.doc.numPages);
+      $('#page-seal').value = sealState.pageNum;
+      sealState.placement = null;
+      await renderPreview(sealState, '#preview-seal', '#wrap-seal');
+      updateSealReady();
+    });
+    $('#preview-seal').addEventListener('click', (e) => {
+      if (!sealState.doc) return;
+      sealState.placement = clickToNorm(e, $('#preview-seal'));
+      redrawSealMarker();
+      updateSealReady();
+    });
+    $('#btn-seal').addEventListener('click', async () => {
+      const btn = $('#btn-seal');
+      btn.disabled = true;
+      hideResult('seal');
+      try {
+        setStatus('seal', 'Stamping seal…');
+        const doc = await loadPdfForEdit(await sealState.file.arrayBuffer());
+        const pageIdx = Math.min(sealState.pageNum, doc.getPageCount()) - 1;
+        const page = doc.getPage(pageIdx);
+        const { width: pw, height: ph } = page.getSize();
+        const bytes = await (await fetch(sealState.dataUrl)).arrayBuffer();
+        const img = /^data:image\/png/i.test(sealState.dataUrl) ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+        const w = (pw * +$('#seal-size').value) / 100;
+        const h = (w * img.height) / img.width;
+        page.drawImage(img, {
+          x: sealState.placement.nx * pw - w / 2,
+          y: ph - sealState.placement.ny * ph - h / 2,
+          width: w,
+          height: h,
+        });
+        const outBytes = await doc.save();
+        showResult('seal', outBytes, `${baseName(sealState.file.name)}_sealed.pdf`, 'application/pdf');
+      } catch (err) {
+        setStatus('seal', `❌ ${err.message || err}`, 'error');
+      } finally {
+        updateSealReady();
       }
     });
   }
