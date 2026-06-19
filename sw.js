@@ -1,6 +1,10 @@
-/* upmypdf service worker — offline-capable shell + cached libraries.
- * Bump CACHE when shipping changes so clients pick up new app.js/tailwind. */
-const CACHE = 'upmypdf-v2026-06-19';
+/* upmypdf service worker — offline-capable, but update-safe.
+ * Strategy:
+ *  - Same-origin (pages, app.js, tailwind.css, icons): NETWORK-FIRST so every
+ *    deploy is picked up immediately; fall back to cache only when offline.
+ *  - jsdelivr libraries (version-pinned, immutable): cache-first for speed/offline.
+ * This avoids the classic PWA trap where cache-first serves stale app.js forever. */
+const CACHE = 'upmypdf-v2';
 const CORE = [
   '/',
   '/app.js',
@@ -20,7 +24,6 @@ const CORE = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE)
-      // Cache best-effort: one missing CDN asset must not abort the whole install.
       .then((c) => Promise.all(CORE.map((u) =>
         fetch(new Request(u, { mode: u.startsWith('http') ? 'cors' : 'same-origin' }))
           .then((r) => (r && (r.ok || r.type === 'opaque')) ? c.put(u, r) : null)
@@ -42,28 +45,25 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Page navigations: network-first (fresh content), fall back to cache, then
-  // to the cached home page so the app still opens offline.
-  if (req.mode === 'navigate') {
+  // Version-pinned CDN libraries are immutable — cache-first.
+  if (url.host === 'cdn.jsdelivr.net') {
     e.respondWith(
-      fetch(req)
-        .then((r) => { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); return r; })
-        .catch(() => caches.match(req).then((r) => r || caches.match('/')))
+      caches.match(req).then((cached) => cached ||
+        fetch(req).then((r) => {
+          if (r && (r.ok || r.type === 'opaque')) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); }
+          return r;
+        }))
     );
     return;
   }
 
-  // Same-origin assets and the jsdelivr libraries: cache-first for instant,
-  // offline-capable loads; update the cache in the background when online.
-  if (url.origin === location.origin || url.host === 'cdn.jsdelivr.net') {
+  // Same-origin (pages, app.js, tailwind.css, icons): network-first so deploys
+  // are live instantly; fall back to cache (then home page) when offline.
+  if (url.origin === location.origin) {
     e.respondWith(
-      caches.match(req).then((cached) =>
-        cached ||
-        fetch(req).then((r) => {
-          if (r && (r.ok || r.type === 'opaque')) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); }
-          return r;
-        }).catch(() => cached)
-      )
+      fetch(req)
+        .then((r) => { if (r && r.ok) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); } return r; })
+        .catch(() => caches.match(req).then((r) => r || (req.mode === 'navigate' ? caches.match('/') : undefined)))
     );
   }
 });

@@ -2471,7 +2471,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Live-filter the tool grid on hub pages so the growing catalogue stays
   // browsable. Hides category headings whose tools are all filtered out.
   (() => {
-    const cards = [...document.querySelectorAll('a.toolcard')];
+    const cards = [...document.querySelectorAll('.toolcard')];
     if (cards.length <= 8) return;
     const grids = [...new Set(cards.map((c) => c.parentElement))];
     const firstGrid = cards[0].parentElement;
@@ -2486,7 +2486,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const q = input.value.trim().toLowerCase();
       cards.forEach((c) => { c.style.display = (!q || c.textContent.toLowerCase().includes(q)) ? '' : 'none'; });
       grids.forEach((g) => {
-        const vis = [...g.querySelectorAll('a.toolcard')].some((c) => c.style.display !== 'none');
+        const vis = [...g.querySelectorAll('.toolcard')].some((c) => c.style.display !== 'none');
         g.style.display = vis ? '' : 'none';
         const h = g.previousElementSibling;
         if (h && h.tagName === 'H2') h.style.display = vis ? '' : 'none';
