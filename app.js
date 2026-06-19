@@ -238,6 +238,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // Lazily inject a third-party UMD script once, resolving when its global is
+  // available. Used for the heavier, less-common converters (PptxGenJS, SheetJS)
+  // so the core tools stay lightweight.
+  const scriptPromises = {};
+  const loadScriptOnce = (src, globalName) => {
+    if (window[globalName]) return Promise.resolve(window[globalName]);
+    if (!scriptPromises[src]) {
+      scriptPromises[src] = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => (window[globalName] ? resolve(window[globalName])
+          : reject(new Error('Converter library failed to initialize.')));
+        s.onerror = () => { delete scriptPromises[src]; reject(new Error('Could not load a required library — check your connection and try again.')); };
+        document.head.appendChild(s);
+      });
+    }
+    return scriptPromises[src];
+  };
+
   // ----------------------------------------------------------- view routing
   // Two page types share this script:
   //  - The homepage hub ("/") has #home-view (card grid) + #tool-view and swaps
@@ -246,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -1913,4 +1932,573 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ============================================================ PDF TO PNG
+  if ($('#dz-pdf2png')) {
+    const p2pngState = { file: null };
+    setupDropzone('pdf2png', ([f]) => {
+      p2pngState.file = f;
+      $('#picked-pdf2png').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-pdf2png').disabled = false;
+      hideResult('pdf2png');
+      setStatus('pdf2png', '');
+    });
+    const canvasToPng = (canvas) => new Promise((res, rej) =>
+      canvas.toBlob((b) => (b ? b.arrayBuffer().then(res, rej) : rej(new Error('Canvas export failed'))), 'image/png'));
+    $('#btn-pdf2png').addEventListener('click', async () => {
+      const f = p2pngState.file;
+      if (!f) return;
+      const btn = $('#btn-pdf2png');
+      btn.disabled = true;
+      hideResult('pdf2png');
+      try {
+        const hi = $('#quality-pdf2png') && $('#quality-pdf2png').value === 'high';
+        const scale = hi ? 2.5 : 1.5;
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const images = [];
+        for (let i = 1; i <= src.numPages; i++) {
+          setStatus('pdf2png', `Rendering page ${i} of ${src.numPages}…`);
+          const page = await src.getPage(i);
+          const vp = page.getViewport({ scale });
+          canvas.width = Math.ceil(vp.width);
+          canvas.height = Math.ceil(vp.height);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          images.push(await canvasToPng(canvas));
+        }
+        if (images.length === 1) {
+          showResult('pdf2png', new Blob([images[0]], { type: 'image/png' }), `${baseName(f.name)}.png`, 'image/png');
+        } else {
+          setStatus('pdf2png', 'Packing images into a ZIP…');
+          const zip = new JSZip();
+          const pad = String(images.length).length;
+          images.forEach((img, i) => zip.file(`${baseName(f.name)}_page_${String(i + 1).padStart(pad, '0')}.png`, img));
+          const blob = await zip.generateAsync({ type: 'blob' });
+          showResult('pdf2png', blob, `${baseName(f.name)}_images.zip`, 'application/zip', `${images.length} images · ${fmtBytes(blob.size)}`);
+        }
+      } catch (err) {
+        setStatus('pdf2png', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !p2pngState.file;
+      }
+    });
+  }
+
+  // ============================================================ GRAYSCALE
+  if ($('#dz-grayscale')) {
+    const gsState = { file: null };
+    setupDropzone('grayscale', ([f]) => {
+      gsState.file = f;
+      $('#picked-grayscale').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-grayscale').disabled = false;
+      hideResult('grayscale');
+      setStatus('grayscale', '');
+    });
+    $('#btn-grayscale').addEventListener('click', async () => {
+      const f = gsState.file;
+      if (!f) return;
+      const btn = $('#btn-grayscale');
+      btn.disabled = true;
+      hideResult('grayscale');
+      try {
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        for (let i = 1; i <= src.numPages; i++) {
+          setStatus('grayscale', `Converting page ${i} of ${src.numPages}…`);
+          const page = await src.getPage(i);
+          const vp1 = page.getViewport({ scale: 1 });
+          const vp = page.getViewport({ scale: 2 });
+          canvas.width = Math.ceil(vp.width);
+          canvas.height = Math.ceil(vp.height);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          const im = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const d = im.data;
+          for (let p = 0; p < d.length; p += 4) {
+            const g = (d[p] * 0.299 + d[p + 1] * 0.587 + d[p + 2] * 0.114) | 0;
+            d[p] = d[p + 1] = d[p + 2] = g;
+          }
+          ctx.putImageData(im, 0, 0);
+          const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.82));
+          out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        }
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('grayscale', bytes, `${baseName(f.name)}_grayscale.pdf`, 'application/pdf',
+          `${src.numPages} page${src.numPages > 1 ? 's' : ''} · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('grayscale', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !gsState.file;
+      }
+    });
+  }
+
+  // ============================================================== REDACT
+  // True redaction: marked areas are painted solid black and the whole page is
+  // flattened to an image, so nothing survives underneath the marks.
+  if ($('#dz-redact')) {
+    const redState = { file: null, doc: null, pageNum: 1, rects: {} };
+    const redWrap = () => $('#wrap-redact');
+    const countRects = () => Object.values(redState.rects).reduce((a, r) => a + r.length, 0);
+    const updateRedactReady = () => {
+      const n = countRects();
+      $('#btn-redact').disabled = !(redState.file && n > 0);
+      if ($('#redact-count')) $('#redact-count').textContent = n ? `${n} box${n > 1 ? 'es' : ''} marked` : '';
+    };
+    const drawRedactBoxes = () => {
+      $$('.redact-box', redWrap()).forEach((m) => m.remove());
+      (redState.rects[redState.pageNum] || []).forEach((r, idx) => {
+        const d = document.createElement('div');
+        d.className = 'redact-box';
+        d.style.cssText = `position:absolute;left:${r.x * 100}%;top:${r.y * 100}%;width:${r.w * 100}%;height:${r.h * 100}%;background:rgba(15,23,42,0.85);border:1px solid #000;cursor:pointer;`;
+        d.title = 'Click to remove this box';
+        d.addEventListener('click', (e) => { e.stopPropagation(); redState.rects[redState.pageNum].splice(idx, 1); drawRedactBoxes(); updateRedactReady(); });
+        redWrap().appendChild(d);
+      });
+    };
+    setupDropzone('redact', async ([f]) => {
+      try {
+        redState.file = f; redState.rects = {}; hideResult('redact');
+        setStatus('redact', 'Loading preview…');
+        redState.doc = await loadPdfJs(await f.arrayBuffer());
+        redState.pageNum = 1;
+        $('#page-redact').value = 1;
+        $('#page-redact').max = redState.doc.numPages;
+        $('#pages-redact').textContent = `/ ${redState.doc.numPages}`;
+        $('#picked-redact').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+        $('#work-redact').classList.remove('hidden');
+        await renderPreview(redState, '#preview-redact', '#wrap-redact');
+        drawRedactBoxes();
+        setStatus('redact', 'Drag across the page to mark areas to hide. Click a box to remove it.');
+      } catch (err) {
+        setStatus('redact', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      }
+      updateRedactReady();
+    });
+    $('#page-redact').addEventListener('change', async () => {
+      if (!redState.doc) return;
+      redState.pageNum = Math.min(Math.max(1, +$('#page-redact').value || 1), redState.doc.numPages);
+      $('#page-redact').value = redState.pageNum;
+      await renderPreview(redState, '#preview-redact', '#wrap-redact');
+      drawRedactBoxes();
+    });
+    let dragStart = null, ghost = null;
+    const relPos = (e) => {
+      const rect = $('#preview-redact').getBoundingClientRect();
+      return { x: Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)), y: Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height)) };
+    };
+    $('#preview-redact').addEventListener('pointerdown', (e) => {
+      if (!redState.doc) return;
+      dragStart = relPos(e);
+      $('#preview-redact').setPointerCapture(e.pointerId);
+      ghost = document.createElement('div');
+      ghost.className = 'redact-box';
+      ghost.style.cssText = 'position:absolute;background:rgba(15,23,42,0.5);border:1px dashed #000;';
+      redWrap().appendChild(ghost);
+    });
+    $('#preview-redact').addEventListener('pointermove', (e) => {
+      if (!dragStart || !ghost) return;
+      const p = relPos(e);
+      const x = Math.min(dragStart.x, p.x), y = Math.min(dragStart.y, p.y);
+      const w = Math.abs(p.x - dragStart.x), h = Math.abs(p.y - dragStart.y);
+      ghost.style.left = `${x * 100}%`; ghost.style.top = `${y * 100}%`;
+      ghost.style.width = `${w * 100}%`; ghost.style.height = `${h * 100}%`;
+    });
+    const finishDrag = (e) => {
+      if (!dragStart) return;
+      const p = relPos(e);
+      const x = Math.min(dragStart.x, p.x), y = Math.min(dragStart.y, p.y);
+      const w = Math.abs(p.x - dragStart.x), h = Math.abs(p.y - dragStart.y);
+      if (ghost) { ghost.remove(); ghost = null; }
+      dragStart = null;
+      if (w > 0.01 && h > 0.01) {
+        (redState.rects[redState.pageNum] = redState.rects[redState.pageNum] || []).push({ x, y, w, h });
+        drawRedactBoxes();
+        updateRedactReady();
+        setStatus('redact', '');
+      }
+    };
+    $('#preview-redact').addEventListener('pointerup', finishDrag);
+    $('#preview-redact').addEventListener('pointercancel', finishDrag);
+    $('#btn-redact').addEventListener('click', async () => {
+      const f = redState.file;
+      if (!f) return;
+      const btn = $('#btn-redact');
+      btn.disabled = true;
+      hideResult('redact');
+      try {
+        setStatus('redact', 'Applying redactions…');
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        for (let i = 1; i <= src.numPages; i++) {
+          const page = await src.getPage(i);
+          const vp1 = page.getViewport({ scale: 1 });
+          const vp = page.getViewport({ scale: 2 });
+          canvas.width = Math.ceil(vp.width);
+          canvas.height = Math.ceil(vp.height);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          (redState.rects[i] || []).forEach((r) => {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.w * canvas.width, r.h * canvas.height);
+          });
+          const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.85));
+          out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        }
+        const bytes = await out.save({ useObjectStreams: true });
+        const n = countRects();
+        showResult('redact', bytes, `${baseName(f.name)}_redacted.pdf`, 'application/pdf',
+          `${n} area${n > 1 ? 's' : ''} redacted · flattened · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('redact', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally {
+        updateRedactReady();
+      }
+    });
+  }
+
+  // ===================================================== EXTRACT IMAGES
+  // Pulls embedded raster images out via pdf.js. Best-effort: RGB/RGBA/gray
+  // bitmaps are recovered; exotic colorspaces and soft masks are skipped.
+  if ($('#dz-extractimg')) {
+    const exState = { file: null };
+    setupDropzone('extractimg', ([f]) => {
+      exState.file = f;
+      $('#picked-extractimg').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-extractimg').disabled = false;
+      hideResult('extractimg');
+      setStatus('extractimg', '');
+    });
+    const imgObjToBuf = (img) => new Promise((resolve) => {
+      try {
+        const w = img.width, h = img.height;
+        if (!w || !h) return resolve(null);
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const cx = c.getContext('2d');
+        const id = cx.createImageData(w, h);
+        const data = img.data;
+        if (img.kind === 3 && data.length >= w * h * 4) {
+          id.data.set(data.subarray(0, w * h * 4));
+        } else if (img.kind === 2 && data.length >= w * h * 3) {
+          for (let i = 0, j = 0; i < w * h; i++) { id.data[j++] = data[i * 3]; id.data[j++] = data[i * 3 + 1]; id.data[j++] = data[i * 3 + 2]; id.data[j++] = 255; }
+        } else if (img.kind === 1 && data.length >= w * h) {
+          for (let i = 0, j = 0; i < w * h; i++) { const g = data[i]; id.data[j++] = g; id.data[j++] = g; id.data[j++] = g; id.data[j++] = 255; }
+        } else if (data && data.length >= w * h * 4) {
+          id.data.set(data.subarray(0, w * h * 4));
+        } else { return resolve(null); }
+        cx.putImageData(id, 0, 0);
+        c.toBlob((b) => (b ? b.arrayBuffer().then(resolve, () => resolve(null)) : resolve(null)), 'image/png');
+      } catch (_) { resolve(null); }
+    });
+    $('#btn-extractimg').addEventListener('click', async () => {
+      const f = exState.file;
+      if (!f) return;
+      const btn = $('#btn-extractimg');
+      btn.disabled = true;
+      hideResult('extractimg');
+      try {
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const found = [];
+        const seen = new Set();
+        const throwaway = document.createElement('canvas');
+        const tctx = throwaway.getContext('2d');
+        for (let i = 1; i <= src.numPages; i++) {
+          setStatus('extractimg', `Scanning page ${i} of ${src.numPages}…`);
+          const page = await src.getPage(i);
+          const vp = page.getViewport({ scale: 1 });
+          throwaway.width = Math.ceil(vp.width); throwaway.height = Math.ceil(vp.height);
+          await page.render({ canvasContext: tctx, viewport: vp }).promise; // forces image objs to resolve
+          const ops = await page.getOperatorList();
+          for (let k = 0; k < ops.fnArray.length; k++) {
+            const fn = ops.fnArray[k];
+            if (fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintJpegXObject) {
+              const name = ops.argsArray[k][0];
+              if (typeof name !== 'string' || seen.has(i + ':' + name)) continue;
+              seen.add(i + ':' + name);
+              let img = null;
+              try { img = page.objs.get(name); } catch (_) {}
+              if (!img) continue;
+              const buf = await imgObjToBuf(img);
+              if (buf) found.push({ page: i, buf });
+            }
+          }
+          if (page.cleanup) page.cleanup();
+        }
+        if (!found.length) throw new Error('No extractable embedded images were found. Vector graphics and some compressed image types can’t be pulled out — use PDF to PNG to save whole pages as images instead.');
+        if (found.length === 1) {
+          showResult('extractimg', new Blob([found[0].buf], { type: 'image/png' }), `${baseName(f.name)}_image.png`, 'image/png', `1 image · ${fmtBytes(found[0].buf.byteLength)}`);
+        } else {
+          setStatus('extractimg', 'Packing images into a ZIP…');
+          const zip = new JSZip();
+          const pad = String(found.length).length;
+          found.forEach((it, idx) => zip.file(`${baseName(f.name)}_p${it.page}_${String(idx + 1).padStart(pad, '0')}.png`, it.buf));
+          const blob = await zip.generateAsync({ type: 'blob' });
+          showResult('extractimg', blob, `${baseName(f.name)}_images.zip`, 'application/zip', `${found.length} images · ${fmtBytes(blob.size)}`);
+        }
+      } catch (err) {
+        setStatus('extractimg', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !exState.file;
+      }
+    });
+  }
+
+  // ============================================================ ADD PAGES
+  if ($('#dz-addpage')) {
+    const apState = { file: null, pageCount: 0 };
+    setupDropzone('addpage', async ([f]) => {
+      hideResult('addpage');
+      try {
+        setStatus('addpage', 'Reading PDF…');
+        apState.pageCount = await readPageCount(await f.arrayBuffer());
+        apState.file = f;
+        $('#picked-addpage').textContent = `Selected: ${f.name} (${fmtBytes(f.size)}) — ${apState.pageCount} pages`;
+        if ($('#after-addpage')) $('#after-addpage').max = apState.pageCount;
+        $('#btn-addpage').disabled = false;
+        setStatus('addpage', '');
+      } catch (err) {
+        apState.file = null;
+        $('#btn-addpage').disabled = true;
+        setStatus('addpage', `❌ ${/password/i.test(String(err)) ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      }
+    });
+    $('#btn-addpage').addEventListener('click', async () => {
+      const f = apState.file;
+      if (!f) return;
+      const btn = $('#btn-addpage');
+      btn.disabled = true;
+      hideResult('addpage');
+      try {
+        const where = $('#pos-addpage').value;
+        const count = Math.min(50, Math.max(1, +$('#count-addpage').value || 1));
+        const sizeOpt = $('#size-addpage').value;
+        const doc = await loadPdfForEdit(await f.arrayBuffer());
+        const total = doc.getPageCount();
+        const first = doc.getPage(0).getSize();
+        const SIZES = { a4: [595.28, 841.89], letter: [612, 792] };
+        const dims = sizeOpt === 'match' ? [first.width, first.height] : SIZES[sizeOpt];
+        const at = where === 'start' ? 0 : where === 'end' ? total : Math.min(total, Math.max(0, +$('#after-addpage').value || total));
+        for (let i = 0; i < count; i++) doc.insertPage(at + i, dims);
+        const bytes = await doc.save();
+        showResult('addpage', bytes, `${baseName(f.name)}_added.pdf`, 'application/pdf',
+          `${count} blank page${count > 1 ? 's' : ''} added · ${total + count} total · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('addpage', `❌ ${err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !apState.file;
+      }
+    });
+  }
+
+  // ====================================================== PDF TO POWERPOINT
+  // Each page becomes a full-bleed image on its own slide (PptxGenJS, lazy).
+  if ($('#dz-pdf2ppt')) {
+    const ppState = { file: null };
+    setupDropzone('pdf2ppt', ([f]) => {
+      ppState.file = f;
+      $('#picked-pdf2ppt').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-pdf2ppt').disabled = false;
+      hideResult('pdf2ppt');
+      setStatus('pdf2ppt', '');
+    });
+    $('#btn-pdf2ppt').addEventListener('click', async () => {
+      const f = ppState.file;
+      if (!f) return;
+      const btn = $('#btn-pdf2ppt');
+      btn.disabled = true;
+      hideResult('pdf2ppt');
+      try {
+        setStatus('pdf2ppt', 'Loading PowerPoint engine…');
+        await loadScriptOnce('https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js', 'PptxGenJS');
+        const Pptx = window.PptxGenJS || window.pptxgen;
+        if (!Pptx) throw new Error('PowerPoint engine failed to initialize.');
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const pptx = new Pptx();
+        const a1 = (await src.getPage(1)).getViewport({ scale: 1 });
+        const ar1 = a1.width / a1.height;
+        const LW = ar1 >= 1 ? 10 : 7.5 * ar1;
+        const LH = ar1 >= 1 ? 10 / ar1 : 7.5;
+        pptx.defineLayout({ name: 'PDFPAGE', width: LW, height: LH });
+        pptx.layout = 'PDFPAGE';
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        for (let i = 1; i <= src.numPages; i++) {
+          setStatus('pdf2ppt', `Adding slide ${i} of ${src.numPages}…`);
+          const page = await src.getPage(i);
+          const vp = page.getViewport({ scale: 1.7 });
+          canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          const ar = canvas.width / canvas.height;
+          let w = LW, h = LW / ar;
+          if (h > LH) { h = LH; w = LH * ar; }
+          pptx.addSlide().addImage({ data: canvas.toDataURL('image/jpeg', 0.85), x: (LW - w) / 2, y: (LH - h) / 2, w, h });
+        }
+        setStatus('pdf2ppt', 'Building .pptx…');
+        const blob = await pptx.write('blob');
+        showResult('pdf2ppt', blob, `${baseName(f.name)}.pptx`, 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          `${src.numPages} slide${src.numPages > 1 ? 's' : ''} · ${fmtBytes(blob.size)}`);
+      } catch (err) {
+        setStatus('pdf2ppt', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !ppState.file;
+      }
+    });
+  }
+
+  // ========================================================= PDF TO EXCEL
+  // Best-effort: rebuilds rows/columns from the text layer (SheetJS, lazy).
+  // Digital tables convert well; scanned PDFs need OCR first.
+  if ($('#dz-pdf2excel')) {
+    const peState = { file: null };
+    setupDropzone('pdf2excel', ([f]) => {
+      peState.file = f;
+      $('#picked-pdf2excel').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-pdf2excel').disabled = false;
+      hideResult('pdf2excel');
+      setStatus('pdf2excel', '');
+    });
+    $('#btn-pdf2excel').addEventListener('click', async () => {
+      const f = peState.file;
+      if (!f) return;
+      const btn = $('#btn-pdf2excel');
+      btn.disabled = true;
+      hideResult('pdf2excel');
+      try {
+        setStatus('pdf2excel', 'Loading spreadsheet engine…');
+        const XLSX = await loadScriptOnce('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', 'XLSX');
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const wb = XLSX.utils.book_new();
+        let anyText = false;
+        for (let i = 1; i <= src.numPages; i++) {
+          setStatus('pdf2excel', `Extracting page ${i} of ${src.numPages}…`);
+          const page = await src.getPage(i);
+          const content = await page.getTextContent();
+          const items = content.items.filter((t) => t.str.trim() !== '').map((t) => ({ str: t.str, x: t.transform[4], y: t.transform[5] }));
+          if (items.length) anyText = true;
+          items.sort((a, b) => b.y - a.y || a.x - b.x);
+          const rows = [];
+          let cur = [], lastY = null;
+          for (const it of items) {
+            if (lastY === null || Math.abs(it.y - lastY) <= 4) { cur.push(it); lastY = lastY === null ? it.y : (lastY + it.y) / 2; }
+            else { rows.push(cur); cur = [it]; lastY = it.y; }
+          }
+          if (cur.length) rows.push(cur);
+          const aoa = rows.map((r) => r.sort((a, b) => a.x - b.x).map((c) => c.str.trim()));
+          const ws = XLSX.utils.aoa_to_sheet(aoa.length ? aoa : [['']]);
+          XLSX.utils.book_append_sheet(wb, ws, `Page ${i}`.slice(0, 31));
+        }
+        if (!anyText) throw new Error('No selectable text found — this looks like a scanned PDF. Run it through OCR first, then convert.');
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        showResult('pdf2excel', new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+          `${baseName(f.name)}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          `${src.numPages} sheet${src.numPages > 1 ? 's' : ''} · ${fmtBytes(wbout.byteLength || wbout.length)}`);
+      } catch (err) {
+        setStatus('pdf2excel', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !peState.file;
+      }
+    });
+  }
+
+  // ========================================================= EXCEL TO PDF
+  if ($('#dz-excel2pdf')) {
+    const epState = { file: null };
+    setupDropzone('excel2pdf', ([f]) => {
+      if (!/\.(xlsx|xls|csv)$/i.test(f.name)) { setStatus('excel2pdf', '❌ Please choose an .xlsx, .xls or .csv file.', 'error'); return; }
+      epState.file = f;
+      $('#picked-excel2pdf').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-excel2pdf').disabled = false;
+      hideResult('excel2pdf');
+      setStatus('excel2pdf', '');
+    });
+    $('#btn-excel2pdf').addEventListener('click', async () => {
+      const f = epState.file;
+      if (!f) return;
+      const btn = $('#btn-excel2pdf');
+      btn.disabled = true;
+      hideResult('excel2pdf');
+      try {
+        setStatus('excel2pdf', 'Loading spreadsheet engine…');
+        const XLSX = await loadScriptOnce('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', 'XLSX');
+        const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' });
+        const doc = await PDFDocument.create();
+        const font = await doc.embedFont(StandardFonts.Helvetica);
+        const fontB = await doc.embedFont(StandardFonts.HelveticaBold);
+        const PW = 841.89, PH = 595.28, M = 36, size = 8.5, lineH = 13;
+        for (const name of wb.SheetNames) {
+          const aoa = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false, defval: '' });
+          if (!aoa.length) continue;
+          const cols = Math.max(...aoa.map((r) => r.length), 1);
+          const colW = (PW - 2 * M) / cols;
+          let page = doc.addPage([PW, PH]);
+          let y = PH - M;
+          page.drawText(toWinAnsi(name).slice(0, 90) || ' ', { x: M, y: y - 10, size: 12, font: fontB, color: rgb(0.1, 0.1, 0.1) });
+          y -= 28;
+          aoa.forEach((row, ri) => {
+            if (y < M + lineH) { page = doc.addPage([PW, PH]); y = PH - M; }
+            for (let c = 0; c < cols; c++) {
+              let s = toWinAnsi(row[c] == null ? '' : String(row[c]));
+              while (s && font.widthOfTextAtSize(s, size) > colW - 4) s = s.slice(0, -1);
+              if (s) page.drawText(s, { x: M + c * colW + 2, y: y - 10, size, font: ri === 0 ? fontB : font, color: rgb(0.15, 0.15, 0.15) });
+            }
+            y -= lineH;
+          });
+        }
+        if (doc.getPageCount() === 0) throw new Error('The spreadsheet appears to be empty.');
+        const bytes = await doc.save({ useObjectStreams: true });
+        showResult('excel2pdf', bytes, `${baseName(f.name)}.pdf`, 'application/pdf',
+          `${doc.getPageCount()} page${doc.getPageCount() > 1 ? 's' : ''} · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('excel2pdf', `❌ ${err.message || err}`, 'error');
+      } finally {
+        btn.disabled = !epState.file;
+      }
+    });
+  }
+
+  // ----------------------------------------------------------------- PWA
+  // Register the service worker (offline + installable) and surface an
+  // "Install app" button when the browser offers one — a path to repeat daily
+  // use without keeping a browser tab open.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  }
+  let deferredInstall = null;
+  const showInstallButton = () => {
+    if (document.getElementById('pwa-install')) return;
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return;
+    const b = document.createElement('button');
+    b.id = 'pwa-install';
+    b.type = 'button';
+    b.textContent = '⤓ Install app';
+    b.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:60;background:#2563EB;color:#fff;font-weight:700;padding:10px 18px;border:0;border-radius:9999px;cursor:pointer;box-shadow:0 8px 24px rgba(37,99,235,.45);font-size:14px;';
+    b.addEventListener('click', async () => {
+      if (!deferredInstall) return;
+      deferredInstall.prompt();
+      try { await deferredInstall.userChoice; } catch (_) {}
+      deferredInstall = null;
+      b.remove();
+    });
+    document.body.appendChild(b);
+  };
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstall = e;
+    showInstallButton();
+  });
+  window.addEventListener('appinstalled', () => {
+    const b = document.getElementById('pwa-install');
+    if (b) b.remove();
+  });
 });
