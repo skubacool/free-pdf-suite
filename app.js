@@ -2817,6 +2817,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.putImageData(im, 0, 0);
           const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.85));
           out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        }
         const bytes = await out.save({ useObjectStreams: true });
         showResult('invert', bytes, `${baseName(f.name)}_inverted.pdf`, 'application/pdf', `${src.numPages} page${src.numPages > 1 ? 's' : ''} · dark mode`);
       } catch (err) { setStatus('invert', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
