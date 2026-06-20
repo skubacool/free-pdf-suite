@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -2467,6 +2467,363 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ============================================ TEXT EXTRACTION HELPERS
+  // Shared by the text-export tools. Groups the text layer back into lines.
+  const extractPdfLines = async (src) => {
+    const pages = [];
+    for (let i = 1; i <= src.numPages; i++) {
+      const content = await (await src.getPage(i)).getTextContent();
+      const lines = [];
+      let line = '';
+      for (const it of content.items) {
+        line += it.str;
+        if (it.hasEOL) { lines.push(line); line = ''; }
+        else if (it.str && !it.str.endsWith(' ')) line += ' ';
+      }
+      if (line.trim()) lines.push(line);
+      pages.push(lines);
+    }
+    return pages;
+  };
+
+  // ============================================================ PDF TO TEXT
+  if ($('#dz-pdf2text')) {
+    const st = { file: null };
+    setupDropzone('pdf2text', ([f]) => { st.file = f; $('#picked-pdf2text').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-pdf2text').disabled = false; hideResult('pdf2text'); setStatus('pdf2text', ''); });
+    $('#btn-pdf2text').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-pdf2text'); btn.disabled = true; hideResult('pdf2text');
+      try {
+        setStatus('pdf2text', 'Extracting text…');
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const out = (await extractPdfLines(src)).map((l) => l.join('\n')).join('\n\n');
+        if (!out.trim()) throw new Error('No selectable text found — this looks like a scanned PDF. Run it through OCR first.');
+        if ($('#out-pdf2text')) $('#out-pdf2text').value = out;
+        const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+        showResult('pdf2text', blob, `${baseName(f.name)}.txt`, 'text/plain', `${src.numPages} page${src.numPages > 1 ? 's' : ''} · ${fmtBytes(blob.size)} of text`);
+      } catch (err) { setStatus('pdf2text', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ PDF TO MARKDOWN
+  if ($('#dz-pdf2md')) {
+    const st = { file: null };
+    setupDropzone('pdf2md', ([f]) => { st.file = f; $('#picked-pdf2md').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-pdf2md').disabled = false; hideResult('pdf2md'); setStatus('pdf2md', ''); });
+    $('#btn-pdf2md').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-pdf2md'); btn.disabled = true; hideResult('pdf2md');
+      try {
+        setStatus('pdf2md', 'Converting to Markdown…');
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const pages = await extractPdfLines(src);
+        let md = '';
+        pages.forEach((lines, i) => { md += `\n\n## Page ${i + 1}\n\n` + lines.map((l) => l.trim()).filter(Boolean).join('\n\n'); });
+        md = md.trim();
+        if (!md) throw new Error('No selectable text found — this looks like a scanned PDF. Run it through OCR first.');
+        if ($('#out-pdf2md')) $('#out-pdf2md').value = md;
+        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+        showResult('pdf2md', blob, `${baseName(f.name)}.md`, 'text/markdown', `${src.numPages} page${src.numPages > 1 ? 's' : ''} · ${fmtBytes(blob.size)}`);
+      } catch (err) { setStatus('pdf2md', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ PDF TO HTML
+  if ($('#dz-pdf2html')) {
+    const st = { file: null };
+    setupDropzone('pdf2html', ([f]) => { st.file = f; $('#picked-pdf2html').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-pdf2html').disabled = false; hideResult('pdf2html'); setStatus('pdf2html', ''); });
+    $('#btn-pdf2html').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-pdf2html'); btn.disabled = true; hideResult('pdf2html');
+      try {
+        setStatus('pdf2html', 'Converting to HTML…');
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const pages = await extractPdfLines(src);
+        if (!pages.some((p) => p.some((l) => l.trim()))) throw new Error('No selectable text found — this looks like a scanned PDF. Run it through OCR first.');
+        const body = pages.map((lines, i) => `<section>\n<h2>Page ${i + 1}</h2>\n` + lines.map((l) => `<p>${escapeHtml(l.trim()) || '&nbsp;'}</p>`).join('\n') + `\n</section>`).join('\n');
+        const html = `<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><title>${escapeHtml(baseName(f.name))}</title>\n<style>body{font-family:system-ui,Arial,sans-serif;max-width:46rem;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1e293b}h2{margin-top:2rem;color:#2563eb}p{margin:.4rem 0}</style></head>\n<body>\n${body}\n</body></html>`;
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        showResult('pdf2html', blob, `${baseName(f.name)}.html`, 'text/html', `${src.numPages} page${src.numPages > 1 ? 's' : ''} · ${fmtBytes(blob.size)}`);
+      } catch (err) { setStatus('pdf2html', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ TEXT TO PDF
+  if ($('#dz-text2pdf')) {
+    const st = { file: null };
+    const ta = () => $('#text-text2pdf');
+    const ready = () => { $('#btn-text2pdf').disabled = !(ta() && ta().value.trim()); };
+    if (ta()) ta().addEventListener('input', ready);
+    setupDropzone('text2pdf', async ([f]) => { st.file = f; if (ta()) ta().value = await f.text(); $('#picked-text2pdf').textContent = `Loaded: ${f.name}`; hideResult('text2pdf'); setStatus('text2pdf', ''); ready(); });
+    $('#btn-text2pdf').addEventListener('click', async () => {
+      const raw = ta() ? ta().value : ''; if (!raw.trim()) { setStatus('text2pdf', 'Paste or type some text first.', 'error'); return; }
+      const btn = $('#btn-text2pdf'); btn.disabled = true; hideResult('text2pdf');
+      try {
+        setStatus('text2pdf', 'Building PDF…');
+        const doc = await PDFDocument.create();
+        const thai = hasThai(raw);
+        const font = thai ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+        const PW = 595.28, PH = 841.89, M = 56, size = 11.5, lineH = size * 1.5;
+        let page = doc.addPage([PW, PH]); let y = PH - M;
+        for (const para of raw.split('\n')) {
+          const text = thai ? para : toWinAnsi(para);
+          if (!text.trim()) { y -= lineH * 0.7; if (y < M) { page = doc.addPage([PW, PH]); y = PH - M; } continue; }
+          for (const ln of wrapText(text, font, size, PW - 2 * M)) {
+            if (y < M + size) { page = doc.addPage([PW, PH]); y = PH - M; }
+            page.drawText(ln, { x: M, y: y - size, size, font, color: rgb(0.1, 0.1, 0.15) });
+            y -= lineH;
+          }
+        }
+        const bytes = await doc.save({ useObjectStreams: true });
+        showResult('text2pdf', bytes, 'text.pdf', 'application/pdf', `${doc.getPageCount()} page${doc.getPageCount() > 1 ? 's' : ''} · ${fmtBytes(bytes.length)}`);
+      } catch (err) { setStatus('text2pdf', `❌ ${err.message || err}`, 'error'); } finally { ready(); }
+    });
+  }
+
+  // ============================================================ WORD COUNTER
+  if ($('#dz-wordcount')) {
+    const st = { file: null };
+    setupDropzone('wordcount', ([f]) => { st.file = f; $('#picked-wordcount').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-wordcount').disabled = false; hideResult('wordcount'); setStatus('wordcount', ''); });
+    $('#btn-wordcount').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-wordcount'); btn.disabled = true; hideResult('wordcount');
+      try {
+        const src = await loadPdfJs(await f.arrayBuffer());
+        let txt = '';
+        for (let i = 1; i <= src.numPages; i++) { setStatus('wordcount', `Reading page ${i} of ${src.numPages}…`); const c = await (await src.getPage(i)).getTextContent(); txt += c.items.map((it) => it.str).join(' ') + ' '; }
+        const words = (txt.match(/\S+/g) || []).length;
+        const chars = txt.replace(/\s/g, '').length;
+        const report = `Words: ${words}\nCharacters (no spaces): ${chars}\nCharacters (with spaces): ${txt.length}\nPages: ${src.numPages}\nAverage words per page: ${Math.round(words / src.numPages)}`;
+        if ($('#out-wordcount')) $('#out-wordcount').value = report;
+        const blob = new Blob([report], { type: 'text/plain' });
+        showResult('wordcount', blob, `${baseName(f.name)}_wordcount.txt`, 'text/plain', `${words.toLocaleString()} words · ${src.numPages} pages`);
+      } catch (err) { setStatus('wordcount', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ VIEW METADATA
+  if ($('#dz-metaview')) {
+    const st = { file: null };
+    setupDropzone('metaview', ([f]) => { st.file = f; $('#picked-metaview').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-metaview').disabled = false; hideResult('metaview'); setStatus('metaview', ''); });
+    $('#btn-metaview').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-metaview'); btn.disabled = true; hideResult('metaview');
+      try {
+        const doc = await loadPdfForEdit(await f.arrayBuffer());
+        const g = (fn) => { try { const v = fn(); return v == null || v === '' ? '—' : v; } catch (_) { return '—'; } };
+        const d = (fn) => { try { const v = fn(); return v ? v.toISOString().slice(0, 10) : '—'; } catch (_) { return '—'; } };
+        const report = [
+          `Title: ${g(() => doc.getTitle())}`, `Author: ${g(() => doc.getAuthor())}`, `Subject: ${g(() => doc.getSubject())}`,
+          `Keywords: ${g(() => doc.getKeywords())}`, `Creator: ${g(() => doc.getCreator())}`, `Producer: ${g(() => doc.getProducer())}`,
+          `Created: ${d(() => doc.getCreationDate())}`, `Modified: ${d(() => doc.getModificationDate())}`, `Pages: ${doc.getPageCount()}`,
+        ].join('\n');
+        if ($('#out-metaview')) $('#out-metaview').value = report;
+        const blob = new Blob([report], { type: 'text/plain' });
+        showResult('metaview', blob, `${baseName(f.name)}_metadata.txt`, 'text/plain', `${doc.getPageCount()} pages`);
+      } catch (err) { setStatus('metaview', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ EDIT METADATA
+  if ($('#dz-metaedit')) {
+    const st = { file: null };
+    setupDropzone('metaedit', async ([f]) => {
+      st.file = f; $('#picked-metaedit').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-metaedit').disabled = false; hideResult('metaedit'); setStatus('metaedit', '');
+      try { const doc = await loadPdfForEdit(await f.arrayBuffer()); const s = (id, v) => { if ($(id)) $(id).value = v || ''; }; s('#meta-title', doc.getTitle()); s('#meta-author', doc.getAuthor()); s('#meta-subject', doc.getSubject()); s('#meta-keywords', doc.getKeywords()); } catch (_) {}
+    });
+    $('#btn-metaedit').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-metaedit'); btn.disabled = true; hideResult('metaedit');
+      try {
+        setStatus('metaedit', 'Updating metadata…');
+        const doc = await loadPdfForEdit(await f.arrayBuffer());
+        doc.setTitle($('#meta-title').value || ''); doc.setAuthor($('#meta-author').value || ''); doc.setSubject($('#meta-subject').value || '');
+        doc.setKeywords(($('#meta-keywords').value || '').split(',').map((s) => s.trim()).filter(Boolean));
+        const bytes = await doc.save();
+        showResult('metaedit', bytes, `${baseName(f.name)}_metadata.pdf`, 'application/pdf', 'Metadata updated');
+      } catch (err) { setStatus('metaedit', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ REMOVE METADATA
+  if ($('#dz-metaremove')) {
+    const st = { file: null };
+    setupDropzone('metaremove', ([f]) => { st.file = f; $('#picked-metaremove').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-metaremove').disabled = false; hideResult('metaremove'); setStatus('metaremove', ''); });
+    $('#btn-metaremove').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-metaremove'); btn.disabled = true; hideResult('metaremove');
+      try {
+        setStatus('metaremove', 'Stripping metadata…');
+        const doc = await loadPdfForEdit(await f.arrayBuffer());
+        doc.setTitle(''); doc.setAuthor(''); doc.setSubject(''); doc.setKeywords([]); doc.setProducer(''); doc.setCreator('');
+        const bytes = await doc.save();
+        showResult('metaremove', bytes, `${baseName(f.name)}_clean.pdf`, 'application/pdf', 'Metadata removed');
+      } catch (err) { setStatus('metaremove', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ FLATTEN PDF
+  if ($('#dz-flatten')) {
+    const st = { file: null };
+    setupDropzone('flatten', ([f]) => { st.file = f; $('#picked-flatten').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-flatten').disabled = false; hideResult('flatten'); setStatus('flatten', ''); });
+    $('#btn-flatten').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-flatten'); btn.disabled = true; hideResult('flatten');
+      try {
+        setStatus('flatten', 'Flattening form fields…');
+        const doc = await loadPdfForEdit(await f.arrayBuffer());
+        let fields = 0;
+        try { const form = doc.getForm(); fields = form.getFields().length; form.flatten(); } catch (_) {}
+        const bytes = await doc.save();
+        showResult('flatten', bytes, `${baseName(f.name)}_flattened.pdf`, 'application/pdf', fields ? `${fields} form field${fields > 1 ? 's' : ''} flattened` : 'Saved (no form fields found)');
+      } catch (err) { setStatus('flatten', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ===================================================== REMOVE ANNOTATIONS
+  if ($('#dz-unannotate')) {
+    const { PDFName } = PDFLib;
+    const st = { file: null };
+    setupDropzone('unannotate', ([f]) => { st.file = f; $('#picked-unannotate').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-unannotate').disabled = false; hideResult('unannotate'); setStatus('unannotate', ''); });
+    $('#btn-unannotate').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-unannotate'); btn.disabled = true; hideResult('unannotate');
+      try {
+        setStatus('unannotate', 'Removing comments & annotations…');
+        const doc = await loadPdfForEdit(await f.arrayBuffer());
+        let n = 0;
+        doc.getPages().forEach((p) => { if (p.node.get(PDFName.of('Annots'))) { p.node.delete(PDFName.of('Annots')); n++; } });
+        const bytes = await doc.save();
+        showResult('unannotate', bytes, `${baseName(f.name)}_no_annotations.pdf`, 'application/pdf', n ? `Cleared annotations on ${n} page${n > 1 ? 's' : ''}` : 'No annotations found');
+      } catch (err) { setStatus('unannotate', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ REVERSE PAGES
+  if ($('#dz-reverse')) {
+    const st = { file: null };
+    setupDropzone('reverse', ([f]) => { st.file = f; $('#picked-reverse').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-reverse').disabled = false; hideResult('reverse'); setStatus('reverse', ''); });
+    $('#btn-reverse').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-reverse'); btn.disabled = true; hideResult('reverse');
+      try {
+        setStatus('reverse', 'Reversing page order…');
+        const src = await loadPdfForEdit(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        (await out.copyPages(src, src.getPageIndices().reverse())).forEach((p) => out.addPage(p));
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('reverse', bytes, `${baseName(f.name)}_reversed.pdf`, 'application/pdf', `${out.getPageCount()} pages reversed`);
+      } catch (err) { setStatus('reverse', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ DUPLICATE PAGES
+  if ($('#dz-duplicate')) {
+    const st = { file: null };
+    setupDropzone('duplicate', ([f]) => { st.file = f; $('#picked-duplicate').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-duplicate').disabled = false; hideResult('duplicate'); setStatus('duplicate', ''); });
+    $('#btn-duplicate').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-duplicate'); btn.disabled = true; hideResult('duplicate');
+      try {
+        const copies = Math.min(10, Math.max(2, +$('#copies-duplicate').value || 2));
+        setStatus('duplicate', 'Duplicating pages…');
+        const src = await loadPdfForEdit(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        for (let i = 0; i < src.getPageCount(); i++) (await out.copyPages(src, Array(copies).fill(i))).forEach((p) => out.addPage(p));
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('duplicate', bytes, `${baseName(f.name)}_duplicated.pdf`, 'application/pdf', `Each page ×${copies} · ${out.getPageCount()} pages`);
+      } catch (err) { setStatus('duplicate', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ============================================================ INTERLEAVE PDF
+  if ($('#dz-interleave')) {
+    const st = { files: [] };
+    setupDropzone('interleave', (files) => {
+      st.files = files.filter((f) => /pdf$/i.test(f.name) || f.type === 'application/pdf').slice(0, 2);
+      $('#picked-interleave').textContent = st.files.length ? `Selected: ${st.files.map((f) => f.name).join(', ')}` : '';
+      $('#btn-interleave').disabled = st.files.length !== 2; hideResult('interleave'); setStatus('interleave', st.files.length === 1 ? 'Add one more PDF (drop both, or click to add the second).' : '');
+    });
+    $('#btn-interleave').addEventListener('click', async () => {
+      if (st.files.length !== 2) return; const btn = $('#btn-interleave'); btn.disabled = true; hideResult('interleave');
+      try {
+        setStatus('interleave', 'Interleaving pages…');
+        const a = await loadPdfForEdit(await st.files[0].arrayBuffer());
+        const b = await loadPdfForEdit(await st.files[1].arrayBuffer());
+        const out = await PDFDocument.create();
+        const na = a.getPageCount(), nb = b.getPageCount();
+        for (let i = 0; i < Math.max(na, nb); i++) {
+          if (i < na) (await out.copyPages(a, [i])).forEach((p) => out.addPage(p));
+          if (i < nb) (await out.copyPages(b, [i])).forEach((p) => out.addPage(p));
+        }
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('interleave', bytes, 'interleaved.pdf', 'application/pdf', `${out.getPageCount()} pages`);
+      } catch (err) { setStatus('interleave', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = st.files.length !== 2; }
+    });
+  }
+
+  // ============================================================ ZIP PDF FILES
+  if ($('#dz-zippdf')) {
+    const st = { files: [] };
+    setupDropzone('zippdf', (files) => {
+      st.files = files.filter((f) => /pdf$/i.test(f.name) || f.type === 'application/pdf');
+      $('#picked-zippdf').textContent = st.files.length ? `${st.files.length} PDF${st.files.length > 1 ? 's' : ''} selected` : '';
+      $('#btn-zippdf').disabled = st.files.length < 2; hideResult('zippdf'); setStatus('zippdf', '');
+    });
+    $('#btn-zippdf').addEventListener('click', async () => {
+      if (st.files.length < 2) return; const btn = $('#btn-zippdf'); btn.disabled = true; hideResult('zippdf');
+      try {
+        setStatus('zippdf', 'Zipping files…');
+        const zip = new JSZip();
+        for (const f of st.files) zip.file(f.name.replace(/[\/\\]/g, '_'), await f.arrayBuffer());
+        const blob = await zip.generateAsync({ type: 'blob' });
+        showResult('zippdf', blob, 'pdfs.zip', 'application/zip', `${st.files.length} files · ${fmtBytes(blob.size)}`);
+      } catch (err) { setStatus('zippdf', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = st.files.length < 2; }
+    });
+  }
+
+  // ============================================================ RESIZE PDF
+  if ($('#dz-resize')) {
+    const st = { file: null };
+    setupDropzone('resize', ([f]) => { st.file = f; $('#picked-resize').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-resize').disabled = false; hideResult('resize'); setStatus('resize', ''); });
+    $('#btn-resize').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-resize'); btn.disabled = true; hideResult('resize');
+      try {
+        const SIZES = { a4: [595.28, 841.89], letter: [612, 792], legal: [612, 1008], a3: [841.89, 1190.55], a5: [419.53, 595.28] };
+        const key = $('#size-resize').value; const [TW, TH] = SIZES[key] || SIZES.a4;
+        setStatus('resize', 'Resizing pages…');
+        const src = await loadPdfForEdit(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        for (let i = 0; i < src.getPageCount(); i++) {
+          const sp = src.getPage(i); const emb = await out.embedPage(sp);
+          const sw = sp.getWidth(), sh = sp.getHeight(); const portrait = sh >= sw;
+          const [pw, ph] = portrait ? [TW, TH] : [TH, TW];
+          const scale = Math.min(pw / sw, ph / sh); const w = sw * scale, h = sh * scale;
+          const page = out.addPage([pw, ph]);
+          page.drawPage(emb, { x: (pw - w) / 2, y: (ph - h) / 2, width: w, height: h });
+        }
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('resize', bytes, `${baseName(f.name)}_${key}.pdf`, 'application/pdf', `Resized to ${key.toUpperCase()} · ${out.getPageCount()} pages`);
+      } catch (err) { setStatus('resize', `❌ ${err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
+  // ===================================================== INVERT COLORS / DARK MODE
+  if ($('#dz-invert')) {
+    const st = { file: null };
+    setupDropzone('invert', ([f]) => { st.file = f; $('#picked-invert').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`; $('#btn-invert').disabled = false; hideResult('invert'); setStatus('invert', ''); });
+    $('#btn-invert').addEventListener('click', async () => {
+      const f = st.file; if (!f) return; const btn = $('#btn-invert'); btn.disabled = true; hideResult('invert');
+      try {
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const out = await PDFDocument.create();
+        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+        for (let i = 1; i <= src.numPages; i++) {
+          setStatus('invert', `Inverting page ${i} of ${src.numPages}…`);
+          const page = await src.getPage(i); const vp1 = page.getViewport({ scale: 1 }); const vp = page.getViewport({ scale: 2 });
+          canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          const im = ctx.getImageData(0, 0, canvas.width, canvas.height); const dd = im.data;
+          for (let p = 0; p < dd.length; p += 4) { dd[p] = 255 - dd[p]; dd[p + 1] = 255 - dd[p + 1]; dd[p + 2] = 255 - dd[p + 2]; }
+          ctx.putImageData(im, 0, 0);
+          const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.85));
+          out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        }
+        const bytes = await out.save({ useObjectStreams: true });
+        showResult('invert', bytes, `${baseName(f.name)}_inverted.pdf`, 'application/pdf', `${src.numPages} page${src.numPages > 1 ? 's' : ''} · dark mode`);
+      } catch (err) { setStatus('invert', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error'); } finally { btn.disabled = !st.file; }
+    });
+  }
+
   // ------------------------------------------------------ homepage tool search
   // Live-filter the tool grid on hub pages so the growing catalogue stays
   // browsable. Hides category headings whose tools are all filtered out.
@@ -2479,7 +2836,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ? firstGrid.previousElementSibling : firstGrid;
     const box = document.createElement('div');
     box.className = 'mb-5';
-    box.innerHTML = '<input type="search" id="tool-search" placeholder="🔍 Search 29 tools…" aria-label="Search PDF tools" class="w-full border border-slate-300 rounded-xl px-4 py-3" style="max-width:30rem" />';
+    box.innerHTML = `<input type="search" id="tool-search" placeholder="🔍 Search ${cards.length} tools…" aria-label="Search PDF tools" class="w-full border border-slate-300 rounded-xl px-4 py-3" style="max-width:30rem" />`;
     anchor.parentElement.insertBefore(box, anchor);
     const input = box.querySelector('#tool-search');
     input.addEventListener('input', () => {
