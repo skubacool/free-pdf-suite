@@ -3722,33 +3722,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const out = await PDFDocument.create();
         const n = src.getPageCount();
         const targetN = Math.ceil(n / 4) * 4;
-        const pages = [];
-        const copied = await out.copyPages(src, src.getPageIndices());
-        for (let i = 0; i < targetN; i++) {
-          if (i < n) {
-            pages.push(copied[i]);
-          } else {
-            const size = copied[0].getSize();
-            pages.push(out.addPage([size.width, size.height]));
-            out.removePage(out.getPageCount() - 1);
-          }
-        }
-        const embedded = await out.embedPages(pages);
+        const size = src.getPage(0).getSize();
+        // Embed only real source pages; padding slots are simply left blank
+        // (blank pages have no /Contents and cannot be embedded).
+        const embedded = await out.embedPages(src.getPages());
+        const emb = (idx) => (idx < n ? embedded[idx] : null);
+        const sheetW = size.width * 2, sheetH = size.height;
         const numSheets = targetN / 4;
         for (let j = 0; j < numSheets; j++) {
-          const size = pages[0].getSize();
-          const sheetW = size.width * 2;
-          const sheetH = size.height;
-          const pLF = targetN - 1 - 2 * j;
-          const pRF = 2 * j;
           const front = out.addPage([sheetW, sheetH]);
-          front.drawPage(embedded[pLF], { x: 0, y: 0, width: size.width, height: size.height });
-          front.drawPage(embedded[pRF], { x: size.width + bindMargin, y: 0, width: size.width - bindMargin, height: size.height });
-          const pLB = 2 * j + 1;
-          const pRB = targetN - 2 - 2 * j;
+          const eLF = emb(targetN - 1 - 2 * j), eRF = emb(2 * j);
+          if (eLF) front.drawPage(eLF, { x: 0, y: 0, width: size.width, height: size.height });
+          if (eRF) front.drawPage(eRF, { x: size.width + bindMargin, y: 0, width: size.width - bindMargin, height: size.height });
           const back = out.addPage([sheetW, sheetH]);
-          back.drawPage(embedded[pLB], { x: 0, y: 0, width: size.width - bindMargin, height: size.height });
-          back.drawPage(embedded[pRB], { x: size.width, y: 0, width: size.width, height: size.height });
+          const eLB = emb(2 * j + 1), eRB = emb(targetN - 2 - 2 * j);
+          if (eLB) back.drawPage(eLB, { x: 0, y: 0, width: size.width - bindMargin, height: size.height });
+          if (eRB) back.drawPage(eRB, { x: size.width, y: 0, width: size.width, height: size.height });
         }
         const bytes = await out.save({ useObjectStreams: true });
         showResult('booklet', bytes, `${baseName(f.name)}_booklet.pdf`, 'application/pdf', `${out.getPageCount()} sheets · landscape`);
@@ -3941,8 +3930,23 @@ document.addEventListener('DOMContentLoaded', () => {
           const data = await f.arrayBuffer();
           
           let embeddedImage;
+          const ext = f.name.split('.').pop().toLowerCase();
           if (slug === 'png2pdf') {
             embeddedImage = await out.embedPng(data);
+          } else if (ext === 'tiff' || ext === 'tif') {
+            // Browsers can't decode TIFF via <img>; use the UTIF decoder (lazy).
+            const UTIF = await loadScriptOnce('https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js', 'UTIF');
+            const ifds = UTIF.decode(data);
+            UTIF.decodeImage(data, ifds[0]);
+            const rgba = UTIF.toRGBA8(ifds[0]);
+            const canvas = document.createElement('canvas');
+            canvas.width = ifds[0].width; canvas.height = ifds[0].height;
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.createImageData(canvas.width, canvas.height);
+            imgData.data.set(rgba);
+            ctx.putImageData(imgData, 0, 0);
+            const pngData = await new Promise((res) => canvas.toBlob((b) => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsArrayBuffer(b); }, 'image/png'));
+            embeddedImage = await out.embedPng(pngData);
           } else {
             const imgEl = new Image();
             const url = URL.createObjectURL(f);
