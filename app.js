@@ -4780,21 +4780,51 @@ document.addEventListener('DOMContentLoaded', () => {
   // Live-filter the tool grid on hub pages so the growing catalogue stays
   // browsable. Hides category headings whose tools are all filtered out.
   (() => {
-    const input = document.getElementById('search-tools');
-    if (!input) return;
     const cards = [...document.querySelectorAll('.toolcard')];
+    if (cards.length <= 8) return;
+    let input = document.getElementById('search-tools');
+    let empty = document.getElementById('search-empty');
+    const clearBtn = document.getElementById('search-clear');
+    // Hub pages without a static search box (e.g. locale homepages): inject one.
+    if (!input) {
+      const firstGrid = cards[0].parentElement;
+      const anchor = (firstGrid.previousElementSibling && firstGrid.previousElementSibling.tagName === 'H2') ? firstGrid.previousElementSibling : firstGrid;
+      const box = document.createElement('div');
+      box.className = 'max-w-2xl mx-auto relative mb-8';
+      box.innerHTML = '<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">🔍</span>'
+        + '<input type="search" id="search-tools" autocomplete="off" style="padding-left:2.9rem;font-size:1.05rem" class="w-full py-4 bg-white border border-slate-300 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900" />';
+      anchor.parentElement.insertBefore(box, anchor);
+      input = box.querySelector('#search-tools');
+    }
+    if (!empty) {
+      empty = document.createElement('p');
+      empty.id = 'search-empty';
+      empty.className = 'hidden mt-4 text-slate-500';
+      (input.closest('div') || input).insertAdjacentElement('afterend', empty);
+    }
+    input.setAttribute('placeholder', `Search ${cards.length} PDF tools — merge, compress, sign, convert…`);
     const grids = [...new Set(cards.map((c) => c.parentElement))];
-    input.addEventListener('input', () => {
-      const q = input.value.trim().toLowerCase();
-      cards.forEach((c) => {
-        c.style.display = (!q || c.textContent.toLowerCase().includes(q)) ? '' : 'none';
-      });
+    const apply = () => {
+      const raw = input.value.trim();
+      const q = raw.toLowerCase();
+      let anyVisible = false;
+      cards.forEach((c) => { const hit = !q || c.textContent.toLowerCase().includes(q); c.style.display = hit ? '' : 'none'; if (hit) anyVisible = true; });
       grids.forEach((g) => {
         const vis = [...g.querySelectorAll('.toolcard')].some((c) => c.style.display !== 'none');
         g.style.display = vis ? '' : 'none';
         const h = g.previousElementSibling;
         if (h && h.tagName === 'H2') h.style.display = vis ? '' : 'none';
       });
+      if (clearBtn) clearBtn.classList.toggle('hidden', !raw);
+      const noHits = !!raw && !anyVisible;
+      empty.classList.toggle('hidden', !noHits);
+      if (noHits) empty.textContent = `No tools match “${raw}”. Try “merge”, “compress”, or “convert”.`;
+    };
+    input.addEventListener('input', apply);
+    if (clearBtn) clearBtn.addEventListener('click', () => { input.value = ''; apply(); input.focus(); });
+    // Press "/" anywhere to jump to search (unless already typing in a field).
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); input.focus(); }
     });
   })();
 
