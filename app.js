@@ -4881,6 +4881,67 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   })();
 
+  // ----------------------------------------------------------------- DARK MODE
+  // The prebuilt Tailwind has no dark: variants, so dark mode is a hand-written
+  // override sheet injected once, toggled via a header button + localStorage.
+  (() => {
+    const css = `
+html.dark{color-scheme:dark;}
+html.dark body{background-color:#0b1220!important;color:#e2e8f0;}
+html.dark .bg-slate-50{background-color:#0b1220!important;}
+html.dark .bg-white{background-color:#1e293b!important;}
+html.dark .bg-slate-100{background-color:#334155!important;}
+html.dark header{background-color:rgba(15,23,42,.92)!important;border-color:#1e293b!important;}
+html.dark footer{background-color:#0e1626!important;}
+html.dark .text-slate-900{color:#f1f5f9!important;}
+html.dark .text-slate-800{color:#e2e8f0!important;}
+html.dark .text-slate-700{color:#cbd5e1!important;}
+html.dark .text-slate-600{color:#aab6c8!important;}
+html.dark .text-slate-500{color:#93a1b5!important;}
+html.dark .text-slate-400{color:#7c8aa0!important;}
+html.dark .border-slate-200{border-color:#283548!important;}
+html.dark .border-slate-300{border-color:#3a4a61!important;}
+html.dark .border-b,html.dark .border-t{border-color:#283548!important;}
+html.dark input,html.dark textarea,html.dark select{background-color:#0b1220!important;color:#e2e8f0!important;border-color:#3a4a61!important;}
+html.dark .dropzone{background-color:#0b1220!important;border-color:#475569!important;}
+html.dark .dropzone:hover{background-color:#162234!important;}
+html.dark .toolcard:hover{background-color:#243044!important;border-color:#3b82f6!important;}
+html.dark .shadow-sm,html.dark .shadow{box-shadow:0 1px 3px rgba(0,0,0,.45)!important;}
+html.dark .bg-emerald-50{background-color:#0d3b2e!important;}
+html.dark .text-emerald-700,html.dark .text-emerald-800{color:#6ee7b7!important;}
+html.dark .border-emerald-200{border-color:#15503c!important;}
+html.dark .bg-brand-50{background-color:#1e3a8a!important;}
+html.dark .text-brand-700{color:#93c5fd!important;}
+html.dark .faq summary{color:#e2e8f0;}`;
+    const s = document.createElement('style'); s.id = 'dark-css'; s.textContent = css; document.head.appendChild(s);
+    let dark;
+    try { const v = localStorage.getItem('upmypdf_theme'); dark = v ? v === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (_) { dark = false; }
+    const host = document.querySelector('header .ml-auto') || document.querySelector('header > div') || document.querySelector('header');
+    let btn = null;
+    if (host) {
+      btn = document.createElement('button');
+      btn.type = 'button'; btn.id = 'theme-toggle'; btn.setAttribute('aria-label', 'Toggle dark mode');
+      btn.className = 'btn border border-slate-200 rounded-full hover:bg-slate-100';
+      btn.style.cssText = 'width:2.25rem;height:2.25rem;display:inline-flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;flex:none;';
+      btn.addEventListener('click', () => { dark = !dark; try { localStorage.setItem('upmypdf_theme', dark ? 'dark' : 'light'); } catch (_) {} apply(); });
+      host.insertBefore(btn, host.firstChild);
+    }
+    const apply = () => { document.documentElement.classList.toggle('dark', dark); if (btn) btn.textContent = dark ? '☀️' : '🌙'; };
+    apply();
+  })();
+
+  // ------------------------------------------------------- report a problem
+  (() => {
+    const nav = document.querySelector('footer nav') || document.querySelector('footer');
+    if (!nav || document.getElementById('report-link')) return;
+    const a = document.createElement('a');
+    a.id = 'report-link';
+    a.className = 'hover:text-slate-900';
+    a.href = 'mailto:skubacool@gmail.com?subject=' + encodeURIComponent('upmypdf — problem report') + '&body=' + encodeURIComponent('Page: ' + location.href + '\n\nWhat went wrong?\n');
+    a.textContent = 'Report a problem';
+    nav.appendChild(a);
+  })();
+
   // ----------------------------------------------------------------- PWA
   // Register the service worker (offline + installable) and surface an
   // "Install app" button when the browser offers one — a path to repeat daily
