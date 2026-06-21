@@ -69,7 +69,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inline preview-before-download: render the produced PDF so users can
     // verify it before downloading. Gated on a viewable PDF + a preview slot.
     if (blob.type === 'application/pdf' && $(`#preview-result-${tool}`)) mountResultPreview(tool, blob);
+    afterResult(tool);
   };
+
+  // Fired on every successful result: log an analytics event, remember the tool
+  // for the "Recently used" row, and add a "Process another file" reset button.
+  function afterResult(tool) {
+    try { if (window.gtag) gtag('event', 'tool_completed', { tool_name: tool, page_path: location.pathname }); } catch (_) {}
+    try {
+      const h2 = document.querySelector(`#panel-${tool} h2`);
+      const name = (h2 && h2.textContent.trim()) || tool;
+      const url = location.pathname;
+      if (url && url !== '/' && !/\/index\.html$/.test(url)) {
+        const KEY = 'upmypdf_recent';
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (_) {}
+        list = list.filter((r) => r && r.url !== url);
+        list.unshift({ name, url });
+        localStorage.setItem(KEY, JSON.stringify(list.slice(0, 6)));
+      }
+    } catch (_) {}
+    const res = document.getElementById(`res-${tool}`);
+    if (res && !res.querySelector('.do-another')) {
+      const dl = res.querySelector('[id^="dl-"]');
+      if (dl) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'do-another btn border border-slate-300 rounded-xl px-5 py-3 font-semibold hover:bg-slate-100';
+        b.textContent = '↻ Process another file';
+        b.addEventListener('click', () => { hideResult(tool); const dz = document.getElementById(`dz-${tool}`); if (dz) dz.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+        dl.insertAdjacentElement('afterend', b);
+      }
+    }
+  }
   $$('[id^="dl-"]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const tool = btn.id.slice(3);
@@ -4775,6 +4807,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ------------------------------------------------------ recently used tools
+  // On hub pages, surface the tools this visitor used most recently (stored
+  // locally on their device) for faster repeat access.
+  (() => {
+    const cards = document.querySelectorAll('.toolcard');
+    if (!cards.length) return;
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('upmypdf_recent') || '[]'); } catch (_) {}
+    list = list.filter((r) => r && r.url && r.name);
+    if (!list.length) return;
+    const firstGrid = cards[0].parentElement;
+    const anchor = (firstGrid.previousElementSibling && firstGrid.previousElementSibling.tagName === 'H2') ? firstGrid.previousElementSibling : firstGrid;
+    const wrap = document.createElement('div');
+    wrap.className = 'mb-8';
+    wrap.innerHTML = '<h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">🕑 Recently used</h2>'
+      + '<div class="flex flex-wrap gap-2">'
+      + list.map((r) => `<a href="${r.url}" class="text-sm border border-slate-200 rounded-xl px-3.5 py-2 hover:bg-slate-100 font-medium text-slate-700">${(r.name || '').replace(/[<>&]/g, '')}</a>`).join('')
+      + '</div>';
+    anchor.parentElement.insertBefore(wrap, anchor);
+  })();
 
   // ------------------------------------------------------ homepage tool search
   // Live-filter the tool grid on hub pages so the growing catalogue stays
