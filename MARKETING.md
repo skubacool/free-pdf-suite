@@ -4,20 +4,20 @@ Ready-to-paste copy to drive traffic. SEO compounds over weeks; these channels
 can bring visitors **this week**. Lead with the one thing competitors can't match:
 **files never leave your browser.**
 
-> Before posting anywhere: in **Google Search Console** add `upmypdf.com`, submit
-> `https://upmypdf.com/sitemap.xml`, and "Request indexing" on your top 8 pages.
-> Repeat in **Bing Webmaster Tools** (import from GSC in one click). Nothing below
-> works until Google can see the 71 pages.
+> ✅ DONE (2026-06-21): **Google Search Console** verified, `sitemap.xml` submitted
+> and re-read — **all 114 URLs discovered**. **Bing Webmaster Tools** site imported
+> from GSC and sitemap submitted (processing). Search engines can now see every page;
+> the posts below drive traffic *this week* while crawl/indexing catches up.
 
 ---
 
 ## 1. Product Hunt
 **Name:** upmypdf
-**Tagline (60 char max):** 29 private PDF tools that never upload your files
+**Tagline (60 char max):** 70+ private PDF tools that never upload your files
 **Topics:** Productivity, Privacy, Design Tools, Web App
 
 **Description:**
-> upmypdf is a free suite of 29 PDF tools — merge, split, compress, sign, redact,
+> upmypdf is a free suite of 70+ PDF tools — merge, split, compress, sign, redact,
 > convert to/from Word, Excel, PowerPoint, JPG & PNG, add a company seal, and more.
 >
 > The difference: **everything runs in your browser.** Your files are never
@@ -52,7 +52,7 @@ Body:
 
 **r/productivity / r/smallbusiness** — title:
 > Free, no-login PDF tools (merge, compress, sign, PDF↔Word/Excel) — no upload, no limits
-Body: short, mention the 29 tools + the privacy/no-limit angle + that it installs as an app.
+Body: short, mention the 70+ tools + the privacy/no-limit angle + that it installs as an app.
 
 **r/selfhosted / r/degoogle** — angle: "client-side, no server sees your files, installable PWA, works offline."
 
@@ -64,7 +64,7 @@ Body: short, mention the 29 tools + the privacy/no-limit angle + that it install
 Add a new app **upmypdf**, then list it as an alternative to **iLovePDF, Smallpdf,
 Adobe Acrobat, PDF24**.
 **Short description:**
-> Free suite of 29 browser-based PDF tools (merge, split, compress, sign, redact,
+> Free suite of 70+ browser-based PDF tools (merge, split, compress, sign, redact,
 > convert, company seal). 100% client-side — files never leave your device. No
 > sign-up, no limits, no watermark. Installable PWA, works offline.
 **Tags:** pdf, privacy, no-upload, offline, free, web-based, pwa
@@ -76,7 +76,7 @@ Adobe Acrobat, PDF24**.
 - "Awesome privacy" GitHub lists (PR your link under PDF/Documents)
 - toolarium / futuretools / there's-an-ai-for-that (has non-AI tool sections)
 - Hacker News **Show HN** (only if you can be around to reply all day):
-  *"Show HN: upmypdf – 29 PDF tools that run entirely in your browser"*
+  *"Show HN: upmypdf – 70+ PDF tools that run entirely in your browser"*
 
 ---
 
@@ -84,7 +84,7 @@ Adobe Acrobat, PDF24**.
 **Hook post:**
 > Every "free PDF" site quietly uploads your files.
 > I built one that doesn't.
-> upmypdf → 29 tools (merge, compress, sign, redact, PDF↔Word/Excel/PPT) that run
+> upmypdf → 70+ tools (merge, compress, sign, redact, PDF↔Word/Excel/PPT) that run
 > 100% in your browser. No upload, no sign-up, no limits.
 > Try it: https://upmypdf.com
 
