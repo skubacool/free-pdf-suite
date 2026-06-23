@@ -231,16 +231,23 @@
   </main>
 
   <footer class="bg-white border-t border-slate-200 mt-10">
-    <div class="max-w-6xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center gap-4 justify-between text-sm text-slate-500">
-      <div>© <span id="year"></span> Free PDF Suite — Free, private, in-browser PDF tools.</div>
+    <div class="max-w-6xl mx-auto px-5 py-8 flex flex-col gap-5 text-sm text-slate-500">
       <nav class="flex flex-wrap items-center gap-x-5 gap-y-2">
         <a href="../merge-pdf/" class="hover:text-slate-900">Merge PDF</a>
         <a href="../split-pdf/" class="hover:text-slate-900">Split PDF</a>
         <a href="../compress-pdf/" class="hover:text-slate-900">Compress PDF</a>
         <a href="../sign-pdf/" class="hover:text-slate-900">Sign PDF</a>
         <a href="../" class="hover:text-slate-900">All Tools</a>
+        <span class="text-slate-300">|</span>
+        <a href="../about/" class="hover:text-slate-900">About</a>
+        <a href="../contact/" class="hover:text-slate-900">Contact</a>
+        <a href="../privacy-policy/" class="hover:text-slate-900 font-medium text-slate-700">Privacy Policy</a>
+        <a href="../terms/" class="hover:text-slate-900">Terms</a>
       </nav>
-      <div class="flex items-center gap-2 font-semibold text-emerald-700">🛡️ Files Never Leave Your Device</div>
+      <div class="flex flex-col md:flex-row items-center gap-4 justify-between">
+        <div>© <span id="year"></span> Free PDF Suite — Free, private, in-browser PDF tools.</div>
+        <div class="flex items-center gap-2 font-semibold text-emerald-700">🛡️ Files Never Leave Your Device</div>
+      </div>
     </div>
   </footer>
   <script>document.getElementById('year').textContent = new Date().getFullYear();
