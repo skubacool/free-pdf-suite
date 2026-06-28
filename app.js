@@ -330,6 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (_) {}
   if ($('#year')) $('#year').textContent = new Date().getFullYear();
 
+  // The original tool modules below predate the self-guard pattern and assume
+  // their panels exist in the DOM. On lean single-tool pages (e.g. the image
+  // tools) those panels are absent, so the first null access (e.g. #files-merge)
+  // would throw and abort the rest of app.js. Gate the whole block on a
+  // representative panel: full tool pages and the homepage hub contain every
+  // panel (so this runs as before), while lean pages skip it harmlessly.
+  if ($('#dz-merge')) {
   // ================================================================= MERGE
   const mergeState = { files: [] };
   const renderMergeList = () => {
@@ -1437,6 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = !protState.file;
     }
   });
+  } // end original (pre-guard) tool modules — gated on #dz-merge above
 
   // ========================================================== DELETE PAGES
   // Self-guarded: only initializes on pages that contain its panel.

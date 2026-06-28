@@ -4,7 +4,7 @@
  *    deploy is picked up immediately; fall back to cache only when offline.
  *  - jsdelivr libraries (version-pinned, immutable): cache-first for speed/offline.
  * This avoids the classic PWA trap where cache-first serves stale app.js forever. */
-const CACHE = 'upmypdf-v3';
+const CACHE = 'upmypdf-v4';
 const CORE = [
   '/',
   '/app.js',
