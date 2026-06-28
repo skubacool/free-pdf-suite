@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -4805,6 +4805,394 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         btn.disabled = false;
       }
+    });
+  }
+
+  // ============================================================ IMAGE TOOLS
+  // 100% client-side image utilities built on the Canvas API. The only
+  // non-core dependency is a HEIC decoder, lazily loaded the first time an
+  // .heic/.heif file is opened. Nothing is ever uploaded — every pixel is
+  // processed in this browser tab, matching the rest of the suite.
+  const HEIC_LIB = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+  const isHeicFile = (f) => /\.(heic|heif)$/i.test(f.name) || /image\/(heic|heif)/i.test(f.type);
+  const isImageFile = (f) => /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp|heic|heif)$/i.test(f.name);
+
+  // Decode an image file into a ready HTMLImageElement (HEIC routed through
+  // heic2any first, since browsers cannot decode HEIC natively).
+  const loadImageEl = async (file) => {
+    let blob = file;
+    if (isHeicFile(file)) {
+      const heic2any = await loadScriptOnce(HEIC_LIB, 'heic2any');
+      blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+      if (Array.isArray(blob)) blob = blob[0];
+    }
+    const url = URL.createObjectURL(blob);
+    try {
+      return await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Could not read this image — try a standard JPG, PNG, WebP or HEIC file.'));
+        img.src = url;
+      });
+    } finally {
+      // The decoded bitmap stays valid after the URL is revoked, so it is safe
+      // to release the object URL once the element has loaded.
+      setTimeout(() => URL.revokeObjectURL(url), 120000);
+    }
+  };
+
+  // Draw an image onto a fresh canvas, optionally resized, with an optional flat
+  // background (needed when flattening transparency for JPEG, which has no alpha)
+  // and an optional source crop rectangle (sx,sy,sw,sh in natural pixels).
+  const drawImageCanvas = (img, w, h, bg, sx, sy, sw, sh) => {
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(w));
+    c.height = Math.max(1, Math.round(h));
+    const ctx = c.getContext('2d');
+    if (bg) { ctx.fillStyle = bg; ctx.fillRect(0, 0, c.width, c.height); }
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    if (sw != null) ctx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    else ctx.drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  };
+
+  const canvasBlob = (canvas, type, quality) =>
+    new Promise((resolve, reject) =>
+      canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Image export failed — please try again.')), type, quality));
+
+  // Binary-search JPEG/WebP quality to land at or just under a byte target.
+  const encodeToTarget = async (canvas, type, targetBytes) => {
+    let best = await canvasBlob(canvas, type, 0.92);
+    if (best.size <= targetBytes) return best;
+    let lo = 0.3, hi = 0.92; best = null;
+    for (let i = 0; i < 8; i++) {
+      const mid = (lo + hi) / 2;
+      const b = await canvasBlob(canvas, type, mid);
+      if (b.size <= targetBytes) { best = b; lo = mid; } else { hi = mid; }
+    }
+    return best;
+  };
+
+  const extFor = (type) => (type === 'image/png' ? '.png' : type === 'image/webp' ? '.webp' : '.jpg');
+
+  // Deliver one or many produced images: a single image downloads directly (with
+  // an inline preview); several are bundled into a ZIP.
+  const deliverImages = async (tool, items, zipName) => {
+    if (!items.length) { setStatus(tool, '❌ Nothing to export.', 'error'); return; }
+    let blob, filename, info;
+    if (items.length === 1) {
+      blob = items[0].blob; filename = items[0].name; info = `${filename} · ${fmtBytes(blob.size)}`;
+    } else {
+      const zip = new JSZip();
+      items.forEach((it) => zip.file(it.name, it.blob));
+      blob = await zip.generateAsync({ type: 'blob' });
+      filename = zipName; info = `${zipName} · ${items.length} images · ${fmtBytes(blob.size)}`;
+    }
+    showResult(tool, blob, filename, blob.type, info);
+    const host = $(`#preview-result-${tool}`);
+    if (host && items.length === 1 && /^image\//.test(blob.type)) {
+      const u = URL.createObjectURL(blob);
+      host.classList.remove('hidden');
+      host.innerHTML = '<div class="text-xs font-semibold text-slate-500 mb-2">👁️ Preview — your result</div>' +
+        '<img src="' + u + '" alt="Result preview" style="max-width:100%;max-height:420px;border:1px solid #e2e8f0;border-radius:12px;display:block" />';
+      setTimeout(() => URL.revokeObjectURL(u), 120000);
+    }
+  };
+
+  // ---- Compress JPG / PNG / WebP (quality slider, multi-file) ----
+  if ($('#dz-imgcompress')) {
+    let files = [];
+    const q = $('#q-imgcompress'), qv = $('#qv-imgcompress');
+    if (q && qv) { qv.textContent = q.value + '%'; q.addEventListener('input', () => qv.textContent = q.value + '%'); }
+    setupDropzone('imgcompress', (fs) => {
+      files = fs.filter(isImageFile);
+      if (!files.length) { setStatus('imgcompress', '❌ Please choose JPG, PNG or WebP images.', 'error'); return; }
+      $('#picked-imgcompress').textContent = files.length === 1 ? `Selected: ${files[0].name} (${fmtBytes(files[0].size)})` : `Selected: ${files.length} images`;
+      $('#btn-imgcompress').disabled = false; hideResult('imgcompress'); setStatus('imgcompress', '');
+    });
+    $('#btn-imgcompress').addEventListener('click', async () => {
+      const btn = $('#btn-imgcompress'); btn.disabled = true; hideResult('imgcompress');
+      try {
+        const quality = Math.min(0.95, Math.max(0.3, (+q.value || 80) / 100));
+        const forceJpeg = $('#tojpeg-imgcompress') && $('#tojpeg-imgcompress').checked;
+        const out = []; let origTotal = 0;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i]; origTotal += f.size;
+          setStatus('imgcompress', `Compressing ${i + 1} of ${files.length}…`);
+          const img = await loadImageEl(f);
+          const isPng = /png$/i.test(f.type) || /\.png$/i.test(f.name);
+          const asJpeg = forceJpeg || !isPng;
+          const type = asJpeg ? 'image/jpeg' : 'image/png';
+          const canvas = drawImageCanvas(img, img.naturalWidth, img.naturalHeight, asJpeg ? '#ffffff' : null);
+          const blob = await canvasBlob(canvas, type, asJpeg ? quality : undefined);
+          out.push({ blob, name: baseName(f.name) + extFor(type) });
+        }
+        await deliverImages('imgcompress', out, 'compressed-images.zip');
+        const newTotal = out.reduce((s, o) => s + o.blob.size, 0);
+        const saved = origTotal > 0 ? Math.max(0, Math.round((1 - newTotal / origTotal) * 100)) : 0;
+        setStatus('imgcompress', `✅ Done — about ${saved}% smaller (${fmtBytes(origTotal)} → ${fmtBytes(newTotal)}).`, 'success');
+      } catch (err) { setStatus('imgcompress', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = files.length === 0; }
+    });
+  }
+
+  // ---- Resize image (percent / width / height / exact, multi-file) ----
+  if ($('#dz-imgresize')) {
+    let files = [];
+    setupDropzone('imgresize', (fs) => {
+      files = fs.filter(isImageFile);
+      if (!files.length) { setStatus('imgresize', '❌ Please choose image files.', 'error'); return; }
+      $('#picked-imgresize').textContent = files.length === 1 ? `Selected: ${files[0].name}` : `Selected: ${files.length} images`;
+      $('#btn-imgresize').disabled = false; hideResult('imgresize'); setStatus('imgresize', '');
+    });
+    const syncFields = () => {
+      const m = $('#mode-imgresize').value;
+      $('#pct-wrap-imgresize').classList.toggle('hidden', m !== 'percent');
+      $('#w-wrap-imgresize').classList.toggle('hidden', m === 'percent' || m === 'height');
+      $('#h-wrap-imgresize').classList.toggle('hidden', m === 'percent' || m === 'width');
+    };
+    $('#mode-imgresize').addEventListener('change', syncFields); syncFields();
+    $('#btn-imgresize').addEventListener('click', async () => {
+      const btn = $('#btn-imgresize'); btn.disabled = true; hideResult('imgresize');
+      try {
+        const mode = $('#mode-imgresize').value;
+        const pct = +$('#pct-imgresize').value, W = +$('#w-imgresize').value, H = +$('#h-imgresize').value;
+        const out = [];
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i]; setStatus('imgresize', `Resizing ${i + 1} of ${files.length}…`);
+          const img = await loadImageEl(f);
+          const nw = img.naturalWidth, nh = img.naturalHeight;
+          let tw, th;
+          if (mode === 'percent') { const p = Math.max(1, pct || 50) / 100; tw = nw * p; th = nh * p; }
+          else if (mode === 'width') { tw = W || nw; th = nh * (tw / nw); }
+          else if (mode === 'height') { th = H || nh; tw = nw * (th / nh); }
+          else { tw = W || nw; th = H || nh; }
+          const isPng = /png$/i.test(f.type) || /\.png$/i.test(f.name);
+          const isWebp = /webp$/i.test(f.type) || /\.webp$/i.test(f.name);
+          const type = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+          const canvas = drawImageCanvas(img, tw, th, type === 'image/jpeg' ? '#ffffff' : null);
+          const blob = await canvasBlob(canvas, type, type === 'image/png' ? undefined : 0.92);
+          out.push({ blob, name: baseName(f.name) + '_resized' + extFor(type) });
+        }
+        await deliverImages('imgresize', out, 'resized-images.zip');
+      } catch (err) { setStatus('imgresize', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = files.length === 0; }
+    });
+  }
+
+  // ---- Convert image (PNG / JPG / WebP, multi-file) ----
+  if ($('#dz-imgconvert')) {
+    let files = [];
+    setupDropzone('imgconvert', (fs) => {
+      files = fs.filter(isImageFile);
+      if (!files.length) { setStatus('imgconvert', '❌ Please choose image files.', 'error'); return; }
+      $('#picked-imgconvert').textContent = files.length === 1 ? `Selected: ${files[0].name}` : `Selected: ${files.length} images`;
+      $('#btn-imgconvert').disabled = false; hideResult('imgconvert'); setStatus('imgconvert', '');
+    });
+    $('#btn-imgconvert').addEventListener('click', async () => {
+      const btn = $('#btn-imgconvert'); btn.disabled = true; hideResult('imgconvert');
+      try {
+        const fmt = $('#fmt-imgconvert').value;
+        const type = fmt === 'png' ? 'image/png' : fmt === 'webp' ? 'image/webp' : 'image/jpeg';
+        const out = [];
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i]; setStatus('imgconvert', `Converting ${i + 1} of ${files.length}…`);
+          const img = await loadImageEl(f);
+          const canvas = drawImageCanvas(img, img.naturalWidth, img.naturalHeight, type === 'image/jpeg' ? '#ffffff' : null);
+          const blob = await canvasBlob(canvas, type, type === 'image/png' ? undefined : 0.92);
+          out.push({ blob, name: baseName(f.name) + extFor(type) });
+        }
+        await deliverImages('imgconvert', out, 'converted-images.zip');
+      } catch (err) { setStatus('imgconvert', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = files.length === 0; }
+    });
+  }
+
+  // ---- HEIC / HEIF / WebP → JPG (multi-file) ----
+  if ($('#dz-heic2jpg')) {
+    let files = [];
+    setupDropzone('heic2jpg', (fs) => {
+      files = fs.filter((f) => isImageFile(f));
+      if (!files.length) { setStatus('heic2jpg', '❌ Please choose HEIC, HEIF or WebP images.', 'error'); return; }
+      $('#picked-heic2jpg').textContent = files.length === 1 ? `Selected: ${files[0].name}` : `Selected: ${files.length} images`;
+      $('#btn-heic2jpg').disabled = false; hideResult('heic2jpg'); setStatus('heic2jpg', '');
+    });
+    $('#btn-heic2jpg').addEventListener('click', async () => {
+      const btn = $('#btn-heic2jpg'); btn.disabled = true; hideResult('heic2jpg');
+      try {
+        const out = [];
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          setStatus('heic2jpg', isHeicFile(f) ? `Converting ${i + 1} of ${files.length} (decoding HEIC…)` : `Converting ${i + 1} of ${files.length}…`);
+          const img = await loadImageEl(f);
+          const canvas = drawImageCanvas(img, img.naturalWidth, img.naturalHeight, '#ffffff');
+          const blob = await canvasBlob(canvas, 'image/jpeg', 0.92);
+          out.push({ blob, name: baseName(f.name) + '.jpg' });
+        }
+        await deliverImages('heic2jpg', out, 'converted-jpgs.zip');
+      } catch (err) { setStatus('heic2jpg', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = files.length === 0; }
+    });
+  }
+
+  // ---- Compress image to a target file size in KB/MB (single file) ----
+  if ($('#dz-imgtargetsize')) {
+    let file = null;
+    setupDropzone('imgtargetsize', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imgtargetsize', '❌ Please choose an image file.', 'error'); return; }
+      file = f; $('#picked-imgtargetsize').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-imgtargetsize').disabled = false; hideResult('imgtargetsize'); setStatus('imgtargetsize', '');
+    });
+    $('#btn-imgtargetsize').addEventListener('click', async () => {
+      const btn = $('#btn-imgtargetsize'); btn.disabled = true; hideResult('imgtargetsize');
+      try {
+        const val = +$('#target-imgtargetsize').value;
+        if (!val || val <= 0) { setStatus('imgtargetsize', '❌ Enter a target size greater than 0.', 'error'); btn.disabled = false; return; }
+        const targetBytes = $('#unit-imgtargetsize').value === 'mb' ? val * 1024 * 1024 : val * 1024;
+        const type = $('#fmt-imgtargetsize').value === 'webp' ? 'image/webp' : 'image/jpeg';
+        const img = await loadImageEl(file);
+        let scale = 1, blob = null;
+        for (let attempt = 0; attempt < 7; attempt++) {
+          setStatus('imgtargetsize', `Optimizing… (pass ${attempt + 1})`);
+          const canvas = drawImageCanvas(img, img.naturalWidth * scale, img.naturalHeight * scale, '#ffffff');
+          const b = await encodeToTarget(canvas, type, targetBytes);
+          if (b) { blob = b; if (b.size <= targetBytes) break; }
+          if (img.naturalWidth * scale <= 320) break;
+          scale *= 0.8;
+        }
+        if (!blob) blob = await canvasBlob(drawImageCanvas(img, img.naturalWidth, img.naturalHeight, '#ffffff'), type, 0.3);
+        await deliverImages('imgtargetsize', [{ blob, name: baseName(file.name) + extFor(type) }], '');
+        const within = blob.size <= targetBytes;
+        setStatus('imgtargetsize', `${within ? '✅' : '⚠️'} Final size ${fmtBytes(blob.size)} (target ${fmtBytes(targetBytes)})${within ? '' : ' — smallest achievable at readable quality.'}`, within ? 'success' : 'info');
+      } catch (err) { setStatus('imgtargetsize', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+  }
+
+  // ---- Passport / Visa photo (preset dimensions + background + target KB) ----
+  if ($('#dz-photoid')) {
+    let file = null;
+    const PRESETS = {
+      'us-visa': { w: 600, h: 600 },
+      'schengen': { w: 413, h: 531 },
+      'india': { w: 413, h: 413 },
+      'china': { w: 390, h: 567 },
+      'canada': { w: 590, h: 826 },
+    };
+    setupDropzone('photoid', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('photoid', '❌ Please choose a clear head-and-shoulders photo.', 'error'); return; }
+      file = f; $('#picked-photoid').textContent = `Selected: ${f.name}`;
+      $('#btn-photoid').disabled = false; hideResult('photoid'); setStatus('photoid', '');
+    });
+    const sync = () => $('#custom-photoid').classList.toggle('hidden', $('#preset-photoid').value !== 'custom');
+    $('#preset-photoid').addEventListener('change', sync); sync();
+    $('#btn-photoid').addEventListener('click', async () => {
+      const btn = $('#btn-photoid'); btn.disabled = true; hideResult('photoid');
+      try {
+        const key = $('#preset-photoid').value;
+        let W, H;
+        if (key === 'custom') { W = +$('#cw-photoid').value; H = +$('#ch-photoid').value; if (!W || !H) throw new Error('Enter custom width and height in pixels.'); }
+        else { W = PRESETS[key].w; H = PRESETS[key].h; }
+        const bg = $('#bg-photoid').value || '#ffffff';
+        const img = await loadImageEl(file);
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        // "Cover" fit: scale up so the photo fills the target, cropping overflow, centered.
+        const s = Math.max(W / nw, H / nh);
+        const sw = W / s, sh = H / s, sx = (nw - sw) / 2, sy = (nh - sh) / 2;
+        const canvas = drawImageCanvas(img, W, H, bg, sx, sy, sw, sh);
+        const tval = +$('#target-photoid').value;
+        let blob;
+        if (tval > 0) blob = (await encodeToTarget(canvas, 'image/jpeg', tval * 1024)) || (await canvasBlob(canvas, 'image/jpeg', 0.6));
+        else blob = await canvasBlob(canvas, 'image/jpeg', 0.92);
+        await deliverImages('photoid', [{ blob, name: baseName(file.name) + `_${W}x${H}.jpg` }], '');
+        setStatus('photoid', `✅ ${W}×${H}px · ${fmtBytes(blob.size)}${tval > 0 ? ` (target ${tval} KB)` : ''}. Always check your portal's exact rules.`, 'success');
+      } catch (err) { setStatus('photoid', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+  }
+
+  // ---- Crop image (interactive drag-select, single file) ----
+  if ($('#dz-imgcrop')) {
+    const state = { img: null, file: null, type: 'image/jpeg', sel: null, drag: null };
+    const canvas = $('#canvas-imgcrop');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    let viewScale = 1;
+    const ratio = () => { const v = $('#ratio-imgcrop').value; if (v === 'free') return null; const p = v.split(':').map(Number); return p[0] / p[1]; };
+    const clampSel = (s) => {
+      s.w = Math.max(10, Math.min(s.w, canvas.width));
+      s.h = Math.max(10, Math.min(s.h, canvas.height));
+      s.x = Math.max(0, Math.min(s.x, canvas.width - s.w));
+      s.y = Math.max(0, Math.min(s.y, canvas.height - s.h));
+      return s;
+    };
+    const redraw = () => {
+      if (!state.img || !ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(state.img, 0, 0, canvas.width, canvas.height);
+      if (state.sel) {
+        ctx.fillStyle = 'rgba(15,23,42,0.45)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const { x, y, w, h } = state.sel;
+        ctx.drawImage(state.img, x / viewScale, y / viewScale, w / viewScale, h / viewScale, x, y, w, h);
+        ctx.strokeStyle = '#2563EB'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+      }
+    };
+    const pos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      return { x: cx * (canvas.width / r.width), y: cy * (canvas.height / r.height) };
+    };
+    const onDown = (e) => { if (!state.img) return; e.preventDefault(); state.drag = pos(e); state.sel = { x: state.drag.x, y: state.drag.y, w: 0, h: 0 }; };
+    const onMove = (e) => {
+      if (!state.drag) return; e.preventDefault();
+      const p = pos(e);
+      let w = p.x - state.drag.x, h = p.y - state.drag.y;
+      const rr = ratio();
+      if (rr) { const aw = Math.abs(w); w = (w < 0 ? -1 : 1) * aw; h = (h < 0 ? -1 : 1) * (aw / rr); }
+      state.sel = clampSel({ x: w < 0 ? state.drag.x + w : state.drag.x, y: h < 0 ? state.drag.y + h : state.drag.y, w: Math.abs(w), h: Math.abs(h) });
+      redraw();
+    };
+    const onUp = () => { state.drag = null; };
+    if (canvas) {
+      canvas.addEventListener('mousedown', onDown);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      canvas.addEventListener('touchstart', onDown, { passive: false });
+      canvas.addEventListener('touchmove', onMove, { passive: false });
+      canvas.addEventListener('touchend', onUp);
+    }
+    $('#ratio-imgcrop').addEventListener('change', () => { if (state.sel) { const rr = ratio(); if (rr) { state.sel.h = state.sel.w / rr; state.sel = clampSel(state.sel); redraw(); } } });
+    setupDropzone('imgcrop', async ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imgcrop', '❌ Please choose an image file.', 'error'); return; }
+      try {
+        const img = await loadImageEl(f);
+        state.img = img; state.file = f; state.sel = null;
+        const isPng = /png$/i.test(f.type) || /\.png$/i.test(f.name);
+        const isWebp = /webp$/i.test(f.type) || /\.webp$/i.test(f.name);
+        state.type = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+        viewScale = Math.min(1, 460 / img.naturalWidth);
+        canvas.width = Math.round(img.naturalWidth * viewScale);
+        canvas.height = Math.round(img.naturalHeight * viewScale);
+        canvas.style.width = canvas.width + 'px';
+        $('#work-imgcrop').classList.remove('hidden');
+        redraw();
+        $('#picked-imgcrop').textContent = `Selected: ${f.name} (${img.naturalWidth}×${img.naturalHeight}px) — drag on the image to choose the crop area.`;
+        $('#btn-imgcrop').disabled = false; hideResult('imgcrop'); setStatus('imgcrop', '');
+      } catch (err) { setStatus('imgcrop', `❌ ${err.message || err}`, 'error'); }
+    });
+    $('#btn-imgcrop').addEventListener('click', async () => {
+      const btn = $('#btn-imgcrop'); btn.disabled = true; hideResult('imgcrop');
+      try {
+        if (!state.sel || state.sel.w < 5 || state.sel.h < 5) throw new Error('Drag a box on the image to choose what to keep.');
+        const inv = 1 / viewScale;
+        const sx = state.sel.x * inv, sy = state.sel.y * inv, sw = state.sel.w * inv, sh = state.sel.h * inv;
+        const out = drawImageCanvas(state.img, sw, sh, state.type === 'image/jpeg' ? '#ffffff' : null, sx, sy, sw, sh);
+        const blob = await canvasBlob(out, state.type, state.type === 'image/png' ? undefined : 0.92);
+        await deliverImages('imgcrop', [{ blob, name: baseName(state.file.name) + '_cropped' + extFor(state.type) }], '');
+        setStatus('imgcrop', `✅ Cropped to ${Math.round(sw)}×${Math.round(sh)}px.`, 'success');
+      } catch (err) { setStatus('imgcrop', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !state.img; }
     });
   }
 
