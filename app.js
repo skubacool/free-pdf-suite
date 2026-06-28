@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -5193,6 +5193,247 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus('imgcrop', `✅ Cropped to ${Math.round(sw)}×${Math.round(sh)}px.`, 'success');
       } catch (err) { setStatus('imgcrop', `❌ ${err.message || err}`, 'error'); }
       finally { btn.disabled = !state.img; }
+    });
+  }
+
+  // ---- Remove image background (lazy in-browser AI model) ----
+  if ($('#dz-imgbgremove')) {
+    let file = null;
+    setupDropzone('imgbgremove', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imgbgremove', '❌ Please choose an image file.', 'error'); return; }
+      file = f; $('#picked-imgbgremove').textContent = `Selected: ${f.name}`;
+      $('#btn-imgbgremove').disabled = false; hideResult('imgbgremove'); setStatus('imgbgremove', '');
+    });
+    $('#btn-imgbgremove').addEventListener('click', async () => {
+      const btn = $('#btn-imgbgremove'); btn.disabled = true; hideResult('imgbgremove');
+      try {
+        setStatus('imgbgremove', 'Loading the background-removal model… the first run downloads it (tens of MB) and may take a minute. It then runs entirely on your device.');
+        const mod = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.8/+esm');
+        const removeBackground = mod.removeBackground || (mod.default && mod.default.removeBackground);
+        if (typeof removeBackground !== 'function') throw new Error('Background-removal library failed to load.');
+        setStatus('imgbgremove', 'Removing background… this runs locally and can take a moment.');
+        const out = await removeBackground(file);
+        await deliverImages('imgbgremove', [{ blob: out, name: baseName(file.name) + '_no-bg.png' }], '');
+        setStatus('imgbgremove', '✅ Background removed — download your transparent PNG below.', 'success');
+      } catch (err) { setStatus('imgbgremove', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+  }
+
+  // ---- Image to text (OCR via Tesseract.js) ----
+  if ($('#dz-imgocr')) {
+    let file = null;
+    const loadTesseract = () => window.Tesseract ? Promise.resolve(window.Tesseract)
+      : loadScriptOnce('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js', 'Tesseract');
+    setupDropzone('imgocr', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imgocr', '❌ Please choose an image file.', 'error'); return; }
+      file = f; $('#picked-imgocr').textContent = `Selected: ${f.name}`;
+      $('#btn-imgocr').disabled = false; setStatus('imgocr', '');
+    });
+    $('#btn-imgocr').addEventListener('click', async () => {
+      const btn = $('#btn-imgocr'); btn.disabled = true;
+      try {
+        setStatus('imgocr', 'Loading OCR engine…');
+        const Tesseract = await loadTesseract();
+        const lang = ($('#lang-imgocr') && $('#lang-imgocr').value) || 'eng';
+        const worker = await Tesseract.createWorker(lang, 1, {
+          logger: (m) => { if (m.status === 'recognizing text') setStatus('imgocr', `Recognizing text ${Math.round((m.progress || 0) * 100)}%…`); }
+        });
+        const img = await loadImageEl(file);
+        const canvas = drawImageCanvas(img, img.naturalWidth, img.naturalHeight, '#ffffff');
+        const { data } = await worker.recognize(canvas);
+        await worker.terminate();
+        const text = (data.text || '').trim();
+        $('#out-imgocr').value = text;
+        $('#res-imgocr').classList.remove('hidden');
+        setStatus('imgocr', text ? `✅ Extracted ${text.length} characters.` : 'No readable text found in this image.', text ? 'success' : 'info');
+      } catch (err) { setStatus('imgocr', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+    if ($('#copy-imgocr')) $('#copy-imgocr').addEventListener('click', () => {
+      const t = $('#out-imgocr'); if (!t.value) return; t.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      setStatus('imgocr', '✅ Copied to clipboard.', 'success');
+    });
+  }
+
+  // ---- Rotate / flip image ----
+  if ($('#dz-imgrotate')) {
+    let file = null;
+    setupDropzone('imgrotate', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imgrotate', '❌ Please choose an image file.', 'error'); return; }
+      file = f; $('#picked-imgrotate').textContent = `Selected: ${f.name}`;
+      $('#btn-imgrotate').disabled = false; hideResult('imgrotate'); setStatus('imgrotate', '');
+    });
+    $('#btn-imgrotate').addEventListener('click', async () => {
+      const btn = $('#btn-imgrotate'); btn.disabled = true; hideResult('imgrotate');
+      try {
+        const op = $('#op-imgrotate').value;
+        const img = await loadImageEl(file);
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        const isPng = /png$/i.test(file.type) || /\.png$/i.test(file.name);
+        const isWebp = /webp$/i.test(file.type) || /\.webp$/i.test(file.name);
+        const type = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+        const c = document.createElement('canvas');
+        const swap = (op === 'r90' || op === 'r270');
+        c.width = swap ? nh : nw; c.height = swap ? nw : nh;
+        const ctx = c.getContext('2d');
+        if (type === 'image/jpeg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); }
+        ctx.save();
+        if (op === 'r90') { ctx.translate(nh, 0); ctx.rotate(Math.PI / 2); }
+        else if (op === 'r180') { ctx.translate(nw, nh); ctx.rotate(Math.PI); }
+        else if (op === 'r270') { ctx.translate(0, nw); ctx.rotate(-Math.PI / 2); }
+        else if (op === 'fliph') { ctx.translate(nw, 0); ctx.scale(-1, 1); }
+        else if (op === 'flipv') { ctx.translate(0, nh); ctx.scale(1, -1); }
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0);
+        ctx.restore();
+        const blob = await canvasBlob(c, type, type === 'image/png' ? undefined : 0.92);
+        await deliverImages('imgrotate', [{ blob, name: baseName(file.name) + '_rotated' + extFor(type) }], '');
+      } catch (err) { setStatus('imgrotate', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+  }
+
+  // ---- Watermark an image (text overlay) ----
+  if ($('#dz-imgwatermark')) {
+    let file = null;
+    setupDropzone('imgwatermark', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imgwatermark', '❌ Please choose an image file.', 'error'); return; }
+      file = f; $('#picked-imgwatermark').textContent = `Selected: ${f.name}`;
+      $('#btn-imgwatermark').disabled = false; hideResult('imgwatermark'); setStatus('imgwatermark', '');
+    });
+    $('#btn-imgwatermark').addEventListener('click', async () => {
+      const btn = $('#btn-imgwatermark'); btn.disabled = true; hideResult('imgwatermark');
+      try {
+        const text = ($('#text-imgwatermark').value || '').trim() || 'WATERMARK';
+        const pos = $('#pos-imgwatermark').value;
+        const sizePct = Math.max(2, Math.min(40, +$('#size-imgwatermark').value || 10));
+        const opacity = Math.max(0.05, Math.min(1, (+$('#opacity-imgwatermark').value || 35) / 100));
+        const color = $('#color-imgwatermark').value || '#ffffff';
+        const img = await loadImageEl(file);
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        const isPng = /png$/i.test(file.type) || /\.png$/i.test(file.name);
+        const isWebp = /webp$/i.test(file.type) || /\.webp$/i.test(file.name);
+        const type = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg';
+        const c = drawImageCanvas(img, nw, nh, type === 'image/jpeg' ? '#ffffff' : null);
+        const ctx = c.getContext('2d');
+        const fs = Math.max(8, Math.round(nw * sizePct / 100));
+        ctx.font = `bold ${fs}px Inter, Arial, sans-serif`;
+        ctx.fillStyle = color; ctx.globalAlpha = opacity;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        if (pos === 'tiled') {
+          ctx.translate(nw / 2, nh / 2); ctx.rotate(-Math.PI / 6); ctx.translate(-nw / 2, -nh / 2);
+          const stepX = ctx.measureText(text).width + fs * 2, stepY = fs * 3;
+          for (let y = -nh; y < nh * 2; y += stepY) for (let x = -nw; x < nw * 2; x += stepX) ctx.fillText(text, x, y);
+        } else if (pos === 'br') {
+          ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+          ctx.fillText(text, nw - fs * 0.4, nh - fs * 0.4);
+        } else {
+          ctx.translate(nw / 2, nh / 2); ctx.rotate(-Math.PI / 6);
+          ctx.fillText(text, 0, 0);
+        }
+        ctx.globalAlpha = 1;
+        const blob = await canvasBlob(c, type, type === 'image/png' ? undefined : 0.92);
+        await deliverImages('imgwatermark', [{ blob, name: baseName(file.name) + '_watermarked' + extFor(type) }], '');
+      } catch (err) { setStatus('imgwatermark', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+  }
+
+  // ---- Circle crop / avatar (transparent PNG) ----
+  if ($('#dz-imground')) {
+    let file = null;
+    setupDropzone('imground', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imground', '❌ Please choose an image file.', 'error'); return; }
+      file = f; $('#picked-imground').textContent = `Selected: ${f.name}`;
+      $('#btn-imground').disabled = false; hideResult('imground'); setStatus('imground', '');
+    });
+    $('#btn-imground').addEventListener('click', async () => {
+      const btn = $('#btn-imground'); btn.disabled = true; hideResult('imground');
+      try {
+        const img = await loadImageEl(file);
+        const nw = img.naturalWidth, nh = img.naturalHeight, side = Math.min(nw, nh);
+        const c = document.createElement('canvas'); c.width = side; c.height = side;
+        const ctx = c.getContext('2d');
+        ctx.beginPath(); ctx.arc(side / 2, side / 2, side / 2, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, (nw - side) / 2, (nh - side) / 2, side, side, 0, 0, side, side);
+        const blob = await canvasBlob(c, 'image/png');
+        await deliverImages('imground', [{ blob, name: baseName(file.name) + '_circle.png' }], '');
+        setStatus('imground', `✅ Circular ${side}×${side}px PNG with transparent corners.`, 'success');
+      } catch (err) { setStatus('imground', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+  }
+
+  // ---- Favicon generator (one image -> all sizes, zipped) ----
+  if ($('#dz-faviconmk')) {
+    let file = null;
+    setupDropzone('faviconmk', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('faviconmk', '❌ Please choose an image (a square logo works best).', 'error'); return; }
+      file = f; $('#picked-faviconmk').textContent = `Selected: ${f.name}`;
+      $('#btn-faviconmk').disabled = false; hideResult('faviconmk'); setStatus('faviconmk', '');
+    });
+    $('#btn-faviconmk').addEventListener('click', async () => {
+      const btn = $('#btn-faviconmk'); btn.disabled = true; hideResult('faviconmk');
+      try {
+        const img = await loadImageEl(file);
+        const nw = img.naturalWidth, nh = img.naturalHeight, sq = Math.min(nw, nh);
+        const sx = (nw - sq) / 2, sy = (nh - sq) / 2;
+        const sizes = [16, 32, 48, 64, 180, 192, 512];
+        const items = [];
+        for (const s of sizes) {
+          const c = drawImageCanvas(img, s, s, null, sx, sy, sq, sq);
+          items.push({ blob: await canvasBlob(c, 'image/png'), name: `favicon-${s}x${s}.png` });
+        }
+        await deliverImages('faviconmk', items, 'favicons.zip');
+        setStatus('faviconmk', `✅ ${sizes.length} icon sizes generated (16–512px) — download the ZIP below.`, 'success');
+      } catch (err) { setStatus('faviconmk', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
+    });
+  }
+
+  // ---- Color palette from an image ----
+  if ($('#dz-imgpalette')) {
+    let file = null;
+    setupDropzone('imgpalette', ([f]) => {
+      if (!f || !isImageFile(f)) { setStatus('imgpalette', '❌ Please choose an image file.', 'error'); return; }
+      file = f; $('#picked-imgpalette').textContent = `Selected: ${f.name}`;
+      $('#btn-imgpalette').disabled = false; setStatus('imgpalette', '');
+    });
+    $('#btn-imgpalette').addEventListener('click', async () => {
+      const btn = $('#btn-imgpalette'); btn.disabled = true;
+      try {
+        setStatus('imgpalette', 'Analyzing colors…');
+        const img = await loadImageEl(file);
+        const W = 120, H = Math.max(1, Math.round(120 * img.naturalHeight / Math.max(1, img.naturalWidth)));
+        const c = drawImageCanvas(img, W, H, null);
+        const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+        const map = {};
+        for (let i = 0; i < px.length; i += 4) {
+          if (px[i + 3] < 128) continue;
+          const k = ((px[i] & 0xF0) << 16) | ((px[i + 1] & 0xF0) << 8) | (px[i + 2] & 0xF0);
+          map[k] = (map[k] || 0) + 1;
+        }
+        const top = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        if (!top.length) throw new Error('Could not read colors from this image.');
+        const hex = (n) => '#' + (n & 0xFFFFFF).toString(16).padStart(6, '0');
+        const host = $('#swatches-imgpalette');
+        host.innerHTML = top.map(([k]) => {
+          const h = hex(+k);
+          return `<button type="button" data-hex="${h}" class="btn flex flex-col items-center gap-1 text-xs font-mono" title="Click to copy"><span style="background:${h};width:64px;height:64px;border:1px solid #e2e8f0;border-radius:10px;display:block"></span>${h}</button>`;
+        }).join('');
+        host.querySelectorAll('[data-hex]').forEach((b) => b.addEventListener('click', () => {
+          const h = b.dataset.hex;
+          (navigator.clipboard ? navigator.clipboard.writeText(h) : Promise.reject()).then(
+            () => setStatus('imgpalette', `✅ Copied ${h}`, 'success'),
+            () => setStatus('imgpalette', `Selected ${h}`, 'info'));
+        }));
+        $('#res-imgpalette').classList.remove('hidden');
+        setStatus('imgpalette', `✅ Top ${top.length} colors — click any swatch to copy its hex.`, 'success');
+      } catch (err) { setStatus('imgpalette', `❌ ${err.message || err}`, 'error'); }
+      finally { btn.disabled = !file; }
     });
   }
 
