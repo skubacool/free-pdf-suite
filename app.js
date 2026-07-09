@@ -166,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         label.textContent = `Page ${cur} of ${total}`;
         prev.disabled = cur <= 1;
         next.disabled = cur >= total;
@@ -208,8 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     });
 
-  const loadPdfJs = (data, password) =>
-    pdfjsLib.getDocument({ data: data.slice(0), password }).promise;
+  const _activePdfJsDocs = new Set();
+  const loadPdfJs = async (data, password) => {
+    if (_activePdfJsDocs.size >= 4) {
+      const oldest = _activePdfJsDocs.values().next().value;
+      try { oldest.destroy(); } catch (e) {}
+      _activePdfJsDocs.delete(oldest);
+    }
+    const doc = await pdfjsLib.getDocument({ data: data.slice(0), password }).promise;
+    _activePdfJsDocs.add(doc);
+    return doc;
+  };
 
   // ---------------------------------------------------- encrypted-PDF support
   // pdf-lib (1.17.1) cannot decrypt content streams, so an encrypted source —
@@ -233,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       const jpg = await out.embedJpg(await canvasToJpeg(canvas, quality));
       out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
     }
@@ -439,6 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         const jpg = await out.embedJpg(await canvasToJpeg(canvas, quality));
         const p = out.addPage([vp1.width, vp1.height]);
         p.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
@@ -499,6 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.85));
         const p = out.addPage([vp1.width, vp1.height]);
         p.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
@@ -530,6 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
     $$(`.place-marker`, $(wrapId)).forEach((m) => m.remove());
   }
 
@@ -1272,6 +1286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         images.push(await canvasToJpeg(canvas, quality));
       }
       if (images.length === 1) {
@@ -1580,6 +1595,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.fillStyle = '#fff';
           ctx.fillRect(0, 0, c.width, c.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const div = document.createElement('div');
           div.className = 'thumb relative border border-slate-200 rounded-lg bg-white p-1 cursor-move';
           div.draggable = true;
@@ -1831,6 +1847,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const { data } = await ocrWorker.recognize(canvas);
           out += `--- Page ${i} ---\n${(data.text || '').trim()}\n\n`;
         }
@@ -1881,6 +1898,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         const jpg = await out.embedJpg(await canvasToJpeg(canvas, quality));
         const p = out.addPage([vp1.width, vp1.height]);
         p.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
@@ -2078,6 +2096,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           images.push(await canvasToPng(canvas));
         }
         if (images.length === 1) {
@@ -2129,6 +2148,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const im = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const d = im.data;
           for (let p = 0; p < d.length; p += 4) {
@@ -2258,6 +2278,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           (redState.rects[i] || []).forEach((r) => {
             ctx.fillStyle = '#000000';
             ctx.fillRect(r.x * canvas.width, r.y * canvas.height, r.w * canvas.width, r.h * canvas.height);
@@ -2329,6 +2350,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const vp = page.getViewport({ scale: 1 });
           throwaway.width = Math.ceil(vp.width); throwaway.height = Math.ceil(vp.height);
           await page.render({ canvasContext: tctx, viewport: vp }).promise; // forces image objs to resolve
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const ops = await page.getOperatorList();
           for (let k = 0; k < ops.fnArray.length; k++) {
             const fn = ops.fnArray[k];
@@ -2450,6 +2472,7 @@ document.addEventListener('DOMContentLoaded', () => {
           canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
           ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const ar = canvas.width / canvas.height;
           let w = LW, h = LW / ar;
           if (h > LH) { h = LH; w = LH * ar; }
@@ -2928,6 +2951,7 @@ document.addEventListener('DOMContentLoaded', () => {
           canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
           ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const im = ctx.getImageData(0, 0, canvas.width, canvas.height); const dd = im.data;
           for (let p = 0; p < dd.length; p += 4) { dd[p] = 255 - dd[p]; dd[p + 1] = 255 - dd[p + 1]; dd[p + 2] = 255 - dd[p + 2]; }
           ctx.putImageData(im, 0, 0);
@@ -3022,6 +3046,7 @@ document.addEventListener('DOMContentLoaded', () => {
           renderCtx.fillStyle = '#ffffff';
           renderCtx.fillRect(0, 0, renderCanvas.width, renderCanvas.height);
           await page.render({ canvasContext: renderCtx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           let canvas = renderCanvas;
           let ctx = renderCtx;
           if (skew !== 'none') {
@@ -3264,6 +3289,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const ctx = c.getContext('2d');
           ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const im = ctx.getImageData(0, 0, c.width, c.height);
           const d = im.data;
           let nonWhitePixels = 0;
@@ -3338,6 +3364,7 @@ document.addEventListener('DOMContentLoaded', () => {
           canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
           ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
+setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const blob = await new Promise((res) => canvas.toBlob(res, 'image/webp', quality));
           blobs.push(blob);
         }
