@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // saved PDF small.
   const UNICODE_FONT_URL = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/noto-sans-thai/NotoSansThai_400Regular.ttf';
   let unicodeFontBytes = null;
-  const hasThai = (s) => /[฀-๿]/.test(s);
+  const hasThai = (s) => /[^\x20-\xFF]/.test(s);
   const getUnicodeFont = async (doc) => {
     if (typeof fontkit === 'undefined') throw new Error('Font engine still loading — please try again in a moment.');
     doc.registerFontkit(fontkit);
@@ -541,6 +541,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
+  const getRotatedOrigin = (Vx, Vy, w, h, page) => {
+    const { width: pw, height: ph } = page.getSize();
+    const angle = page.getRotation().angle || 0;
+    let Ux, Uy;
+    if (angle === 90) { Ux = Vy; Uy = ph - Vx; }
+    else if (angle === 180) { Ux = pw - Vx; Uy = ph - Vy; }
+    else if (angle === 270) { Ux = pw - Vy; Uy = Vx; }
+    else { Ux = Vx; Uy = Vy; }
+    const rad = (angle * Math.PI) / 180;
+    const cx = (w / 2) * Math.cos(rad) - (h / 2) * Math.sin(rad);
+    const cy = (w / 2) * Math.sin(rad) + (h / 2) * Math.cos(rad);
+    return { x: Ux - cx, y: Uy - cy, rotate: degrees(angle) };
+  };
+
+  const decodeDataUrlBytes = (dataUrl) => {
+    const b64 = dataUrl.split(',')[1];
+    const binStr = atob(b64);
+    const arr = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) arr[i] = binStr.charCodeAt(i);
+    return arr.buffer;
+  };
+
   // ================================================================== SIGN
   const signState = { file: null, doc: null, pageNum: 1, placement: null, hasInk: false, mode: 'draw', typedName: '', uploadedDataUrl: null };
 
@@ -707,13 +729,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const doc = await loadPdfForEdit(await signState.file.arrayBuffer());
       const page = doc.getPage(signState.pageNum - 1);
       const { width: pw, height: ph } = page.getSize();
-      const pngBytes = await (await fetch(await signaturePngDataUrl())).arrayBuffer();
+      const angle = page.getRotation().angle || 0;
+      const vw = (angle === 90 || angle === 270) ? ph : pw;
+      const vh = (angle === 90 || angle === 270) ? pw : ph;
+      const pngBytes = decodeDataUrlBytes(await signaturePngDataUrl());
       const img = await doc.embedPng(pngBytes);
-      const w = (pw * +$('#sig-width').value) / 100;
+      const w = (vw * +$('#sig-width').value) / 100;
       const h = (w * img.height) / img.width;
+      
+      const Vx = signState.placement.nx * vw;
+      const Vy = vh - signState.placement.ny * vh;
+      const pos = getRotatedOrigin(Vx, Vy, w, h, page);
+      
       page.drawImage(img, {
-        x: signState.placement.nx * pw - w / 2,
-        y: ph - signState.placement.ny * ph - h / 2,
+        ...pos,
         width: w,
         height: h,
       });
@@ -829,9 +858,20 @@ document.addEventListener('DOMContentLoaded', () => {
       for (const it of typeState.items) {
         const page = doc.getPage(it.page - 1);
         const { width: pw, height: ph } = page.getSize();
-        page.drawText((needsUnicode ? it.text : toWinAnsi(it.text)) || ' ', {
-          x: it.nx * pw,
-          y: ph - it.ny * ph - it.size * 0.78,
+        const angle = page.getRotation().angle || 0;
+        const vw = (angle === 90 || angle === 270) ? ph : pw;
+        const vh = (angle === 90 || angle === 270) ? pw : ph;
+        
+        const textToDraw = (needsUnicode ? it.text : toWinAnsi(it.text)) || ' ';
+        const textWidth = font.widthOfTextAtSize(textToDraw, it.size);
+        const Vx = it.nx * vw + textWidth / 2;
+        const Vy = (vh - it.ny * vh - it.size * 0.78) + it.size / 2;
+        const pos = getRotatedOrigin(Vx, Vy, textWidth, it.size, page);
+
+        page.drawText(textToDraw, {
+          x: pos.x,
+          y: pos.y,
+          rotate: pos.rotate,
           size: it.size,
           font,
           color: hexToRgb(it.colorHex),
@@ -1953,13 +1993,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const pageIdx = Math.min(sealState.pageNum, doc.getPageCount()) - 1;
         const page = doc.getPage(pageIdx);
         const { width: pw, height: ph } = page.getSize();
-        const bytes = await (await fetch(sealState.dataUrl)).arrayBuffer();
+        const angle = page.getRotation().angle || 0;
+        const vw = (angle === 90 || angle === 270) ? ph : pw;
+        const vh = (angle === 90 || angle === 270) ? pw : ph;
+        const bytes = sealState.dataUrl.startsWith('data:') ? decodeDataUrlBytes(sealState.dataUrl) : await (await fetch(sealState.dataUrl)).arrayBuffer();
         const img = /^data:image\/png/i.test(sealState.dataUrl) ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
-        const w = (pw * +$('#seal-size').value) / 100;
+        const w = (vw * +$('#seal-size').value) / 100;
         const h = (w * img.height) / img.width;
+
+        const Vx = sealState.placement.nx * vw;
+        const Vy = vh - sealState.placement.ny * vh;
+        const pos = getRotatedOrigin(Vx, Vy, w, h, page);
+
         page.drawImage(img, {
-          x: sealState.placement.nx * pw - w / 2,
-          y: ph - sealState.placement.ny * ph - h / 2,
+          ...pos,
           width: w,
           height: h,
         });
