@@ -867,8 +867,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
     try {
       setStatus('type', 'Writing text into PDF…');
       const doc = await loadPdfForEdit(await typeState.file.arrayBuffer());
-      const needsUnicode = typeState.items.some((it) => hasThai(it.text));
-      const font = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+      const needsUnicode = typeState.items.some((it) => hasUnicode(it.text));
+      const font = needsUnicode ? await getUnicodeFont(doc, typeState.items.map(i=>i.text).join("")) : await doc.embedFont(StandardFonts.Helvetica);
       for (const it of typeState.items) {
         const page = doc.getPage(it.page - 1);
         const { width: pw, height: ph } = page.getSize();
@@ -876,7 +876,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         const vw = (angle === 90 || angle === 270) ? ph : pw;
         const vh = (angle === 90 || angle === 270) ? pw : ph;
         
-        const textToDraw = (needsUnicode ? it.text : toWinAnsi(it.text)) || ' ';
+        const textToDraw = (needsUnicode ? adjustThai(it.text) : toWinAnsi(it.text)) || ' ';
         const textWidth = font.widthOfTextAtSize(textToDraw, it.size);
         const Vx = it.nx * vw + textWidth / 2;
         const Vy = (vh - it.ny * vh - it.size * 0.78) + it.size / 2;
@@ -979,15 +979,15 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
 
       setStatus('word2pdf', 'Laying out PDF…');
       const doc = await PDFDocument.create();
-      const needsUnicode = blocks.some((b) => hasThai(b.text));
-      const fontReg = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+      const needsUnicode = blocks.some((b) => hasUnicode(b.text));
+      const fontReg = needsUnicode ? await getUnicodeFont(doc, blocks.map(b=>b.text).join("")) : await doc.embedFont(StandardFonts.Helvetica);
       const fontBold = needsUnicode ? fontReg : await doc.embedFont(StandardFonts.HelveticaBold);
       const PAGE_W = 595.28, PAGE_H = 841.89, MARGIN = 56; // A4
       let page = doc.addPage([PAGE_W, PAGE_H]);
       let y = PAGE_H - MARGIN;
       for (const b of blocks) {
         const font = b.bold ? fontBold : fontReg;
-        const text = needsUnicode ? b.text : toWinAnsi(b.text);
+        const text = needsUnicode ? adjustThai(b.text) : toWinAnsi(b.text);
         const maxW = PAGE_W - MARGIN * 2 - b.indent;
         const lineH = b.size * 1.45;
         if (!text) { y -= lineH * 0.7; continue; }
@@ -1391,9 +1391,9 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
     try {
       setStatus('watermark', 'Stamping watermark…');
       const doc = await loadPdfForEdit(await f.arrayBuffer());
-      const thai = hasThai(raw);
-      const font = thai ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.HelveticaBold);
-      const text = thai ? raw : toWinAnsi(raw);
+      const thai = hasUnicode(raw);
+      const font = thai ? await getUnicodeFont(doc, raw) : await doc.embedFont(StandardFonts.HelveticaBold);
+      const text = thai ? adjustThai(raw) : toWinAnsi(raw);
       const opacity = +$('#opacity-watermark').value / 100;
       const pos = ($('#pos-watermark') && $('#pos-watermark').value) || 'diagonal';
       const color = rgb(0.55, 0.55, 0.55);
@@ -2568,8 +2568,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' });
         const doc = await PDFDocument.create();
         const jsonStr = JSON.stringify(wb.SheetNames) + JSON.stringify(wb.Sheets);
-        const needsUnicode = hasThai(jsonStr);
-        const font = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+        const needsUnicode = hasUnicode(jsonStr);
+        const font = needsUnicode ? await getUnicodeFont(doc, jsonStr) : await doc.embedFont(StandardFonts.Helvetica);
         const fontB = needsUnicode ? font : await doc.embedFont(StandardFonts.HelveticaBold);
         const PW = 841.89, PH = 595.28, M = 36, size = 8.5, lineH = 13;
         for (const name of wb.SheetNames) {
@@ -2579,14 +2579,14 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const colW = (PW - 2 * M) / cols;
           let page = doc.addPage([PW, PH]);
           let y = PH - M;
-          const titleText = (needsUnicode ? name : toWinAnsi(name)).slice(0, 90) || ' ';
+          const titleText = (needsUnicode ? adjustThai(name) : toWinAnsi(name)).slice(0, 90) || ' ';
           page.drawText(titleText, { x: M, y: y - 10, size: 12, font: fontB, color: rgb(0.1, 0.1, 0.1) });
           y -= 28;
           aoa.forEach((row, ri) => {
             if (y < M + lineH) { page = doc.addPage([PW, PH]); y = PH - M; }
             for (let c = 0; c < cols; c++) {
               const rawVal = row[c] == null ? '' : String(row[c]);
-              let s = needsUnicode ? rawVal : toWinAnsi(rawVal);
+              let s = needsUnicode ? adjustThai(rawVal) : toWinAnsi(rawVal);
               const useFont = ri === 0 ? fontB : font;
               while (s && useFont.widthOfTextAtSize(s, size) > colW - 4) s = s.slice(0, -1);
               if (s) page.drawText(s, { x: M + c * colW + 2, y: y - 10, size, font: useFont, color: rgb(0.15, 0.15, 0.15) });
@@ -2696,12 +2696,12 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       try {
         setStatus('text2pdf', 'Building PDF…');
         const doc = await PDFDocument.create();
-        const thai = hasThai(raw);
-        const font = thai ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+        const thai = hasUnicode(raw);
+        const font = thai ? await getUnicodeFont(doc, raw) : await doc.embedFont(StandardFonts.Helvetica);
         const PW = 595.28, PH = 841.89, M = 56, size = 11.5, lineH = size * 1.5;
         let page = doc.addPage([PW, PH]); let y = PH - M;
         for (const para of raw.split('\n')) {
-          const text = thai ? para : toWinAnsi(para);
+          const text = thai ? adjustThai(para) : toWinAnsi(para);
           if (!text.trim()) { y -= lineH * 0.7; if (y < M) { page = doc.addPage([PW, PH]); y = PH - M; } continue; }
           for (const ln of wrapText(text, font, size, PW - 2 * M)) {
             if (y < M + size) { page = doc.addPage([PW, PH]); y = PH - M; }
@@ -3244,18 +3244,18 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           }
           cover.drawRectangle({ x: 0, y: 0, width: W, height: H, color: fillBg });
           const combinedStr = [title, subtitle, author, date].join('');
-          const needsUnicode = hasThai(combinedStr);
-          const fontReg = needsUnicode ? await getUnicodeFont(out) : await out.embedFont(StandardFonts.Helvetica);
+          const needsUnicode = hasUnicode(combinedStr);
+          const fontReg = needsUnicode ? await getUnicodeFont(out, combinedStr) : await out.embedFont(StandardFonts.Helvetica);
           const fontBold = needsUnicode ? fontReg : await out.embedFont(StandardFonts.HelveticaBold);
           
-          cover.drawText(needsUnicode ? title : toWinAnsi(title), { x: 50, y: H * 0.55, size: 32, font: fontBold, color: fillText });
-          if (subtitle) cover.drawText(needsUnicode ? subtitle : toWinAnsi(subtitle), { x: 50, y: H * 0.48, size: 16, font: fontReg, color: fillSub });
+          cover.drawText(needsUnicode ? adjustThai(title) : toWinAnsi(title), { x: 50, y: H * 0.55, size: 32, font: fontBold, color: fillText });
+          if (subtitle) cover.drawText(needsUnicode ? adjustThai(subtitle) : toWinAnsi(subtitle), { x: 50, y: H * 0.48, size: 16, font: fontReg, color: fillSub });
           let footerY = 70;
           if (author) {
-            cover.drawText(`By ${needsUnicode ? author : toWinAnsi(author)}`, { x: 50, y: footerY, size: 12, font: fontBold, color: fillSub });
+            cover.drawText(`By ${needsUnicode ? adjustThai(author) : toWinAnsi(author)}`, { x: 50, y: footerY, size: 12, font: fontBold, color: fillSub });
             footerY -= 20;
           }
-          if (date) cover.drawText(needsUnicode ? date : toWinAnsi(date), { x: 50, y: footerY, size: 11, font: fontReg, color: fillSub });
+          if (date) cover.drawText(needsUnicode ? adjustThai(date) : toWinAnsi(date), { x: 50, y: footerY, size: 11, font: fontReg, color: fillSub });
         }
         const copiedPages = await out.copyPages(src, src.getPageIndices());
         copiedPages.forEach((p) => out.addPage(p));
@@ -3496,8 +3496,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         if (!blocks.length) throw new Error('No readable markdown headings or paragraphs found.');
         setStatus('md2pdf', 'Generating PDF pages…');
         const doc = await PDFDocument.create();
-        const needsUnicode = blocks.some((b) => hasThai(b.text));
-        const fontReg = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+        const needsUnicode = blocks.some((b) => hasUnicode(b.text));
+        const fontReg = needsUnicode ? await getUnicodeFont(doc, blocks.map(b=>b.text).join("")) : await doc.embedFont(StandardFonts.Helvetica);
         const fontBold = needsUnicode ? fontReg : await doc.embedFont(StandardFonts.HelveticaBold);
         const PAGE_W = 595.28, PAGE_H = 841.89;
         const MARGIN = +$('#margins-md2pdf').value || 56;
@@ -3507,7 +3507,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         for (const b of blocks) {
           const font = b.bold ? fontBold : fontReg;
           const size = b.bold ? b.size : baseFontSize;
-          const text = needsUnicode ? b.text : toWinAnsi(b.text);
+          const text = needsUnicode ? adjustThai(b.text) : toWinAnsi(b.text);
           const maxW = PAGE_W - MARGIN * 2 - b.indent;
           const lineH = size * 1.45;
           for (const line of wrapText(text, font, size, maxW)) {
