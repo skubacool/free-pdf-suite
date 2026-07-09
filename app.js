@@ -1322,11 +1322,21 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = 0; i < total; i++) {
         const page = doc.getPage(i);
         const { width: pw, height: ph } = page.getSize();
+        const angle = page.getRotation().angle || 0;
+        const vw = (angle === 90 || angle === 270) ? ph : pw;
+        const vh = (angle === 90 || angle === 270) ? pw : ph;
+        
         const label = fmt === 'pageofn' ? `Page ${i + 1} of ${total}` : String(i + 1);
         const tw = font.widthOfTextAtSize(label, SIZE);
-        const x = pos.endsWith('left') ? MARGIN : pos.endsWith('right') ? pw - MARGIN - tw : (pw - tw) / 2;
-        const y = pos.startsWith('top') ? ph - MARGIN : 18;
-        page.drawText(label, { x, y, size: SIZE, font, color: rgb(0.3, 0.3, 0.3) });
+        
+        const Vx = pos.endsWith('left') ? MARGIN : pos.endsWith('right') ? vw - MARGIN - tw : (vw - tw) / 2;
+        const Vy = pos.startsWith('top') ? vh - MARGIN : 18;
+        
+        const VxCenter = Vx + tw / 2;
+        const VyCenter = Vy + SIZE / 2;
+        const origin = getRotatedOrigin(VxCenter, VyCenter, tw, SIZE, page);
+        
+        page.drawText(label, { x: origin.x, y: origin.y, rotate: origin.rotate, size: SIZE, font, color: rgb(0.3, 0.3, 0.3) });
       }
       const bytes = await doc.save();
       showResult('pagenum', bytes, `${baseName(f.name)}_numbered.pdf`, 'application/pdf',
@@ -1375,36 +1385,50 @@ document.addEventListener('DOMContentLoaded', () => {
       const cos45 = Math.cos(Math.PI / 4);
       for (const page of doc.getPages()) {
         const { width: pw, height: ph } = page.getSize();
+        const angle = page.getRotation().angle || 0;
+        const vw = (angle === 90 || angle === 270) ? ph : pw;
+        const vh = (angle === 90 || angle === 270) ? pw : ph;
+        
         // Auto-fit: scale a 60pt probe so the text spans a target width in points,
         // so the watermark always fits the page regardless of its dimensions.
         const w60 = font.widthOfTextAtSize(text, 60) || 1;
         const fit = (targetW, max) => Math.max(12, Math.min(max, (60 * targetW) / w60));
         if (pos === 'tile') {
-          const size = fit(pw * 0.30, 46);
+          const size = fit(vw * 0.30, 46);
           const tw = font.widthOfTextAtSize(text, size);
           const stepX = tw + size * 2.2;
           const stepY = size * 3.2;
-          for (let yy = -size; yy < ph + stepY; yy += stepY)
-            for (let xx = -tw; xx < pw + tw; xx += stepX)
-              page.drawText(text, { x: xx, y: yy, size, font, color, opacity, rotate: degrees(45) });
+          for (let yy = -size; yy < vh + stepY; yy += stepY) {
+            for (let xx = -tw; xx < vw + tw; xx += stepX) {
+              const VxCenter = xx + tw / 2;
+              const VyCenter = yy + size / 2;
+              const origin = getRotatedOrigin(VxCenter, VyCenter, tw, size, page);
+              page.drawText(text, { x: origin.x, y: origin.y, size, font, color, opacity, rotate: degrees(angle + 45) });
+            }
+          }
         } else if (pos === 'diagonal') {
-          const diag = Math.sqrt(pw * pw + ph * ph);
+          const diag = Math.sqrt(vw * vw + vh * vh);
           const size = fit(diag * 0.6, 110);
           const tw = font.widthOfTextAtSize(text, size);
+          const VxCenter = vw / 2;
+          const VyCenter = vh / 2;
+          const origin = getRotatedOrigin(VxCenter, VyCenter, tw, size, page);
           page.drawText(text, {
-            x: pw / 2 - (tw / 2) * cos45,
-            y: ph / 2 - (tw / 2) * cos45,
-            size, font, color, opacity, rotate: degrees(45),
+            x: origin.x,
+            y: origin.y,
+            size, font, color, opacity, rotate: degrees(angle + 45),
           });
         } else {
           // horizontal placements: center / top / bottom
-          const size = fit(pw * 0.7, 84);
+          const size = fit(vw * 0.7, 84);
           const tw = font.widthOfTextAtSize(text, size);
-          const x = (pw - tw) / 2;
-          const y = pos === 'top' ? ph - 44 - size * 0.2
-                  : pos === 'bottom' ? 40
-                  : ph / 2 - size * 0.35;
-          page.drawText(text, { x, y, size, font, color, opacity });
+          const VxCenter = vw / 2;
+          let Vy = pos === 'top' ? vh - 44 - size * 0.2
+                 : pos === 'bottom' ? 40
+                 : vh / 2 - size * 0.35;
+          const VyCenter = Vy + size / 2;
+          const origin = getRotatedOrigin(VxCenter, VyCenter, tw, size, page);
+          page.drawText(text, { x: origin.x, y: origin.y, size, font, color, opacity, rotate: origin.rotate });
         }
       }
       const bytes = await doc.save();
@@ -2520,8 +2544,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const XLSX = await loadScriptOnce('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', 'XLSX');
         const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' });
         const doc = await PDFDocument.create();
-        const font = await doc.embedFont(StandardFonts.Helvetica);
-        const fontB = await doc.embedFont(StandardFonts.HelveticaBold);
+        const jsonStr = JSON.stringify(wb.SheetNames) + JSON.stringify(wb.Sheets);
+        const needsUnicode = hasThai(jsonStr);
+        const font = needsUnicode ? await getUnicodeFont(doc) : await doc.embedFont(StandardFonts.Helvetica);
+        const fontB = needsUnicode ? font : await doc.embedFont(StandardFonts.HelveticaBold);
         const PW = 841.89, PH = 595.28, M = 36, size = 8.5, lineH = 13;
         for (const name of wb.SheetNames) {
           const aoa = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false, defval: '' });
@@ -2530,14 +2556,17 @@ document.addEventListener('DOMContentLoaded', () => {
           const colW = (PW - 2 * M) / cols;
           let page = doc.addPage([PW, PH]);
           let y = PH - M;
-          page.drawText(toWinAnsi(name).slice(0, 90) || ' ', { x: M, y: y - 10, size: 12, font: fontB, color: rgb(0.1, 0.1, 0.1) });
+          const titleText = (needsUnicode ? name : toWinAnsi(name)).slice(0, 90) || ' ';
+          page.drawText(titleText, { x: M, y: y - 10, size: 12, font: fontB, color: rgb(0.1, 0.1, 0.1) });
           y -= 28;
           aoa.forEach((row, ri) => {
             if (y < M + lineH) { page = doc.addPage([PW, PH]); y = PH - M; }
             for (let c = 0; c < cols; c++) {
-              let s = toWinAnsi(row[c] == null ? '' : String(row[c]));
-              while (s && font.widthOfTextAtSize(s, size) > colW - 4) s = s.slice(0, -1);
-              if (s) page.drawText(s, { x: M + c * colW + 2, y: y - 10, size, font: ri === 0 ? fontB : font, color: rgb(0.15, 0.15, 0.15) });
+              const rawVal = row[c] == null ? '' : String(row[c]);
+              let s = needsUnicode ? rawVal : toWinAnsi(rawVal);
+              const useFont = ri === 0 ? fontB : font;
+              while (s && useFont.widthOfTextAtSize(s, size) > colW - 4) s = s.slice(0, -1);
+              if (s) page.drawText(s, { x: M + c * colW + 2, y: y - 10, size, font: useFont, color: rgb(0.15, 0.15, 0.15) });
             }
             y -= lineH;
           });
@@ -3189,16 +3218,19 @@ document.addEventListener('DOMContentLoaded', () => {
             fillBg = rgb(0.49, 0.11, 0.11); fillText = rgb(1, 1, 1); fillSub = rgb(0.9, 0.75, 0.75);
           }
           cover.drawRectangle({ x: 0, y: 0, width: W, height: H, color: fillBg });
-          const fontReg = await out.embedFont(StandardFonts.Helvetica);
-          const fontBold = await out.embedFont(StandardFonts.HelveticaBold);
-          cover.drawText(toWinAnsi(title), { x: 50, y: H * 0.55, size: 32, font: fontBold, color: fillText });
-          if (subtitle) cover.drawText(toWinAnsi(subtitle), { x: 50, y: H * 0.48, size: 16, font: fontReg, color: fillSub });
+          const combinedStr = [title, subtitle, author, date].join('');
+          const needsUnicode = hasThai(combinedStr);
+          const fontReg = needsUnicode ? await getUnicodeFont(out) : await out.embedFont(StandardFonts.Helvetica);
+          const fontBold = needsUnicode ? fontReg : await out.embedFont(StandardFonts.HelveticaBold);
+          
+          cover.drawText(needsUnicode ? title : toWinAnsi(title), { x: 50, y: H * 0.55, size: 32, font: fontBold, color: fillText });
+          if (subtitle) cover.drawText(needsUnicode ? subtitle : toWinAnsi(subtitle), { x: 50, y: H * 0.48, size: 16, font: fontReg, color: fillSub });
           let footerY = 70;
           if (author) {
-            cover.drawText(`By ${toWinAnsi(author)}`, { x: 50, y: footerY, size: 12, font: fontBold, color: fillSub });
+            cover.drawText(`By ${needsUnicode ? author : toWinAnsi(author)}`, { x: 50, y: footerY, size: 12, font: fontBold, color: fillSub });
             footerY -= 20;
           }
-          if (date) cover.drawText(toWinAnsi(date), { x: 50, y: footerY, size: 11, font: fontReg, color: fillSub });
+          if (date) cover.drawText(needsUnicode ? date : toWinAnsi(date), { x: 50, y: footerY, size: 11, font: fontReg, color: fillSub });
         }
         const copiedPages = await out.copyPages(src, src.getPageIndices());
         copiedPages.forEach((p) => out.addPage(p));
@@ -4251,29 +4283,34 @@ document.addEventListener('DOMContentLoaded', () => {
           const page = out.getPage(pageNum - 1);
           const pageSize = page.getSize();
           
-          let x = 0, y = 0;
+          const angle = page.getRotation().angle || 0;
+          const vw = (angle === 90 || angle === 270) ? pageSize.height : pageSize.width;
+          const vh = (angle === 90 || angle === 270) ? pageSize.width : pageSize.height;
+          
+          let Vx = 0, Vy = 0;
           const margin = 20;
           if (pos === 'center') {
-            x = (pageSize.width - w) / 2;
-            y = (pageSize.height - h) / 2;
+            Vx = (vw - w) / 2;
+            Vy = (vh - h) / 2;
           } else if (pos === 'top-left') {
-            x = margin;
-            y = pageSize.height - h - margin;
+            Vx = margin;
+            Vy = vh - h - margin;
           } else if (pos === 'top-right') {
-            x = pageSize.width - w - margin;
-            y = pageSize.height - h - margin;
+            Vx = vw - w - margin;
+            Vy = vh - h - margin;
           } else if (pos === 'bottom-left') {
-            x = margin;
-            y = margin;
+            Vx = margin;
+            Vy = margin;
           } else if (pos === 'bottom-right') {
-            x = pageSize.width - w - margin;
-            y = margin;
+            Vx = vw - w - margin;
+            Vy = margin;
           } else if (pos === 'custom') {
-            x = +$('#x-addimage').value || 0;
-            y = +$('#y-addimage').value || 0;
+            Vx = +$('#x-addimage').value || 0;
+            Vy = +$('#y-addimage').value || 0;
           }
           
-          page.drawImage(embeddedImage, { x, y, width: w, height: h, opacity });
+          const origin = getRotatedOrigin(Vx + w / 2, Vy + h / 2, w, h, page);
+          page.drawImage(embeddedImage, { ...origin, width: w, height: h, opacity });
         });
 
         const bytes = await out.save({ useObjectStreams: true });
