@@ -308,7 +308,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'letterhead', 'pdfgrid'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -5553,6 +5553,159 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         setStatus('imgpalette', `✅ Top ${top.length} colors — click any swatch to copy its hex.`, 'success');
       } catch (err) { setStatus('imgpalette', `❌ ${err.message || err}`, 'error'); }
       finally { btn.disabled = !file; }
+    });
+  }
+
+  // ============================================================ PDF LETTERHEAD OVERLAY
+  if ($('#dz-letterhead')) {
+    const lhState = { pdf: null, template: null };
+    setupDropzone('letterhead', ([f]) => {
+      lhState.pdf = f;
+      $('#picked-letterhead').textContent = `Target PDF: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-letterhead').disabled = !(lhState.pdf && lhState.template);
+      hideResult('letterhead'); setStatus('letterhead', '');
+    });
+    setupDropzone('letterhead-tpl', ([f]) => {
+      lhState.template = f;
+      $('#picked-letterhead-tpl').textContent = `Template: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-letterhead').disabled = !(lhState.pdf && lhState.template);
+      hideResult('letterhead'); setStatus('letterhead', '');
+    });
+    $('#btn-letterhead').addEventListener('click', async () => {
+      if (!lhState.pdf || !lhState.template) return;
+      const btn = $('#btn-letterhead'); btn.disabled = true; hideResult('letterhead');
+      try {
+        setStatus('letterhead', 'Loading files…');
+        const doc = await loadPdfForEdit(await lhState.pdf.arrayBuffer());
+        const layer = $('#layer-letterhead')?.value || 'on-top';
+
+        const tplFile = lhState.template;
+        const tplBuf = await tplFile.arrayBuffer();
+        const isPdf = /\.pdf$/i.test(tplFile.name) || tplFile.type === 'application/pdf';
+
+        let embeddedTemplate;
+        if (isPdf) {
+          const tplDoc = await loadPdfForEdit(tplBuf);
+          embeddedTemplate = await doc.embedPage(tplDoc.getPage(0));
+        } else {
+          const imgBytes = new Uint8Array(tplBuf);
+          if (/\.png$/i.test(tplFile.name) || tplFile.type === 'image/png') {
+            embeddedTemplate = await doc.embedPng(imgBytes);
+          } else {
+            embeddedTemplate = await doc.embedJpg(imgBytes);
+          }
+        }
+
+        const pages = doc.getPages();
+        for (let i = 0; i < pages.length; i++) {
+          setStatus('letterhead', `Overlaying page ${i + 1} of ${pages.length}…`);
+          const page = pages[i];
+          const { width: pw, height: ph } = page.getSize();
+
+          const drawOpts = { x: 0, y: 0, width: pw, height: ph };
+          if (isPdf) {
+            page.drawPage(embeddedTemplate, drawOpts);
+          } else {
+            // For images placed on top, use slight transparency so content shows through;
+            // for behind, draw at full opacity (content was already rendered over it).
+            const opacity = layer === 'on-top' ? 0.15 : 1.0;
+            page.drawImage(embeddedTemplate, { ...drawOpts, opacity });
+          }
+        }
+
+        const bytes = await doc.save({ useObjectStreams: true });
+        showResult('letterhead', bytes, `${baseName(lhState.pdf.name)}_letterhead.pdf`, 'application/pdf',
+          `${pages.length} page${pages.length > 1 ? 's' : ''} · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('letterhead', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally { btn.disabled = !(lhState.pdf && lhState.template); }
+    });
+  }
+
+  // ============================================================ PDF GRID / CONTACT SHEET
+  if ($('#dz-pdfgrid')) {
+    const gridState = { file: null };
+    setupDropzone('pdfgrid', ([f]) => {
+      gridState.file = f;
+      $('#picked-pdfgrid').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+      $('#btn-pdfgrid').disabled = false;
+      hideResult('pdfgrid'); setStatus('pdfgrid', '');
+    });
+    $('#btn-pdfgrid').addEventListener('click', async () => {
+      const f = gridState.file; if (!f) return;
+      const btn = $('#btn-pdfgrid'); btn.disabled = true; hideResult('pdfgrid');
+      try {
+        setStatus('pdfgrid', 'Rendering pages…');
+        const cols = +($('#cols-pdfgrid')?.value || 3);
+        const src = await loadPdfJs(await f.arrayBuffer());
+        const total = src.numPages;
+
+        // Render all pages at a reasonable scale
+        const thumbs = [];
+        const thumbScale = 1.2;
+        for (let i = 1; i <= total; i++) {
+          setStatus('pdfgrid', `Rendering page ${i} of ${total}…`);
+          const page = await src.getPage(i);
+          const vp = page.getViewport({ scale: thumbScale });
+          const c = document.createElement('canvas');
+          c.width = Math.ceil(vp.width);
+          c.height = Math.ceil(vp.height);
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
+          thumbs.push(c);
+        }
+
+        // Calculate grid layout
+        const maxW = Math.max(...thumbs.map(t => t.width));
+        const maxH = Math.max(...thumbs.map(t => t.height));
+        const pad = 8;
+        const labelH = 24;
+        const cellW = maxW + pad * 2;
+        const cellH = maxH + pad * 2 + labelH;
+        const rows = Math.ceil(total / cols);
+        const gridW = cols * cellW + pad;
+        const gridH = rows * cellH + pad;
+
+        setStatus('pdfgrid', 'Stitching grid…');
+        const master = document.createElement('canvas');
+        master.width = gridW;
+        master.height = gridH;
+        const mctx = master.getContext('2d');
+        mctx.fillStyle = '#e2e8f0';
+        mctx.fillRect(0, 0, gridW, gridH);
+
+        thumbs.forEach((thumb, idx) => {
+          const col = idx % cols;
+          const row = Math.floor(idx / cols);
+          const x = pad + col * cellW;
+          const y = pad + row * cellH;
+
+          // White cell background
+          mctx.fillStyle = '#ffffff';
+          mctx.fillRect(x, y, cellW - pad, cellH - pad);
+
+          // Draw thumb centered in cell
+          const dx = x + (cellW - pad - thumb.width) / 2;
+          const dy = y + (cellH - pad - labelH - thumb.height) / 2;
+          mctx.drawImage(thumb, dx, dy);
+
+          // Page label
+          mctx.fillStyle = '#475569';
+          mctx.font = 'bold 14px Inter, system-ui, sans-serif';
+          mctx.textAlign = 'center';
+          mctx.fillText(`Page ${idx + 1}`, x + (cellW - pad) / 2, y + cellH - pad - 6);
+        });
+
+        // Export as JPEG
+        const blob = await new Promise((res) => master.toBlob(res, 'image/jpeg', 0.90));
+        showResult('pdfgrid', blob, `${baseName(f.name)}_grid.jpg`, 'image/jpeg',
+          `${total} pages in ${cols}×${rows} grid · ${fmtBytes(blob.size)}`);
+      } catch (err) {
+        setStatus('pdfgrid', `❌ ${err?.name === 'PasswordException' ? PW_NEEDED_MSG : err.message || err}`, 'error');
+      } finally { btn.disabled = !gridState.file; }
     });
   }
 

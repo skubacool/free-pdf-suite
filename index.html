@@ -657,6 +657,16 @@
             <div class="font-bold mt-3">PDF Inspector</div>
             <p class="text-sm text-slate-500 mt-1">Inspect PDF structures, fonts, catalog metadata and fields.</p>
           </a>
+          <a href="pdf-letterhead-overlay/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🖨️</span>
+            <div class="font-bold mt-3">PDF Letterhead</div>
+            <p class="text-sm text-slate-500 mt-1">Overlay a letterhead, logo or border template on every page.</p>
+          </a>
+          <a href="pdf-contact-sheet/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">PDF Contact Sheet</div>
+            <p class="text-sm text-slate-500 mt-1">Thumbnail grid of all pages — for storyboards, reviews and proofs.</p>
+          </a>
           <!-- ADVERTISEMENT SLOT -->
           <div class="ad-box rounded-2xl min-h-[140px]" aria-label="Advertisement"></div>
         </div>
@@ -2359,6 +2369,83 @@
             <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
           </div>
         </div>
+
+          <!-- ============ PDF LETTERHEAD OVERLAY ============ -->
+          <div id="panel-letterhead" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🖨️</span>
+              <div>
+                <h2 class="text-2xl font-bold">PDF Letterhead Overlay</h2>
+                <p class="text-slate-500 text-sm">Apply a template (letterhead, border, logo) on top of every page. Supports PDF or image templates.</p>
+              </div>
+            </div>
+            <div id="dz-letterhead" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop your target PDF here or click to browse</p>
+              <input type="file" id="file-letterhead" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-letterhead" class="mt-4 text-sm text-slate-600"></p>
+            <div id="dz-letterhead-tpl" class="dropzone mt-4 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">🎨</div>
+              <p class="mt-2 font-semibold">Drop your template (PDF or image) here or click to browse</p>
+              <p class="text-sm text-slate-500">Use a 1-page PDF template, or a JPG/PNG letterhead image</p>
+              <input type="file" id="file-letterhead-tpl" accept="application/pdf,.pdf,image/png,.png,image/jpeg,.jpg,.jpeg" class="hidden" />
+            </div>
+            <p id="picked-letterhead-tpl" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5">
+              <label class="text-sm font-semibold">Layer
+                <select id="layer-letterhead" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="on-top" selected>On top of content</option>
+                  <option value="behind">Behind content</option>
+                </select>
+              </label>
+            </div>
+            <button id="btn-letterhead" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply Letterhead</button>
+            <p id="status-letterhead" class="mt-4 text-sm font-medium"></p>
+            <div id="res-letterhead" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-letterhead" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-letterhead" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download File</button>
+                <span class="text-sm text-slate-600" id="info-letterhead"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ PDF GRID / CONTACT SHEET ============ -->
+          <div id="panel-pdfgrid" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🖼️</span>
+              <div>
+                <h2 class="text-2xl font-bold">PDF Contact Sheet</h2>
+                <p class="text-slate-500 text-sm">Render all pages into a single image grid — ideal for storyboards, layout reviews and thumbnails.</p>
+              </div>
+            </div>
+            <div id="dz-pdfgrid" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-pdfgrid" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-pdfgrid" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5">
+              <label class="text-sm font-semibold">Columns
+                <select id="cols-pdfgrid" class="mt-1.5 block border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="2">2 columns</option>
+                  <option value="3" selected>3 columns</option>
+                  <option value="4">4 columns</option>
+                  <option value="5">5 columns</option>
+                </select>
+              </label>
+            </div>
+            <button id="btn-pdfgrid" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Generate Contact Sheet</button>
+            <p id="status-pdfgrid" class="mt-4 text-sm font-medium"></p>
+            <div id="res-pdfgrid" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-pdfgrid" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Image</button>
+                <span class="text-sm text-slate-600" id="info-pdfgrid"></span>
+              </div>
+            </div>
+          </div>
+
         </section>
 
         <!-- Right rail -->
