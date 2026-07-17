@@ -13,6 +13,7 @@ import { initImageCollage } from './tools/imagecollage.js';
 import { initMerge } from './tools/merge.js';
 import { initSplit } from './tools/split.js';
 import { initRotate } from './tools/rotate.js';
+import { initSignTool } from './tools/sign.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initPdfGrid();
@@ -29,4 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMerge();
   initSplit();
   initRotate();
+  if (window.appHelpers) {
+    initSignTool(window.appHelpers);
+  }
 });
