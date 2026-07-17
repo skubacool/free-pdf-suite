@@ -267,10 +267,9 @@ export function initSignTool(appHelpers) {
       const w = (vw * +$('#sig-width').value) / 100;
       const h = (w * img.height) / img.width;
 
-      const Vx = state.placement.nx * vw - (w / 2);
-      const Vy = vh - state.placement.ny * vh - (h / 2);
+      const Vx = state.placement.nx * vw;
+      const Vy = state.placement.ny * vh;
       
-      // getRotatedOrigin expects the bottom-left point. We adjusted Vx and Vy to be bottom-left of the image box (in viewing coordinates)
       const pos = getRotatedOrigin(Vx, Vy, w, h, page);
 
       page.drawImage(img, {
