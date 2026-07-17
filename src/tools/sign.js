@@ -203,6 +203,7 @@ export function initSignTool(appHelpers) {
       state.placement = null;
       hideResult('sign');
       setStatus('sign', 'Loading preview…');
+      updateReady();
       
       state.doc = await loadPdfJs(await f.arrayBuffer());
       state.pageNum = 1;
@@ -226,6 +227,7 @@ export function initSignTool(appHelpers) {
     state.pageNum = Math.min(Math.max(1, +$('#page-sign').value || 1), state.doc.numPages);
     $('#page-sign').value = state.pageNum;
     state.placement = null;
+    updateReady();
     await renderPreview(state, '#preview-sign', '#wrap-sign');
     updateReady();
   });
@@ -239,6 +241,7 @@ export function initSignTool(appHelpers) {
 
   // 9. Execute Stamping
   $('#btn-sign').addEventListener('click', async () => {
+    if (!state.placement || !state.dataUrl || !state.file) return;
     const btn = $('#btn-sign');
     btn.disabled = true;
     hideResult('sign');
