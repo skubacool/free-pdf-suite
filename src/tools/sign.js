@@ -1,7 +1,7 @@
 export function initSignTool(appHelpers) {
   const {
     $, $$, setupDropzone, hideResult, setStatus, loadPdfJs, renderPreview, fmtBytes,
-    PW_NEEDED_MSG, loadPdfForEdit, decodeDataUrlBytes, getRotatedOrigin, savePdfAndShowResult,
+    PW_NEEDED_MSG, loadPdfForEdit, decodeDataUrlBytes, getRotatedOrigin, showResult,
     clickToNorm
   } = appHelpers;
 
@@ -276,7 +276,8 @@ export function initSignTool(appHelpers) {
         height: h,
       });
 
-      await savePdfAndShowResult('sign', doc, state.file.name.replace(/\.[^.]+$/, '-signed.pdf'));
+      const pdfBytes = await doc.save({ useObjectStreams: true });
+      showResult('sign', pdfBytes, state.file.name.replace(/\.[^.]+$/, '-signed.pdf'), 'application/pdf', 'Document signed successfully');
     } catch (err) {
       console.error(err);
       setStatus('sign', `❌ Error: ${err.message || err}`, 'error');
