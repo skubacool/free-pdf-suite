@@ -11,3 +11,14 @@ Thumbs.db
 !.dev.vars.example
 .env*
 !.env.example
+
+# Local dev/QA scratch — never publish to the live site.
+# Everything in the repo root is served publicly by GitHub Pages, so debug
+# dumps, test harnesses and failure screenshots must stay out of git.
+scratch/
+*_error.png
+temp_*.js
+original_app.js
+early_app.js
+app_history.txt
+test_*.pdf
