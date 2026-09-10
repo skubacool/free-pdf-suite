@@ -162,7 +162,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script defer src="../app.js?v=9"></script>
+  <script defer src="../app.js?v=10"></script>
   <script type="module" src="../nhost.js"></script>
 </head>
 
@@ -214,6 +214,41 @@
     <!-- ================= หน้าหลัก ================= -->
     <div id="home-view">
 
+      <section class="th-tools-row mt-8">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">เครื่องมือยอดนิยม (หน้าภาษาไทย)</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a href="merge-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
+            <div class="font-bold mt-3">รวมไฟล์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">รวมหลายไฟล์เป็นไฟล์เดียว</p>
+          </a>
+          <a href="compress-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗜️</span>
+            <div class="font-bold mt-3">ลดขนาดไฟล์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ย่อไฟล์ให้ส่งอีเมลได้</p>
+          </a>
+          <a href="pdf-to-word/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">📃</span>
+            <div class="font-bold mt-3">PDF เป็น Word</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงข้อความไปแก้ไขต่อ</p>
+          </a>
+          <a href="jpg-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">รูปเป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">รวมรูปถ่ายเป็น PDF</p>
+          </a>
+          <a href="ocr-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🔤</span>
+            <div class="font-bold mt-3">OCR ภาษาไทย</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงข้อความจากไฟล์สแกน</p>
+          </a>
+          <a href="passport-photo/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🪪</span>
+            <div class="font-bold mt-3">รูปวีซ่า/ติดบัตร</div>
+            <p class="text-sm text-slate-500 mt-1">ขนาดและ KB ตามที่กำหนด</p>
+          </a>
+        </div>
+      </section>
       <section class="text-center pt-12 pb-10">
         <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
           เครื่องมือ PDF ครบทุกอย่าง<br class="hidden md:block" />

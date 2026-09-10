@@ -519,14 +519,13 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   } catch (_) {}
   if ($('#year')) $('#year').textContent = new Date().getFullYear();
 
-  // The original tool modules below predate the self-guard pattern and assume
-  // their panels exist in the DOM. On lean single-tool pages (e.g. the image
-  // tools) those panels are absent, so the first null access (e.g. #files-merge)
-  // would throw and abort the rest of app.js. Gate the whole block on a
-  // representative panel: full tool pages and the homepage hub contain every
-  // panel (so this runs as before), while lean pages skip it harmlessly.
-  if ($('#dz-merge')) {
-
+  // The original tool modules below predate the self-guard pattern and touch
+  // their panel elements unconditionally. Lean pages (a single tool, e.g. the
+  // localised /th/ pages) legitimately lack the others, so each module is
+  // wrapped individually: a missing panel skips just that module instead of
+  // aborting the rest of app.js. Gating the whole block on one panel was wrong
+  // - a lean merge page satisfies the gate but still lacks compress, sign, etc.
+  try {
   // ============================================================== COMPRESS
   const compressState = { file: null };
   setupDropzone('compress', ([f]) => {
@@ -581,7 +580,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = false;
     }
   });
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ================================================================ UNLOCK
   const unlockState = { file: null };
   setupDropzone('unlock', ([f]) => {
@@ -640,7 +640,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   });
 
   // Removed local shared preview renderer (moved to global helper section));
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // =========================================================== TYPE ON PDF
   const typeState = { file: null, doc: null, pageNum: 1, items: [] };
   // Removed local hexToRgb (moved to global helper section)
@@ -767,7 +768,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = typeState.items.length === 0;
     }
   });
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ============================================================ WORD -> PDF
   const w2pState = { file: null };
   setupDropzone('word2pdf', ([f]) => {
@@ -855,7 +857,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = false;
     }
   });
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ============================================================ PDF -> WORD
   const p2wState = { file: null };
   setupDropzone('pdf2word', ([f]) => {
@@ -906,9 +909,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = false;
     }
   });
-
-
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ============================================================ JPG TO PDF
   const i2pState = { files: [] };
   const renderI2pList = () => {
@@ -990,7 +992,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = i2pState.files.length === 0;
     }
   });
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ============================================================ PDF TO JPG
   const p2jState = { file: null };
   setupDropzone('pdf2jpg', ([f]) => {
@@ -1046,7 +1049,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = !p2jState.file;
     }
   });
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ======================================================== PAGE NUMBERS
   const pnState = { file: null };
   setupDropzone('pagenum', ([f]) => {
@@ -1101,7 +1105,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = !pnState.file;
     }
   });
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ============================================================ WATERMARK
   const wmState = { file: null };
   $('#opacity-watermark').addEventListener('input', () => {
@@ -1199,7 +1204,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = !wmState.file;
     }
   });
-
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+  try {
   // ============================================================== PROTECT
   // pdf-lib cannot write encrypted PDFs, so this tool lazily loads the
   // @cantoo/pdf-lib fork (which adds AES encryption) only when used. The fork's
@@ -1266,7 +1272,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       btn.disabled = !protState.file;
     }
   });
-  } // end original (pre-guard) tool modules — gated on #dz-merge above
+  } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
+
 
   // ========================================================== DELETE PAGES
   // Self-guarded: only initializes on pages that contain its panel.
@@ -5792,7 +5799,12 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   const baseHref = () => {
     const a = document.querySelector('header a[href]');
     const h = a && a.getAttribute('href');
-    return h && /\.\.\/$|^\.\/$|^\/$/.test(h) ? h : '../';
+    let base = h && /\.\.\/$|^\.\/$|^\/$/.test(h) ? h : '../';
+    // Localised pages live one level deeper (/th/<slug>/). Chain to the English
+    // tools, which always exist, rather than guessing at a translated page.
+    const lang = document.documentElement.getAttribute('lang') || 'en';
+    if (lang !== 'en') base += '../';
+    return base;
   };
 
   const CHAIN_PDF = [
