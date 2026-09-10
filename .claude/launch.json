@@ -3,10 +3,10 @@
   "configurations": [
     {
       "name": "static",
-      "autoPort": true,
+      "autoPort": false,
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server"],
-      "port": 8099
+      "runtimeArgs": ["-m", "http.server", "8123"],
+      "port": 8123
     }
   ]
 }
