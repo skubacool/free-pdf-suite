@@ -39,10 +39,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const UNICODE_FONT_URL = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/noto-sans-thai/NotoSansThai_400Regular.ttf';
   const CJK_FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf';
   const LATIN_FONT_URL = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/noto-sans/NotoSans_400Regular.ttf';
-  let unicodeFontBytes = null;
-  let cjkFontBytes = null;
-  let latinFontBytes = null;
-  const parsedFonts = {}; // url -> fontkit font, reused for glyph-coverage checks
+  const ARABIC_FONT_URL = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/noto-sans-arabic/NotoSansArabic_400Regular.ttf';
+  const HEBREW_FONT_URL = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/noto-sans-hebrew/NotoSansHebrew_400Regular.ttf';
+  const DEVANAGARI_FONT_URL = 'https://cdn.jsdelivr.net/npm/@expo-google-fonts/noto-sans-devanagari/NotoSansDevanagari_400Regular.ttf';
+  // fontkit 1.1.1's Arabic/Indic shapers are transpiled generators referencing a
+  // global `regeneratorRuntime` that its UMD bundle does not ship. Without this
+  // polyfill they throw 'regeneratorRuntime is not defined' and the tool dies, so
+  // it is loaded on demand the first time such a script is used.
+  const REGENERATOR_URL = 'https://cdn.jsdelivr.net/npm/regenerator-runtime@0.14.1/runtime.js';
+  const fontBytesCache = {}; // url -> ArrayBuffer
+  const parsedFonts = {};    // url -> fontkit font, reused for glyph-coverage checks
 
 
   const hasUnicode = (s) => /[^ -ÿ]/.test(s);
@@ -65,20 +71,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const hasThaiChars = (t) => /[฀-๿]/.test(t);
   const hasCjkChars = (t) => /[ᄀ-ᇿ⺀-鿿ꥠ-꥿가-퟿豈-﫿︰-﹏＀-￯]/.test(t);
 
+  // Script -> font table, tried in order (last entry is the fallback). `subset` is
+  // per font and must be decided by RENDERING the output: pdf-lib's subsetter is
+  // unreliable and differs per font (see the notes on the embed call below).
+  const SCRIPT_FONTS = [
+    { label: 'CJK', url: CJK_FONT_URL, subset: true, test: (t) => hasCjkChars(t) },
+    { label: 'Thai', url: UNICODE_FONT_URL, subset: true, test: (t) => hasThaiChars(t) },
+    { label: 'Arabic', url: ARABIC_FONT_URL, subset: false, needsShaper: true, test: (t) => /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/.test(t) },
+    { label: 'Hebrew', url: HEBREW_FONT_URL, subset: false, needsShaper: true, test: (t) => /[֐-׿יִ-ﭏ]/.test(t) },
+    { label: 'Devanagari', url: DEVANAGARI_FONT_URL, subset: false, needsShaper: true, test: (t) => /[ऀ-ॿ꣠-ꣿ]/.test(t) },
+    { label: 'Unicode', url: LATIN_FONT_URL, subset: false, test: () => true },
+  ];
+
   const getUnicodeFont = async (doc, text = '') => {
     if (typeof fontkit === 'undefined') throw new Error('Font engine still loading - please try again in a moment.');
     doc.registerFontkit(fontkit);
-    const pick = hasCjkChars(text)
-      ? { url: CJK_FONT_URL, label: 'CJK', subset: true, get: () => cjkFontBytes, set: (b) => (cjkFontBytes = b) }
-      : hasThaiChars(text)
-        ? { url: UNICODE_FONT_URL, label: 'Thai', subset: true, get: () => unicodeFontBytes, set: (b) => (unicodeFontBytes = b) }
-        : { url: LATIN_FONT_URL, label: 'Unicode', subset: false, get: () => latinFontBytes, set: (b) => (latinFontBytes = b) };
-    if (!pick.get()) {
+    const pick = SCRIPT_FONTS.find((f) => f.test(text)) || SCRIPT_FONTS[SCRIPT_FONTS.length - 1];
+    if (pick.needsShaper && typeof regeneratorRuntime === 'undefined') {
+      await loadScriptOnce(REGENERATOR_URL, 'regeneratorRuntime');
+    }
+    if (!fontBytesCache[pick.url]) {
       const res = await fetch(pick.url);
       if (!res.ok) throw new Error(`Could not download the ${pick.label} font - check your connection and try again.`);
-      pick.set(await res.arrayBuffer());
+      fontBytesCache[pick.url] = await res.arrayBuffer();
     }
-    const bytes = pick.get();
+    const bytes = fontBytesCache[pick.url];
     // Record any characters this font cannot draw, so callers can say so plainly
     // instead of emitting silent blank boxes (Arabic, Hebrew, Devanagari, ...).
     let unsupported = [];
