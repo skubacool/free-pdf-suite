@@ -275,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dl.insertAdjacentElement('afterend', b);
       }
     }
+    chainButtons(tool);
   }
   $$('[id^="dl-"]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -5780,6 +5781,186 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       }
     });
   }
+
+  // ---------------------------------------------- presets + tool chaining
+  // Both are deliberately GENERIC: they read and write the standard panel markup
+  // (#panel-KEY, #file-KEY, #res-KEY) rather than touching any tool module, so
+  // every existing tool gains them without being modified.
+
+  // Base href for cross-tool links. Derived from the header logo link so it works
+  // at the site root in production and under a sub-path in local preview.
+  const baseHref = () => {
+    const a = document.querySelector('header a[href]');
+    const h = a && a.getAttribute('href');
+    return h && /\.\.\/$|^\.\/$|^\/$/.test(h) ? h : '../';
+  };
+
+  const CHAIN_PDF = [
+    { key: 'compress', url: 'compress-pdf', label: 'Compress' },
+    { key: 'ocr', url: 'ocr-pdf', label: 'OCR text' },
+    { key: 'watermark', url: 'watermark-pdf', label: 'Watermark' },
+    { key: 'sign', url: 'sign-pdf', label: 'Sign' },
+  ];
+  const CHAIN_IMG = [
+    { key: 'imgcompress', url: 'compress-image', label: 'Compress' },
+    { key: 'imgresize', url: 'resize-image', label: 'Resize' },
+    { key: 'img2pdf', url: 'jpg-to-pdf', label: 'To PDF' },
+  ];
+
+  // A produced file is handed to the next tool through IndexedDB: blob URLs die
+  // with the page, so the bytes have to outlive the navigation.
+  const idbReq = (r) => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const idbOpen = () => new Promise((res, rej) => {
+    const r = indexedDB.open('upmypdf', 1);
+    r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('handoff')) db.createObjectStore('handoff'); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  const handoffPut = async (rec) => {
+    const db = await idbOpen();
+    const t = db.transaction('handoff', 'readwrite');
+    t.objectStore('handoff').put(rec, 'pending');
+    return new Promise((res, rej) => { t.oncomplete = () => res(); t.onerror = () => rej(t.error); });
+  };
+  const handoffTake = async () => {
+    const db = await idbOpen();
+    const v = await idbReq(db.transaction('handoff', 'readonly').objectStore('handoff').get('pending'));
+    const t = db.transaction('handoff', 'readwrite');
+    t.objectStore('handoff').delete('pending');
+    await new Promise((res) => { t.oncomplete = res; t.onerror = res; });
+    return v || null;
+  };
+
+  // Offer "keep going" buttons on a finished result, so the output can move
+  // straight into the next tool without a download/re-upload round trip.
+  function chainButtons(tool) {
+    try {
+      const res = document.getElementById(`res-${tool}`);
+      const r = results[tool];
+      if (!res || !r || !r.blob || res.querySelector('.chain-row')) return;
+      if (!('indexedDB' in window)) return;
+      const type = r.blob.type || '';
+      const list = (type === 'application/pdf' ? CHAIN_PDF : /^image\//.test(type) ? CHAIN_IMG : [])
+        .filter((t) => !location.pathname.includes('/' + t.url + '/'));
+      if (!list.length) return;
+      const row = document.createElement('div');
+      row.className = 'chain-row mt-4 flex flex-wrap items-center gap-2 text-sm';
+      const cap = document.createElement('span');
+      cap.className = 'text-slate-500 font-medium';
+      cap.textContent = 'Keep going:';
+      row.appendChild(cap);
+      list.slice(0, 4).forEach((t) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn border border-brand-600 text-brand-700 rounded-lg px-3 py-1.5 font-semibold hover:bg-brand-50';
+        b.textContent = t.label + ' →';
+        b.addEventListener('click', async () => {
+          const original = b.textContent;
+          try {
+            b.disabled = true; b.textContent = 'Sending…';
+            const buf = await r.blob.arrayBuffer();
+            await handoffPut({ name: r.filename, type: r.blob.type, buf, target: t.key });
+            location.href = baseHref() + t.url + '/';
+          } catch (e) {
+            b.disabled = false; b.textContent = original;
+            setStatus(tool, `❌ Could not pass the file on: ${e.message || e}`, 'error');
+          }
+        });
+        row.appendChild(b);
+      });
+      res.appendChild(row);
+    } catch (_) {}
+  }
+
+  // On load, if a file was handed over, drop it straight into this tool.
+  (async () => {
+    try {
+      if (!('indexedDB' in window)) return;
+      const rec = await handoffTake();
+      if (!rec || !rec.target) return;
+      const input = document.getElementById(`file-${rec.target}`);
+      if (!input) return; // not this page's tool - the record is simply discarded
+      const file = new File([rec.buf], rec.name || 'file', { type: rec.type || '' });
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      setStatus(rec.target, `✅ Brought ${rec.name} over from the previous tool — nothing was uploaded.`, 'success');
+    } catch (_) {}
+  })();
+
+  // ---- saved presets, for every tool panel ----
+  // Serialises the panel's own inputs (never the file input) to localStorage, so
+  // recurring jobs - a company watermark, a passport size, a target file size -
+  // are one click instead of retyping.
+  (() => {
+    const KEY = 'upmypdf_presets';
+    const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (_) { return {}; } };
+    const write = (o) => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (_) {} };
+    const fieldsOf = (panel) => [...panel.querySelectorAll('input,select,textarea')]
+      .filter((el) => el.id && el.type !== 'file' && el.type !== 'hidden');
+
+    $$('.panel[id^="panel-"]').forEach((panel) => {
+      const tool = panel.id.replace('panel-', '');
+      const fields = fieldsOf(panel);
+      if (fields.length < 2) return; // nothing worth saving
+      const bar = document.createElement('div');
+      bar.className = 'preset-bar mt-4 flex flex-wrap items-center gap-2 text-sm';
+      bar.innerHTML =
+        '<span class="text-slate-500 font-medium">Presets:</span>' +
+        `<select id="preset-sel-${tool}" class="border border-slate-300 rounded-lg px-2 py-1 bg-white text-sm"><option value="">(none saved)</option></select>` +
+        `<button type="button" id="preset-save-${tool}" class="btn border border-slate-300 rounded-lg px-3 py-1 font-semibold hover:bg-slate-100">Save current</button>` +
+        `<button type="button" id="preset-del-${tool}" class="btn border border-slate-300 rounded-lg px-3 py-1 hover:bg-slate-100">Delete</button>`;
+      const header = panel.querySelector(':scope > div.flex.items-center.gap-3');
+      if (header) header.insertAdjacentElement('afterend', bar); else panel.prepend(bar);
+
+      const sel = bar.querySelector(`#preset-sel-${tool}`);
+      const refresh = () => {
+        const all = read()[tool] || {};
+        const names = Object.keys(all);
+        sel.innerHTML = names.length
+          ? '<option value="">Choose a preset…</option>' + names.map((n) => `<option>${escapeHtml(n)}</option>`).join('')
+          : '<option value="">(none saved)</option>';
+      };
+      refresh();
+
+      sel.addEventListener('change', () => {
+        const data = (read()[tool] || {})[sel.value];
+        if (!data) return;
+        fieldsOf(panel).forEach((el) => {
+          if (!(el.id in data)) return;
+          if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!data[el.id];
+          else el.value = data[el.id];
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        setStatus(tool, `✅ Loaded preset "${sel.value}".`, 'success');
+      });
+
+      bar.querySelector(`#preset-save-${tool}`).addEventListener('click', () => {
+        const name = (prompt('Name this preset', sel.value || 'My settings') || '').trim();
+        if (!name) return;
+        const snap = {};
+        fieldsOf(panel).forEach((el) => { snap[el.id] = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value; });
+        const all = read();
+        all[tool] = all[tool] || {};
+        all[tool][name] = snap;
+        write(all);
+        refresh();
+        sel.value = name;
+        setStatus(tool, `✅ Saved preset "${name}" on this device.`, 'success');
+      });
+
+      bar.querySelector(`#preset-del-${tool}`).addEventListener('click', () => {
+        const all = read();
+        if (!sel.value || !all[tool] || !all[tool][sel.value]) return;
+        const gone = sel.value;
+        delete all[tool][gone];
+        write(all);
+        refresh();
+        setStatus(tool, `Deleted preset "${gone}".`);
+      });
+    });
+  })();
 
   // ------------------------------------------------------ recently used tools
   // On hub pages, surface the tools this visitor used most recently (stored
