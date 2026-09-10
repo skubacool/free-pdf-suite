@@ -485,7 +485,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'scan', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -5476,6 +5476,308 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         setStatus('imgmerge', `✅ Merged ${imgs.length} images into ${c.width}×${c.height}px.`, 'success');
       } catch (err) { setStatus('imgmerge', `❌ ${err.message || err}`, 'error'); }
       finally { btn.disabled = files.length < 2; }
+    });
+  }
+
+  // ---- Scan to PDF: phone camera or photos -> deskewed, cleaned, multi-page PDF ----
+  // Everything (camera frames included) stays in this tab; nothing is uploaded.
+  if ($('#dz-scan')) {
+    const st = { pages: [], stream: null };
+    const MAXDIM = 2000; // cap the working size so the pixel loops stay fast
+
+    const fileToCanvas = async (f) => {
+      const img = await loadImageEl(f);
+      const s = Math.min(1, MAXDIM / Math.max(img.naturalWidth, img.naturalHeight));
+      return drawImageCanvas(img, img.naturalWidth * s, img.naturalHeight * s, null);
+    };
+
+    // Perspective-correct a quad (TL,TR,BR,BL, in source pixels) into an upright
+    // image, using Heckbert's projective map from the unit square to the quad and
+    // inverse-sampling each destination pixel (bilinear).
+    const warpQuad = (src, q, outW, outH) => {
+      const sd = src.getContext('2d').getImageData(0, 0, src.width, src.height);
+      const sp = sd.data, sw = src.width, sh = src.height;
+      const out = document.createElement('canvas');
+      out.width = Math.max(1, Math.round(outW));
+      out.height = Math.max(1, Math.round(outH));
+      const octx = out.getContext('2d');
+      const od = octx.createImageData(out.width, out.height);
+      const op = od.data;
+      const x0 = q[0].x, y0 = q[0].y, x1 = q[1].x, y1 = q[1].y;
+      const x2 = q[2].x, y2 = q[2].y, x3 = q[3].x, y3 = q[3].y;
+      const sx = x0 - x1 + x2 - x3, sy = y0 - y1 + y2 - y3;
+      let a, b, c, d, e, f, g, h;
+      if (Math.abs(sx) < 1e-9 && Math.abs(sy) < 1e-9) {
+        a = x1 - x0; b = x3 - x0; c = x0;
+        d = y1 - y0; e = y3 - y0; f = y0; g = 0; h = 0;
+      } else {
+        const dx1 = x1 - x2, dx2 = x3 - x2, dy1 = y1 - y2, dy2 = y3 - y2;
+        const den = dx1 * dy2 - dx2 * dy1 || 1e-9;
+        g = (sx * dy2 - dx2 * sy) / den;
+        h = (dx1 * sy - sx * dy1) / den;
+        a = x1 - x0 + g * x1; b = x3 - x0 + h * x3; c = x0;
+        d = y1 - y0 + g * y1; e = y3 - y0 + h * y3; f = y0;
+      }
+      for (let py = 0; py < out.height; py++) {
+        const v = (py + 0.5) / out.height;
+        for (let px = 0; px < out.width; px++) {
+          const u = (px + 0.5) / out.width;
+          const w = g * u + h * v + 1;
+          const X = (a * u + b * v + c) / w, Y = (d * u + e * v + f) / w;
+          const o = (py * out.width + px) * 4;
+          if (X < 0 || Y < 0 || X > sw - 1 || Y > sh - 1) { op[o] = op[o + 1] = op[o + 2] = 255; op[o + 3] = 255; continue; }
+          const ix = X | 0, iy = Y | 0, fx = X - ix, fy = Y - iy;
+          const ix2 = Math.min(ix + 1, sw - 1), iy2 = Math.min(iy + 1, sh - 1);
+          const i00 = (iy * sw + ix) * 4, i10 = (iy * sw + ix2) * 4;
+          const i01 = (iy2 * sw + ix) * 4, i11 = (iy2 * sw + ix2) * 4;
+          for (let k = 0; k < 3; k++) {
+            const top = sp[i00 + k] + (sp[i10 + k] - sp[i00 + k]) * fx;
+            const bot = sp[i01 + k] + (sp[i11 + k] - sp[i01 + k]) * fx;
+            op[o + k] = top + (bot - top) * fy;
+          }
+          op[o + 3] = 255;
+        }
+      }
+      octx.putImageData(od, 0, 0);
+      return out;
+    };
+
+    // Rough auto-crop: a page is normally brighter than the surface under it, so
+    // Otsu-threshold a small copy and take the bright region's bounding box. If the
+    // result looks implausible we keep the whole frame rather than cropping wrongly.
+    const autoCorners = (cv) => {
+      const full = [{ x: 0, y: 0 }, { x: cv.width, y: 0 }, { x: cv.width, y: cv.height }, { x: 0, y: cv.height }];
+      const W = 240, H = Math.max(1, Math.round(cv.height * W / cv.width));
+      const small = drawImageCanvas(cv, W, H, null);
+      const d = small.getContext('2d').getImageData(0, 0, W, H).data;
+      const g = new Uint8Array(W * H), hist = new Array(256).fill(0);
+      for (let i = 0, j = 0; i < d.length; i += 4, j++) {
+        const v = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) | 0;
+        g[j] = v; hist[v]++;
+      }
+      let total = 0; for (let i = 0; i < 256; i++) total += i * hist[i];
+      let sumB = 0, wB = 0, best = -1, thr = 128;
+      for (let i = 0; i < 256; i++) {
+        wB += hist[i]; if (!wB) continue;
+        const wF = W * H - wB; if (!wF) break;
+        sumB += i * hist[i];
+        const mB = sumB / wB, mF = (total - sumB) / wF;
+        const between = wB * wF * (mB - mF) * (mB - mF);
+        if (between > best) { best = between; thr = i; }
+      }
+      // Corner extraction, not a bounding box: for a convex page the extremes of
+      // (x+y) and (x-y) land on the four corners, which is what lets us actually
+      // deskew the perspective instead of merely cropping a tilted page.
+      let tl = null, br = null, tr = null, bl = null;
+      let sMin = 1e9, sMax = -1e9, dMin = 1e9, dMax = -1e9, count = 0;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        if (g[y * W + x] <= thr) continue;
+        count++;
+        const sum = x + y, dif = x - y;
+        if (sum < sMin) { sMin = sum; tl = { x, y }; }
+        if (sum > sMax) { sMax = sum; br = { x, y }; }
+        if (dif > dMax) { dMax = dif; tr = { x, y }; }
+        if (dif < dMin) { dMin = dif; bl = { x, y }; }
+      }
+      if (!tl || !tr || !br || !bl) return full;
+      const frac = count / (W * H);
+      if (frac > 0.97 || frac < 0.12) return full; // implausible -> keep the frame
+      // Reject a degenerate quad (any edge too short to be a page).
+      const edge = (p1, p2) => Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      const minEdge = Math.min(edge(tl, tr), edge(tr, br), edge(br, bl), edge(bl, tl));
+      if (minEdge < Math.min(W, H) * 0.15) return full;
+      const kx = cv.width / W, ky = cv.height / H;
+      return [tl, tr, br, bl].map((pt) => ({ x: pt.x * kx, y: pt.y * ky }));
+    };
+
+    // 'bw' uses an adaptive (local-mean) threshold via an integral image, which is
+    // what gives the crisp flatbed-scanner look on an unevenly lit phone photo.
+    const enhanceCanvas = (cv, mode) => {
+      if (mode === 'color') return cv;
+      const ctx = cv.getContext('2d');
+      const im = ctx.getImageData(0, 0, cv.width, cv.height), p = im.data;
+      const w = cv.width, hh = cv.height;
+      const gray = new Float32Array(w * hh);
+      for (let i = 0, j = 0; i < p.length; i += 4, j++) gray[j] = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
+      if (mode === 'gray') {
+        for (let i = 0, j = 0; i < p.length; i += 4, j++) { const v = gray[j]; p[i] = p[i + 1] = p[i + 2] = v; }
+      } else {
+        const ii = new Float64Array((w + 1) * (hh + 1));
+        for (let y = 0; y < hh; y++) {
+          let rs = 0;
+          for (let x = 0; x < w; x++) { rs += gray[y * w + x]; ii[(y + 1) * (w + 1) + x + 1] = ii[y * (w + 1) + x + 1] + rs; }
+        }
+        const r = Math.max(8, Math.round(Math.min(w, hh) / 40));
+        for (let y = 0; y < hh; y++) {
+          const y0 = Math.max(0, y - r), y1 = Math.min(hh - 1, y + r);
+          for (let x = 0; x < w; x++) {
+            const x0 = Math.max(0, x - r), x1 = Math.min(w - 1, x + r);
+            const cnt = (x1 - x0 + 1) * (y1 - y0 + 1);
+            const s = ii[(y1 + 1) * (w + 1) + x1 + 1] - ii[y0 * (w + 1) + x1 + 1]
+                    - ii[(y1 + 1) * (w + 1) + x0] + ii[y0 * (w + 1) + x0];
+            const idx = (y * w + x) * 4;
+            const val = gray[y * w + x] > (s / cnt) * 0.92 ? 255 : 0;
+            p[idx] = p[idx + 1] = p[idx + 2] = val;
+          }
+        }
+      }
+      ctx.putImageData(im, 0, 0);
+      return cv;
+    };
+
+    const rotateCanvas = (cv, deg) => {
+      const d = ((deg % 360) + 360) % 360;
+      if (!d) return cv;
+      const swap = d === 90 || d === 270;
+      const out = document.createElement('canvas');
+      out.width = swap ? cv.height : cv.width;
+      out.height = swap ? cv.width : cv.height;
+      const c = out.getContext('2d');
+      c.translate(out.width / 2, out.height / 2);
+      c.rotate(d * Math.PI / 180);
+      c.drawImage(cv, -cv.width / 2, -cv.height / 2);
+      return out;
+    };
+
+    // Build the finished page image (crop -> rotate -> clean).
+    const renderPage = (pg) => {
+      let cv = pg.canvas;
+      if ($('#auto-scan').checked) {
+        const q = autoCorners(cv);
+        const wTop = Math.hypot(q[1].x - q[0].x, q[1].y - q[0].y);
+        const wBot = Math.hypot(q[2].x - q[3].x, q[2].y - q[3].y);
+        const hL = Math.hypot(q[3].x - q[0].x, q[3].y - q[0].y);
+        const hR = Math.hypot(q[2].x - q[1].x, q[2].y - q[1].y);
+        cv = warpQuad(cv, q, Math.max(wTop, wBot), Math.max(hL, hR));
+      }
+      cv = rotateCanvas(cv, pg.rot);
+      return enhanceCanvas(cv, $('#enh-scan').value);
+    };
+
+    const renderList = () => {
+      const wrap = $('#pages-scan');
+      wrap.innerHTML = '';
+      st.pages.forEach((pg, i) => {
+        const li = document.createElement('div');
+        li.className = 'flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-2';
+        const th = document.createElement('canvas');
+        const s = 64 / Math.max(pg.canvas.width, pg.canvas.height);
+        th.width = Math.max(1, pg.canvas.width * s); th.height = Math.max(1, pg.canvas.height * s);
+        th.getContext('2d').drawImage(pg.canvas, 0, 0, th.width, th.height);
+        th.className = 'border border-slate-300 rounded';
+        li.appendChild(th);
+        const label = document.createElement('span');
+        label.className = 'text-sm font-medium';
+        label.textContent = `Page ${i + 1}`;
+        li.appendChild(label);
+        const btns = document.createElement('span');
+        btns.className = 'ml-auto flex gap-1';
+        btns.innerHTML = `<button data-act="up" data-i="${i}" class="border border-slate-300 rounded-lg px-2.5 py-0.5 hover:bg-white" title="Move up">&uarr;</button>
+          <button data-act="down" data-i="${i}" class="border border-slate-300 rounded-lg px-2.5 py-0.5 hover:bg-white" title="Move down">&darr;</button>
+          <button data-act="rot" data-i="${i}" class="border border-slate-300 rounded-lg px-2.5 py-0.5 hover:bg-white" title="Rotate">&#8635;</button>
+          <button data-act="rm" data-i="${i}" class="border border-red-200 text-red-700 rounded-lg px-2.5 py-0.5 hover:bg-red-50" title="Remove">&times;</button>`;
+        li.appendChild(btns);
+        wrap.appendChild(li);
+      });
+      $('#btn-scan').disabled = st.pages.length === 0;
+      $('#count-scan').textContent = st.pages.length ? `${st.pages.length} page${st.pages.length > 1 ? 's' : ''} ready` : '';
+    };
+
+    $('#pages-scan').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-act]');
+      if (!b) return;
+      const i = +b.dataset.i, act = b.dataset.act;
+      if (act === 'rm') st.pages.splice(i, 1);
+      if (act === 'rot') st.pages[i].rot = (st.pages[i].rot + 90) % 360;
+      if (act === 'up' && i > 0) { const t = st.pages[i - 1]; st.pages[i - 1] = st.pages[i]; st.pages[i] = t; }
+      if (act === 'down' && i < st.pages.length - 1) { const t = st.pages[i + 1]; st.pages[i + 1] = st.pages[i]; st.pages[i] = t; }
+      hideResult('scan');
+      renderList();
+    });
+
+    const addFiles = async (files) => {
+      const imgs = files.filter(isImageFile);
+      if (!imgs.length) { setStatus('scan', '❌ Please choose photos (JPG, PNG or HEIC).', 'error'); return; }
+      for (let i = 0; i < imgs.length; i++) {
+        setStatus('scan', `Reading photo ${i + 1} of ${imgs.length}…`);
+        st.pages.push({ canvas: await fileToCanvas(imgs[i]), rot: 0 });
+      }
+      setStatus('scan', '');
+      hideResult('scan');
+      renderList();
+    };
+    setupDropzone('scan', addFiles);
+
+    // ---- camera capture (optional; falls back to the dropzone when unavailable) ----
+    const camWrap = $('#camwrap-scan'), video = $('#video-scan');
+    const stopCam = () => {
+      if (st.stream) { st.stream.getTracks().forEach((t) => t.stop()); st.stream = null; }
+      camWrap.classList.add('hidden');
+    };
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+      $('#cam-scan').disabled = true;
+      $('#cam-scan').title = 'This browser has no camera access';
+    }
+    $('#cam-scan').addEventListener('click', async () => {
+      try {
+        setStatus('scan', 'Starting camera…');
+        st.stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false,
+        });
+        video.srcObject = st.stream;
+        await video.play();
+        camWrap.classList.remove('hidden');
+        setStatus('scan', 'Camera ready — line up the page and tap Capture.');
+      } catch (err) {
+        stopCam();
+        setStatus('scan', `❌ Could not open the camera (${err.name || err.message}). You can still add photos from your device below.`, 'error');
+      }
+    });
+    $('#shoot-scan').addEventListener('click', () => {
+      if (!st.stream) return;
+      const vw = video.videoWidth, vh = video.videoHeight;
+      if (!vw || !vh) { setStatus('scan', 'Camera is still warming up — try again in a second.', 'info'); return; }
+      const s = Math.min(1, MAXDIM / Math.max(vw, vh));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(vw * s); cv.height = Math.round(vh * s);
+      cv.getContext('2d').drawImage(video, 0, 0, cv.width, cv.height);
+      st.pages.push({ canvas: cv, rot: 0 });
+      hideResult('scan');
+      renderList();
+      setStatus('scan', `Captured page ${st.pages.length}. Capture more, or create the PDF below.`, 'success');
+    });
+    $('#stopcam-scan').addEventListener('click', () => { stopCam(); setStatus('scan', ''); });
+    window.addEventListener('pagehide', stopCam);
+
+    $('#btn-scan').addEventListener('click', async () => {
+      const btn = $('#btn-scan'); btn.disabled = true; hideResult('scan');
+      try {
+        if (!st.pages.length) throw new Error('Add at least one photo or capture a page first.');
+        const doc = await PDFDocument.create();
+        const A4 = [595.28, 841.89];
+        const fit = $('#size-scan').value === 'fit';
+        for (let i = 0; i < st.pages.length; i++) {
+          setStatus('scan', `Processing page ${i + 1} of ${st.pages.length}…`);
+          const cv = renderPage(st.pages[i]);
+          const jpg = await doc.embedJpg(await canvasToJpeg(cv, 0.85));
+          if (fit) {
+            doc.addPage([jpg.width, jpg.height]).drawImage(jpg, { x: 0, y: 0, width: jpg.width, height: jpg.height });
+          } else {
+            const page = doc.addPage(A4);
+            const k = Math.min(A4[0] / jpg.width, A4[1] / jpg.height);
+            const w = jpg.width * k, h = jpg.height * k;
+            page.drawImage(jpg, { x: (A4[0] - w) / 2, y: (A4[1] - h) / 2, width: w, height: h });
+          }
+        }
+        const bytes = await doc.save({ useObjectStreams: true });
+        showResult('scan', bytes, 'scan.pdf', 'application/pdf',
+          `scan.pdf · ${st.pages.length} page${st.pages.length > 1 ? 's' : ''} · ${fmtBytes(bytes.length)}`);
+      } catch (err) {
+        setStatus('scan', `❌ ${err.message || err}`, 'error');
+      } finally {
+        btn.disabled = st.pages.length === 0;
+      }
     });
   }
 

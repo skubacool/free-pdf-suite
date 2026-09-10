@@ -191,7 +191,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="./app.js?v=7"></script>
+  <script defer src="./app.js?v=8"></script>
   <!-- Optional backend scaffolding (Nhost) — inert until configured in nhost.js -->
   <script type="module" src="./nhost.js"></script>
 </head>
@@ -699,6 +699,11 @@
 
         <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">Image Tools</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a href="scan-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📷</span>
+            <div class="font-bold mt-3">Scan to PDF</div>
+            <p class="text-sm text-slate-500 mt-1">Phone camera → auto-cropped, cleaned multi-page PDF.</p>
+          </a>
           <a href="compress-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
             <div class="font-bold mt-3">Compress Image</div>
