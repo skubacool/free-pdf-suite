@@ -223,9 +223,104 @@ document.addEventListener('DOMContentLoaded', () => {
     return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
   };
 
+  // ---------------------------------------------------- multi-file batch layer
+  // Tools listed here accept many files at once. Each module still processes a
+  // single file with its own state and click handler (untouched); this layer
+  // feeds the files one by one, captures each result via showResult and packs
+  // everything into one ZIP. Per-file failures are reported by name and never
+  // abort the remaining files. Tools that need per-file input (page ranges,
+  // signatures, form values, merge/interleave) are deliberately not listed.
+  const BATCH_TOOLS = new Set([
+    'compress', 'targetsize', 'protect', 'watermark', 'pagenum', 'headfoot', 'rotate', 'flip',
+    'grayscale', 'invert', 'bgcolor', 'scanned', 'flatten', 'metaremove', 'unannotate',
+    'reverse', 'resize', 'longpage', 'duplicate', 'nup', 'removeblank', 'extractimg',
+    'pdf2jpg', 'pdf2png', 'pdf2webp', 'pdf2word', 'pdf2text', 'pdf2md', 'pdf2html',
+    'pdf2ppt', 'pdf2excel', 'ocr', 'word2pdf', 'excel2pdf',
+  ]);
+  const batches = {}; // tool -> { files, cb, i, running, outcome, results, failed }
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const batchPicked = (tool) => {
+    const b = batches[tool];
+    const el = $(`#picked-${tool}`);
+    const btn = $(`#btn-${tool}`);
+    if (!b) return;
+    const total = b.files.reduce((n, f) => n + f.size, 0);
+    if (el) el.textContent = `Selected: ${b.files.length} files (${fmtBytes(total)}) — the same settings will be applied to each; you'll get a ZIP`;
+    if (btn) {
+      if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+      btn.textContent = `${btn.dataset.label} × ${b.files.length}`;
+    }
+  };
+  const batchRestoreLabel = (tool) => {
+    const btn = $(`#btn-${tool}`);
+    if (btn && btn.dataset.label) btn.textContent = btn.dataset.label;
+  };
+  const runBatch = async (tool) => {
+    const b = batches[tool];
+    const btn = $(`#btn-${tool}`);
+    if (!b || b.running || !btn) return;
+    b.running = true; b.results = []; b.failed = [];
+    hideResult(tool);
+    try {
+      for (b.i = 0; b.i < b.files.length; b.i++) {
+        const f = b.files[b.i];
+        b.outcome = null;
+        // Re-select this file through the module's own callback (may be async
+        // when it reads page counts or renders thumbnails).
+        try { const r = b.cb([f]); if (r && typeof r.then === 'function') await r; }
+        catch (e) { b.outcome = { err: e.message || String(e) }; }
+        if (!b.outcome) {
+          batchPicked(tool);
+          for (let n = 0; n < 100 && btn.disabled; n++) await sleep(50);
+          if (btn.disabled) b.outcome = { err: 'could not load this file' };
+        }
+        if (!b.outcome) {
+          // Leave the user's own click dispatch first: HTMLElement.click() is a
+          // no-op while a click on the same element is still in progress.
+          await sleep(0);
+          btn.click(); // the module's normal handler; result/error arrive via showResult/setStatus
+          let idle = 0;
+          while (!b.outcome) {
+            await sleep(100);
+            // handler finished (button re-enabled) without producing anything
+            if (!btn.disabled) { if (++idle > 10) b.outcome = { err: 'no output produced' }; } else idle = 0;
+          }
+        }
+        if (b.outcome.err) b.failed.push(`${f.name} — ${b.outcome.err}`);
+        else b.results.push(b.outcome);
+      }
+    } finally {
+      b.running = false;
+    }
+    for (let n = 0; n < 100 && btn.disabled; n++) await sleep(50);
+    btn.disabled = false;
+    if (!b.results.length) {
+      setStatus(tool, `❌ No files could be processed.\n${b.failed.join('\n')}`, 'error');
+      return;
+    }
+    setStatus(tool, 'Packing ZIP…');
+    const zip = new JSZip();
+    const used = new Set();
+    b.results.forEach((r) => {
+      let name = r.filename, k = 2;
+      while (used.has(name)) { name = r.filename.replace(/(\.[^.]+)?$/, ` (${k++})$1`); }
+      used.add(name);
+      zip.file(name, r.blob);
+    });
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const zipName = `${tool}_${b.results.length}_files.zip`;
+    showResult(tool, blob, zipName, 'application/zip', `${zipName} · ${b.results.length} of ${b.files.length} files · ${fmtBytes(blob.size)}`);
+    if (b.failed.length) setStatus(tool, `⚠️ ${b.results.length} done, ${b.failed.length} skipped: ${b.failed.join('; ')}`, 'error');
+  };
+
   const setStatus = (tool, msg, kind = 'info') => {
     const el = $(`#status-${tool}`);
     if (!el) return;
+    const b = batches[tool];
+    if (b && b.running) {
+      if (kind === 'error') { if (!b.outcome) b.outcome = { err: String(msg).replace(/^❌\s*/, '') }; }
+      else if (msg) msg = `[${b.i + 1}/${b.files.length}] ${b.files[b.i].name}: ${msg}`;
+    }
     el.textContent = msg;
     el.className = 'mt-4 text-sm font-medium ' +
       (kind === 'error' ? 'text-red-700' : kind === 'success' ? 'text-emerald-700' : 'text-slate-500');
@@ -236,6 +331,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const results = {}; // tool -> { blob, filename }
   const showResult = (tool, bytesOrBlob, filename, mime, infoText) => {
     const blob = bytesOrBlob instanceof Blob ? bytesOrBlob : new Blob([bytesOrBlob], { type: mime });
+    const b = batches[tool];
+    if (b && b.running) { if (!b.outcome) b.outcome = { blob, filename }; return; }
     results[tool] = { blob, filename };
     $(`div#res-${tool}`).classList.remove('hidden');
     $(`#info-${tool}`).textContent = infoText || `${filename} · ${fmtBytes(blob.size)}`;
@@ -357,9 +454,38 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
 
   const baseName = (name) => name.replace(/\.[^.]+$/, '');
 
-  const setupDropzone = (tool, onFiles) => {
+  const setupDropzone = (tool, onFilesRaw) => {
     const dz = $(`#dz-${tool}`);
     const input = $(`#file-${tool}`);
+    const batchable = BATCH_TOOLS.has(tool);
+    const onFiles = !batchable ? onFilesRaw : (files) => {
+      if (files.length > 1) {
+        batches[tool] = { files, cb: onFilesRaw, running: false };
+        const r = onFilesRaw([files[0]]);
+        Promise.resolve(r).then(() => batchPicked(tool), () => batchPicked(tool));
+        return;
+      }
+      delete batches[tool];
+      batchRestoreLabel(tool);
+      return onFilesRaw(files);
+    };
+    if (batchable) {
+      if (input) input.multiple = true;
+      const btn = $(`#btn-${tool}`);
+      if (btn) btn.addEventListener('click', (e) => {
+        const b = batches[tool];
+        if (!b || b.running || b.files.length < 2) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        runBatch(tool);
+      }, true);
+      const lang = (document.documentElement.lang || 'en').toLowerCase();
+      if (lang.startsWith('en') && !dz.querySelector('.batch-hint')) {
+        const hint = document.createElement('p');
+        hint.className = 'batch-hint mt-1 text-xs text-slate-500';
+        hint.textContent = 'Several files? Select them all — same settings, one ZIP.';
+        dz.appendChild(hint);
+      }
+    }
     dz.addEventListener('click', () => input.click());
     input.addEventListener('change', () => {
       if (input.files.length) onFiles([...input.files]);

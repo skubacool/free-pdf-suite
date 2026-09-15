@@ -36,9 +36,7 @@ export function initBates() {
         const arr = new Uint8Array(await f.arrayBuffer());
         const pdfDoc = await PDFLib.PDFDocument.load(arr, { ignoreEncryption: true });
 
-        const fontConf = await getUnicodeFont(pdfDoc);
-        const font = fontConf.font;
-        const needsUnicode = fontConf.needsUnicode;
+        const font = await getUnicodeFont(pdfDoc, prefix + suffix);
 
         const pages = pdfDoc.getPages();
 
@@ -48,7 +46,7 @@ export function initBates() {
 
           const numStr = currentNum.toString().padStart(pad, '0');
           const batesText = `${prefix}${numStr}${suffix}`;
-          const safeText = needsUnicode ? adjustThai(batesText) : batesText;
+          const safeText = adjustThai(batesText);
 
           const fontSize = 12;
           const textWidth = font.widthOfTextAtSize(safeText, fontSize);
@@ -70,19 +68,8 @@ export function initBates() {
       }
 
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(zipBlob);
-
-      const dlBtn = $('#dl-bates');
-      dlBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Bates_Numbered.zip';
-        a.click();
-      };
-
-      $('#info-bates').textContent = `Processed ${files.length} files (${totalProcessed} pages total).`;
-      showResult('bates');
-      setStatus('bates', '✅ Bates numbering complete!', 'success');
+      showResult('bates', zipBlob, 'Bates_Numbered.zip', 'application/zip',
+        `Processed ${files.length} files (${totalProcessed} pages total).`);
 
     } catch (e) {
       console.error(e);

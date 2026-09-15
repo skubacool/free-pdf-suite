@@ -32,10 +32,8 @@ export function initHeadFoot() {
       const arr = new Uint8Array(await f.arrayBuffer());
       const pdfDoc = await PDFLib.PDFDocument.load(arr, { ignoreEncryption: true });
 
-      // Embed custom font to support all languages
-      const fontConf = await getUnicodeFont(pdfDoc);
-      const font = fontConf.font;
-      const needsUnicode = fontConf.needsUnicode;
+      // Embed a Unicode font chosen for the script of the text (Thai, CJK, ...)
+      const font = await getUnicodeFont(pdfDoc, headerText + footerText);
 
       const pages = pdfDoc.getPages();
       const totalPages = pages.length;
@@ -48,8 +46,8 @@ export function initHeadFoot() {
         const parsedHeader = headerText.replace(/{n}/g, i + 1).replace(/{total}/g, totalPages);
         const parsedFooter = footerText.replace(/{n}/g, i + 1).replace(/{total}/g, totalPages);
 
-        const hText = needsUnicode ? adjustThai(parsedHeader) : parsedHeader;
-        const fText = needsUnicode ? adjustThai(parsedFooter) : parsedFooter;
+        const hText = adjustThai(parsedHeader);
+        const fText = adjustThai(parsedFooter);
 
         const fontSize = 10;
         
@@ -77,20 +75,8 @@ export function initHeadFoot() {
       }
 
       const out = await pdfDoc.save();
-      const blob = new Blob([out], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      
-      const dlBtn = $('#dl-headfoot');
-      dlBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `HeaderFooter_${f.name}`;
-        a.click();
-      };
-
-      $('#info-headfoot').textContent = `Processed ${totalPages} pages.`;
-      showResult('headfoot');
-      setStatus('headfoot', '✅ Header & Footer added successfully!', 'success');
+      showResult('headfoot', out, `${f.name.replace(/\.pdf$/i, '')}_header_footer.pdf`, 'application/pdf',
+        `Processed ${totalPages} pages.`);
 
     } catch (e) {
       console.error(e);
