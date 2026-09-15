@@ -583,63 +583,99 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
   try {
   // ================================================================ UNLOCK
-  const unlockState = { file: null };
-  setupDropzone('unlock', ([f]) => {
-    unlockState.file = f;
-    $('#picked-unlock').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
+  // Accepts one or many PDFs that share the same password. One file → plain
+  // PDF download; several → ZIP of the unlocked copies. Files that fail
+  // (wrong password, corrupt) are reported by name without aborting the rest.
+  const unlockState = { files: [] };
+  setupDropzone('unlock', (fs) => {
+    const files = fs.filter((f) => /\.pdf$/i.test(f.name) || f.type === 'application/pdf');
+    if (!files.length) { setStatus('unlock', '❌ Please choose PDF files.', 'error'); return; }
+    unlockState.files = files;
+    const total = files.reduce((n, f) => n + f.size, 0);
+    $('#picked-unlock').textContent = files.length === 1
+      ? `Selected: ${files[0].name} (${fmtBytes(files[0].size)})`
+      : `Selected: ${files.length} PDFs (${fmtBytes(total)}) — the same password will be tried on each`;
+    $('#btn-unlock').textContent = files.length === 1 ? 'Unlock PDF' : `Unlock ${files.length} PDFs`;
     $('#btn-unlock').disabled = false;
     hideResult('unlock');
     setStatus('unlock', '');
   });
+  const unlockOne = async (f, password, label) => {
+    const data = await f.arrayBuffer();
+    let src;
+    try {
+      src = await loadPdfJs(data, password);
+    } catch (err) {
+      if (err?.name === 'PasswordException') {
+        throw new Error(password
+          ? 'Incorrect password. Please check it and try again.'
+          : 'This PDF requires a password — enter it above and try again.');
+      }
+      throw err;
+    }
+    const out = await PDFDocument.create();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    for (let i = 1; i <= src.numPages; i++) {
+      setStatus('unlock', `${label}Rebuilding page ${i} of ${src.numPages}…`);
+      const page = await src.getPage(i);
+      const vp1 = page.getViewport({ scale: 1 });
+      const vp = page.getViewport({ scale: 2 });
+      canvas.width = Math.ceil(vp.width);
+      canvas.height = Math.ceil(vp.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
+      const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.85));
+      const p = out.addPage([vp1.width, vp1.height]);
+      p.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+    }
+    try { src.destroy(); _activePdfJsDocs.delete(src); } catch (e) {}
+    return out.save({ useObjectStreams: true });
+  };
   $('#btn-unlock').addEventListener('click', async () => {
-    const f = unlockState.file;
-    if (!f) return;
+    const files = unlockState.files;
+    if (!files.length) return;
     const btn = $('#btn-unlock');
     btn.disabled = true;
     hideResult('unlock');
+    const password = $('#pw-unlock').value || undefined;
     try {
-      const data = await f.arrayBuffer();
-      const password = $('#pw-unlock').value || undefined;
-      let src;
-      try {
-        src = await loadPdfJs(data, password);
-      } catch (err) {
-        if (err?.name === 'PasswordException') {
-          throw new Error(password
-            ? 'Incorrect password. Please check it and try again.'
-            : 'This PDF requires a password — enter it above and try again.');
+      if (files.length === 1) {
+        const f = files[0];
+        const bytes = await unlockOne(f, password, '');
+        showResult('unlock', bytes, `${baseName(f.name)}_unlocked.pdf`, 'application/pdf');
+        return;
+      }
+      const zip = new JSZip();
+      const failed = [];
+      let done = 0;
+      for (let k = 0; k < files.length; k++) {
+        const f = files[k];
+        const label = `[${k + 1}/${files.length}] ${f.name}: `;
+        try {
+          const bytes = await unlockOne(f, password, label);
+          zip.file(`${baseName(f.name)}_unlocked.pdf`, bytes);
+          done++;
+        } catch (err) {
+          failed.push(`${f.name} — ${err.message || err}`);
         }
-        throw err;
       }
-      setStatus('unlock', 'Password accepted — rebuilding unlocked copy…');
-      const out = await PDFDocument.create();
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      for (let i = 1; i <= src.numPages; i++) {
-        setStatus('unlock', `Rebuilding page ${i} of ${src.numPages}…`);
-        const page = await src.getPage(i);
-        const vp1 = page.getViewport({ scale: 1 });
-        const vp = page.getViewport({ scale: 2 });
-        canvas.width = Math.ceil(vp.width);
-        canvas.height = Math.ceil(vp.height);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvasContext: ctx, viewport: vp }).promise;
-setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
-        const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.85));
-        const p = out.addPage([vp1.width, vp1.height]);
-        p.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+      if (!done) throw new Error(`No files could be unlocked.\n${failed.join('\n')}`);
+      setStatus('unlock', 'Packing ZIP…');
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const info = `unlocked_pdfs.zip · ${done} of ${files.length} PDFs · ${fmtBytes(blob.size)}`;
+      showResult('unlock', blob, 'unlocked_pdfs.zip', 'application/zip', info);
+      if (failed.length) {
+        setStatus('unlock', `⚠️ ${done} unlocked, ${failed.length} skipped: ${failed.join('; ')}`, 'error');
       }
-      const bytes = await out.save({ useObjectStreams: true });
-      showResult('unlock', bytes, `${baseName(f.name)}_unlocked.pdf`, 'application/pdf');
     } catch (err) {
       setStatus('unlock', `❌ ${err.message || err}`, 'error');
     } finally {
       btn.disabled = false;
     }
   });
-
-  // Removed local shared preview renderer (moved to global helper section));
   } catch (e) { if (window.console) console.warn('[upmypdf] tool module skipped on this page:', e && e.message); }
   try {
   // =========================================================== TYPE ON PDF

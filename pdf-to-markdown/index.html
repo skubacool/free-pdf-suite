@@ -135,7 +135,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script defer src="../app.js?v=10"></script>
+  <script defer src="../app.js?v=11"></script>
   <script type="module" src="../nhost.js"></script>
 </head>
 
@@ -347,8 +347,8 @@
             </div>
             <div id="dz-unlock" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
               <div class="text-3xl">📥</div>
-              <p class="mt-2 font-semibold">Drop a protected PDF here or click to browse</p>
-              <input type="file" id="file-unlock" accept="application/pdf,.pdf" class="hidden" />
+              <p class="mt-2 font-semibold">Drop one or more protected PDFs here or click to browse</p>
+              <input type="file" id="file-unlock" accept="application/pdf,.pdf" class="hidden" multiple />
             </div>
             <p id="picked-unlock" class="mt-4 text-sm text-slate-600"></p>
             <label class="block mt-5 text-sm font-semibold">Password <span class="font-normal text-slate-500">(leave empty if the PDF opens without one)</span></label>
