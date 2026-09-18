@@ -341,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // verify it before downloading. Gated on a viewable PDF + a preview slot.
     if (blob.type === 'application/pdf' && $(`#preview-result-${tool}`)) mountResultPreview(tool, blob);
     afterResult(tool);
+    resultListeners.forEach((fn) => { try { fn(tool, blob, filename); } catch (e) { console.warn('[upmypdf] result listener failed:', e); } });
   };
 
   // Fired on every successful result: log an analytics event, remember the tool
@@ -454,6 +455,10 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
 
   const baseName = (name) => name.replace(/\.[^.]+$/, '');
 
+  const dropCallbacks = {}; // tool -> select callback (see feedTool)
+  const feedTool = (tool, file) => { const cb = dropCallbacks[tool]; if (!cb) throw new Error(`No tool "${tool}" on this page`); return cb([file]); };
+  const resultListeners = [];
+  const onResult = (fn) => resultListeners.push(fn);
   const setupDropzone = (tool, onFilesRaw) => {
     const dz = $(`#dz-${tool}`);
     const input = $(`#file-${tool}`);
@@ -486,6 +491,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         dz.appendChild(hint);
       }
     }
+    dropCallbacks[tool] = onFiles; // lets the Workspace page hand a file straight to a tool
     dz.addEventListener('click', () => input.click());
     input.addEventListener('change', () => {
       if (input.files.length) onFiles([...input.files]);
@@ -602,7 +608,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   };
 
     // Expose core helpers to window for modular tools
-  window.appHelpers = { $, $$, fmtBytes, baseName, loadPdfJs, loadPdfForEdit, canvasToJpeg, setupDropzone, showResult, hideResult, setStatus, PW_NEEDED_MSG, PDFLib, getUnicodeFont, adjustThai, renderPreview, decodeDataUrlBytes, getRotatedOrigin, clickToNorm };
+  window.appHelpers = { $, $$, fmtBytes, baseName, loadPdfJs, loadPdfForEdit, canvasToJpeg, setupDropzone, showResult, hideResult, setStatus, feedTool, onResult, PW_NEEDED_MSG, PDFLib, getUnicodeFont, adjustThai, renderPreview, decodeDataUrlBytes, getRotatedOrigin, clickToNorm };
 
   // ----------------------------------------------------------- view routing
   // Two page types share this script:
@@ -612,7 +618,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'scan', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'scan', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage', 'workspace'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);

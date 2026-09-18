@@ -14,6 +14,7 @@ import { initMerge } from './tools/merge.js';
 import { initSplit } from './tools/split.js';
 import { initRotate } from './tools/rotate.js';
 import { initSignTool } from './tools/sign.js';
+import { initWorkspace } from './tools/workspace.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initPdfGrid();
@@ -32,5 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initRotate();
   if (window.appHelpers) {
     initSignTool(window.appHelpers);
+    initWorkspace(); // after every tool has registered its dropzone
   }
 });

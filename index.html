@@ -191,7 +191,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="./app.js?v=12"></script>
+  <script defer src="./app.js?v=13"></script>
   <!-- Optional backend scaffolding (Nhost) — inert until configured in nhost.js -->
   <script type="module" src="./nhost.js"></script>
 </head>
@@ -288,8 +288,21 @@
 
       <!-- Tool grid -->
       <section class="pb-10">
+        <a href="pdf-workspace/" class="toolcard flex flex-col sm:flex-row sm:items-center gap-4 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-2xl p-5 md:p-6 mb-8 border border-brand-700">
+          <span class="inline-flex w-12 h-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl">&#x1F9F0;</span>
+          <span class="grow">
+            <span class="block font-bold text-lg">New: PDF Workspace &mdash; one upload, every edit</span>
+            <span class="block text-sm text-brand-100 mt-0.5">Unlock, reorder, rotate, watermark, number, add text, sign, redact, compress and protect one PDF in a single flow. Pick one job or several.</span>
+          </span>
+          <span class="shrink-0 inline-flex items-center gap-1 bg-white text-brand-700 font-bold rounded-xl px-4 py-2 text-sm">Open workspace &rarr;</span>
+        </a>
         <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Organize</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a href="pdf-workspace/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-brand-50 text-2xl">&#x1F9F0;</span>
+            <div class="font-bold mt-3">PDF Workspace</div>
+            <p class="text-sm text-slate-500 mt-1">Upload once, run several tools in a row: sign, unlock, watermark, protect&hellip;</p>
+          </a>
           <a href="merge-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
             <div class="font-bold mt-3">Merge PDF</div>
