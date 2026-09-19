@@ -130,7 +130,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&text=%E0%B9%84%E0%B8%97%E0%B8%A2&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="/tailwind.css?v=3" />
+  <link rel="stylesheet" href="/tailwind.css?v=4" />
   <style>
     ::selection { background:#2563EB; color:#fff; }
 
@@ -191,7 +191,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="./app.js?v=14"></script>
+  <script defer src="./app.js?v=15"></script>
   <!-- Optional backend scaffolding (Nhost) — inert until configured in nhost.js -->
   <script type="module" src="./nhost.js"></script>
 </head>
@@ -294,7 +294,15 @@
             <span class="block font-bold text-lg">New: PDF Workspace &mdash; open once, edit everything</span>
             <span class="block text-sm text-brand-100 mt-0.5">A desktop-style editor in your browser: open a PDF, then unlock, rotate, watermark, add text, sign, redact, compress or protect it &mdash; any tool, any order, undo any time.</span>
           </span>
-          <span class="shrink-0 inline-flex items-center gap-1 bg-white text-brand-700 font-bold rounded-xl px-4 py-2 text-sm">Open workspace &rarr;</span>
+          <span class="shrink-0 inline-flex items-center gap-1 bg-white text-brand-700 font-bold rounded-xl px-4 py-2 text-sm">Open PDF workspace &rarr;</span>
+        </a>
+        <a href="image-workspace/" class="toolcard flex flex-col sm:flex-row sm:items-center gap-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-2xl p-5 md:p-6 -mt-4 mb-8 border border-rose-600">
+          <span class="inline-flex w-12 h-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl">&#x1F5BC;&#xFE0F;</span>
+          <span class="grow">
+            <span class="block font-bold text-lg">New: Image Workspace &mdash; same idea, for photos</span>
+            <span class="block text-sm text-rose-100 mt-0.5">Open a JPG, PNG, WebP or HEIC once, then resize, crop, rotate, remove the background, watermark, compress or convert it &mdash; any tool, any order, undo any time, save as PDF.</span>
+          </span>
+          <span class="shrink-0 inline-flex items-center gap-1 bg-white text-rose-600 font-bold rounded-xl px-4 py-2 text-sm">Open image workspace &rarr;</span>
         </a>
         <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Organize</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -712,6 +720,11 @@
 
         <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">Image Tools</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a href="image-workspace/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">&#x1F5BC;&#xFE0F;</span>
+            <div class="font-bold mt-3">Image Workspace</div>
+            <p class="text-sm text-slate-500 mt-1">Open a photo once and use any image tool on it, in any order &mdash; like a desktop editor.</p>
+          </a>
           <a href="scan-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📷</span>
             <div class="font-bold mt-3">Scan to PDF</div>
