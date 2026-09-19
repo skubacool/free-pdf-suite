@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     await page.render({ canvasContext: ctx, viewport: vp }).promise;
     setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
-    $(`.place-marker`, $(wrapId)).forEach((m) => m.remove());
+    $$('.place-marker', $(wrapId)).forEach((m) => m.remove());
   }
 
   const clickToNorm = (e, canvas) => {
