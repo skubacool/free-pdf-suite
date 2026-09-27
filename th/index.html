@@ -35,10 +35,6 @@
   <!-- Language alternates -->
   <link rel="alternate" hreflang="en" href="https://upmypdf.com/" />
   <link rel="alternate" hreflang="th" href="https://upmypdf.com/th/" />
-  <link rel="alternate" hreflang="es" href="https://upmypdf.com/es/" />
-  <link rel="alternate" hreflang="id" href="https://upmypdf.com/id/" />
-  <link rel="alternate" hreflang="vi" href="https://upmypdf.com/vi/" />
-  <link rel="alternate" hreflang="pt" href="https://upmypdf.com/pt/" />
   <link rel="alternate" hreflang="x-default" href="https://upmypdf.com/" />
 
   <script type="application/ld+json">
@@ -163,7 +159,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script defer src="../app.js?v=20"></script>
+  <script defer src="../app.js?v=21"></script>
   <script type="module" src="../nhost.js"></script>
 </head>
 
@@ -195,10 +191,6 @@
           <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 flex flex-col">
           <a href="../" lang="en" hreflang="en" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">English</a>
           <a href="../th/" lang="th" hreflang="th" style="font-family:'Noto Sans Thai',Inter,sans-serif" class="flex items-center gap-2 px-4 py-2 text-sm bg-brand-50 text-brand-700 font-semibold">ไทย<span class="ml-auto text-brand-600">✓</span></a>
-          <a href="../es/" lang="es" hreflang="es" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Español</a>
-          <a href="../id/" lang="id" hreflang="id" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Bahasa Indonesia</a>
-          <a href="../vi/" lang="vi" hreflang="vi" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Tiếng Việt</a>
-          <a href="../pt/" lang="pt" hreflang="pt" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Português</a>
           </div>
         </details>
       </div>
@@ -281,180 +273,184 @@
             <span class="text-slate-700 font-medium">ดาวน์โหลดผลลัพธ์</span>
           </div>
         </div>
-              <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">เครื่องมือใหม่</h2>
+      </section>
+
+      <section class="pb-10">
+        <a href="../pdf-workspace/" class="toolcard flex flex-col sm:flex-row sm:items-center gap-4 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-2xl p-5 md:p-6 mb-8 border border-brand-700">
+          <span class="inline-flex w-12 h-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl">🧰</span>
+          <span class="grow">
+            <span class="block font-bold text-lg">ใหม่: พื้นที่ทำงาน PDF &mdash; เปิดครั้งเดียว แก้ไขได้ทุกอย่าง</span>
+            <span class="block text-sm text-brand-100 mt-0.5">โปรแกรมแก้ไขสไตล์เดสก์ท็อปในเบราว์เซอร์ของคุณ: เปิด PDF แล้วปลดล็อก หมุน ใส่ลายน้ำ เพิ่มข้อความ เซ็นชื่อ ปิดข้อมูลลับ บีบอัด หรือใส่รหัสผ่าน &mdash; ใช้เครื่องมือใดก็ได้ ตามลำดับใดก็ได้ ยกเลิกได้ทุกเมื่อ</span>
+          </span>
+          <span class="shrink-0 inline-flex items-center gap-1 bg-white text-brand-700 font-bold rounded-xl px-4 py-2 text-sm">เปิดพื้นที่ทำงาน PDF &rarr;</span>
+        </a>
+        <a href="../image-workspace/" class="toolcard flex flex-col sm:flex-row sm:items-center gap-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-2xl p-5 md:p-6 -mt-4 mb-8 border border-rose-600">
+          <span class="inline-flex w-12 h-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl">🖼️</span>
+          <span class="grow">
+            <span class="block font-bold text-lg">ใหม่: พื้นที่ทำงานรูปภาพ &mdash; แนวคิดเดียวกัน สำหรับรูปภาพ</span>
+            <span class="block text-sm text-rose-100 mt-0.5">เปิดไฟล์ JPG, PNG, WebP หรือ HEIC ครั้งเดียว แล้วปรับขนาด ครอบตัด หมุน ลบพื้นหลัง ใส่ลายน้ำ บีบอัด หรือแปลงไฟล์ &mdash; ใช้เครื่องมือใดก็ได้ ตามลำดับใดก็ได้ ยกเลิกได้ทุกเมื่อ บันทึกเป็น PDF ได้ด้วย</span>
+          </span>
+          <span class="shrink-0 inline-flex items-center gap-1 bg-white text-rose-600 font-bold rounded-xl px-4 py-2 text-sm">เปิดพื้นที่ทำงานรูปภาพ &rarr;</span>
+        </a>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">จัดระเบียบเอกสาร</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <a href="../add-header-footer/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">📄</span>
-            <div class="font-bold mt-3">เพิ่มส่วนหัว/ส่วนท้าย</div>
-            <p class="text-sm text-slate-500 mt-1">เพิ่มเลขหน้า, วันที่, หรือข้อความบนทุกหน้า</p>
+          <a href="../pdf-workspace/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-brand-50 text-2xl">&#x1F9F0;</span>
+            <div class="font-bold mt-3">พื้นที่ทำงาน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">เปิดไฟล์ PDF ครั้งเดียว ใช้เครื่องมือใดก็ได้ตามลำดับที่ต้องการ เหมือนโปรแกรมแก้ไข PDF บนเครื่อง</p>
           </a>
-          <a href="../bates-numbering/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">🏛️</span>
-            <div class="font-bold mt-3">ประทับเลข Bates</div>
-            <p class="text-sm text-slate-500 mt-1">ประทับเลขเอกสารสำหรับงานกฎหมาย</p>
+          <a href="merge-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
+            <div class="font-bold mt-3">รวมไฟล์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">รวมหลายไฟล์ PDF เป็นเอกสารเดียว</p>
           </a>
-          <a href="../qr-code-generator/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📱</span>
-            <div class="font-bold mt-3">สร้าง QR Code</div>
-            <p class="text-sm text-slate-500 mt-1">สร้าง QR Code และแปะลงบนเอกสาร PDF</p>
+          <a href="../split-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">✂️</span>
+            <div class="font-bold mt-3">แยกไฟล์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงเฉพาะหน้าที่ต้องการ หรือลบหน้าที่ไม่ใช้</p>
           </a>
-          <a href="../pdf-text-diff/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🔍</span>
-            <div class="font-bold mt-3">เปรียบเทียบข้อความ PDF</div>
-            <p class="text-sm text-slate-500 mt-1">เทียบความแตกต่างระหว่างสองเอกสาร</p>
+          <a href="../rotate-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔄</span>
+            <div class="font-bold mt-3">หมุน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แก้หน้าที่เอียงหรือกลับหัวจากการสแกน</p>
+          </a>
+          <a href="../organize-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🧩</span>
+            <div class="font-bold mt-3">จัดเรียงหน้า PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ลากเพื่อจัดเรียงหน้าใหม่ และลบหน้าที่ไม่ต้องการ</p>
+          </a>
+          <a href="../delete-pages-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗑️</span>
+            <div class="font-bold mt-3">ลบหน้า PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ลบหน้าที่ไม่ต้องการ เก็บเฉพาะหน้าที่ใช้</p>
+          </a>
+          <a href="../crop-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">⬜</span>
+            <div class="font-bold mt-3">ครอบตัด PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ตัดขอบทุกหน้าให้พอดี</p>
+          </a>
+          <a href="../n-up-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔳</span>
+            <div class="font-bold mt-3">รวมหลายหน้าในแผ่นเดียว</div>
+            <p class="text-sm text-slate-500 mt-1">จัด 2 หรือ 4 หน้าไว้ในแผ่นเดียวเพื่อประหยัดกระดาษ</p>
+          </a>
+          <a href="../add-pages-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">➕</span>
+            <div class="font-bold mt-3">เพิ่มหน้าว่าง</div>
+            <p class="text-sm text-slate-500 mt-1">แทรกหน้าว่างที่ตำแหน่งใดก็ได้ใน PDF</p>
+          </a>
+          <a href="../reverse-pdf-pages/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">🔃</span>
+            <div class="font-bold mt-3">สลับลำดับหน้า PDF</div>
+            <p class="text-sm text-slate-500 mt-1">กลับลำดับหน้าของ PDF จากหน้าแรกไปหลังสุด</p>
+          </a>
+          <a href="../duplicate-pdf-pages/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">📑</span>
+            <div class="font-bold mt-3">ทำซ้ำหน้า PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ทำซ้ำทุกหน้าของ PDF ตามจำนวนที่กำหนด</p>
+          </a>
+          <a href="../interleave-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔀</span>
+            <div class="font-bold mt-3">สลับหน้าสองไฟล์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">รวมสองไฟล์ PDF โดยสลับหน้ากันไปมา</p>
+          </a>
+          <a href="../zip-pdf-files/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🗜️</span>
+            <div class="font-bold mt-3">บีบไฟล์ PDF เป็น ZIP</div>
+            <p class="text-sm text-slate-500 mt-1">รวมหลายไฟล์ PDF ไว้ใน ZIP เดียว</p>
+          </a>
+          <a href="../resize-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">📏</span>
+            <div class="font-bold mt-3">เปลี่ยนขนาดหน้า PDF</div>
+            <p class="text-sm text-slate-500 mt-1">เปลี่ยนขนาดหน้าเป็น A4, Letter, Legal, A3 หรือ A5</p>
+          </a>
+          <a href="../split-pdf-horizontally/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🥞</span>
+            <div class="font-bold mt-3">แบ่งหน้า PDF ครึ่งซีก</div>
+            <p class="text-sm text-slate-500 mt-1">แบ่งหน้า PDF ครึ่งหนึ่งตามแนวนอนหรือแนวตั้ง</p>
+          </a>
+          <a href="../remove-blank-pages/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🧹</span>
+            <div class="font-bold mt-3">ลบหน้าว่างออกจาก PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ตรวจจับและลบหน้าว่างออกจากเอกสาร</p>
+          </a>
+          <a href="../create-booklet-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">📖</span>
+            <div class="font-bold mt-3">ทำเล่มบุ๊กเล็ต</div>
+            <p class="text-sm text-slate-500 mt-1">จัดเรียงหน้าใหม่สำหรับพิมพ์เป็นเล่มบุ๊กเล็ต</p>
+          </a>
+          <a href="../divide-pdf-pages/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">✂️</span>
+            <div class="font-bold mt-3">แบ่งไฟล์ PDF เป็นหลายไฟล์</div>
+            <p class="text-sm text-slate-500 mt-1">แบ่ง PDF ออกเป็นหลายไฟล์ตามช่วงหรือจำนวนที่กำหนด</p>
+          </a>
+          <a href="../pdf-highlighter/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-yellow-100 text-yellow-600 text-2xl">🖍️</span>
+            <div class="font-bold mt-3">ไฮไลท์ข้อความ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ค้นหาและไฮไลท์ข้อความที่คุณต้องการ</p>
+          </a>
+          <a href="../pdf-bookmark-editor/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 text-2xl">📑</span>
+            <div class="font-bold mt-3">แก้ไขบุ๊กมาร์ก PDF</div>
+            <p class="text-sm text-slate-500 mt-1">เพิ่มสารบัญ (TOC) ที่สามารถคลิกได้</p>
+          </a>
+          <a href="../pdf-table-extractor/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 text-2xl">📊</span>
+            <div class="font-bold mt-3">ดึงตาราง PDF เป็น CSV</div>
+            <p class="text-sm text-slate-500 mt-1">แยกตารางข้อมูลไปเป็นไฟล์ CSV</p>
+          </a>
+          <a href="../invoice-generator/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-100 text-sky-600 text-2xl">🧾</span>
+            <div class="font-bold mt-3">สร้างใบแจ้งหนี้</div>
+            <p class="text-sm text-slate-500 mt-1">สร้างใบแจ้งหนี้ PDF อย่างมืออาชีพ</p>
+          </a>
+          <a href="../image-collage/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-purple-100 text-purple-600 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">รวมรูปเป็นคอลลาจ</div>
+            <p class="text-sm text-slate-500 mt-1">จัดเรียงหลายรูปภาพในหน้าเดียว</p>
           </a>
           <a href="../batch-rename-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🏷️</span>
             <div class="font-bold mt-3">เปลี่ยนชื่อ PDF จำนวนมาก</div>
             <p class="text-sm text-slate-500 mt-1">เปลี่ยนชื่อไฟล์พร้อมกันตามข้อมูลในไฟล์</p>
           </a>
-          <a href="../pdf-highlighter/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-yellow-50 text-2xl">🖍️</span>
-            <div class="font-bold mt-3">ไฮไลท์ข้อความ PDF</div>
-            <p class="text-sm text-slate-500 mt-1">ค้นหาและไฮไลท์ข้อความที่คุณต้องการ</p>
-          </a>
-          <a href="../pdf-bookmark-editor/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📑</span>
-            <div class="font-bold mt-3">แก้ไขบุ๊กมาร์ก PDF</div>
-            <p class="text-sm text-slate-500 mt-1">เพิ่มสารบัญ (TOC) ที่สามารถคลิกได้</p>
-          </a>
-          <a href="../pdf-table-extractor/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">📊</span>
-            <div class="font-bold mt-3">ดึงตาราง PDF เป็น CSV</div>
-            <p class="text-sm text-slate-500 mt-1">แยกตารางข้อมูลไปเป็นไฟล์ CSV</p>
-          </a>
-          <a href="../invoice-generator/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">🧾</span>
-            <div class="font-bold mt-3">สร้างใบแจ้งหนี้</div>
-            <p class="text-sm text-slate-500 mt-1">สร้างใบแจ้งหนี้ PDF อย่างมืออาชีพ</p>
-          </a>
-          <a href="../image-collage/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">🖼️</span>
-            <div class="font-bold mt-3">รวมรูปเป็นคอลลาจ</div>
-            <p class="text-sm text-slate-500 mt-1">จัดเรียงหลายรูปภาพในหน้าเดียว</p>
-          </a>
         </div>
-      </section>
-
-      <section class="pb-10">
-        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">จัดระเบียบเอกสาร</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button data-tool="merge" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🗂️</span>
-            <div class="font-bold mt-3">รวม PDF</div>
-            <p class="text-sm text-slate-500 mt-1">รวมไฟล์ PDF หลายไฟล์เป็นเอกสารเดียว</p>
-          </button>
-          <button data-tool="split" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">✂️</span>
-            <div class="font-bold mt-3">แยก PDF</div>
-            <p class="text-sm text-slate-500 mt-1">ดึงเฉพาะหน้าที่ต้องการ หรือลบหน้าที่ไม่ใช้</p>
-          </button>
-          <button data-tool="rotate" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔄</span>
-            <div class="font-bold mt-3">หมุน PDF</div>
-            <p class="text-sm text-slate-500 mt-1">แก้หน้าที่เอียงหรือกลับหัวจากการสแกน</p>
-          </button>
-        </div>
-
         <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">แปลงไฟล์</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button data-tool="word2pdf" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+          <a href="../word-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">📝</span>
             <div class="font-bold mt-3">Word เป็น PDF</div>
             <p class="text-sm text-slate-500 mt-1">แปลงเอกสาร .docx เป็น PDF พร้อมแชร์</p>
-          </button>
-          <button data-tool="pdf2word" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+          </a>
+          <a href="pdf-to-word/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📃</span>
             <div class="font-bold mt-3">PDF เป็น Word</div>
             <p class="text-sm text-slate-500 mt-1">ดึงข้อความจาก PDF ไปแก้ไขต่อใน Word</p>
-          </button>
-          <button data-tool="img2pdf" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+          </a>
+          <a href="jpg-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🖼️</span>
-            <div class="font-bold mt-3">JPG เป็น PDF</div>
+            <div class="font-bold mt-3">รูปเป็น PDF</div>
             <p class="text-sm text-slate-500 mt-1">รวมรูปถ่ายและภาพสแกนเป็น PDF ไฟล์เดียว</p>
-          </button>
-          <button data-tool="pdf2jpg" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
+          </a>
+          <a href="../pdf-to-jpg/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">📸</span>
             <div class="font-bold mt-3">PDF เป็น JPG</div>
             <p class="text-sm text-slate-500 mt-1">บันทึกทุกหน้าเป็นรูปภาพคุณภาพสูง</p>
-          </button>
-        </div>
-
-        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">แก้ไขและเซ็นเอกสาร</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button data-tool="sign" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">✍️</span>
-            <div class="font-bold mt-3">เซ็น PDF</div>
-            <p class="text-sm text-slate-500 mt-1">วาด พิมพ์ หรืออัปโหลดลายเซ็น แล้ววางบนเอกสาร</p>
-          </button>
-          <button data-tool="type" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">⌨️</span>
-            <div class="font-bold mt-3">พิมพ์ข้อความบน PDF</div>
-            <p class="text-sm text-slate-500 mt-1">กรอกฟอร์ม เพิ่มข้อความ วันที่ หรือโน้ต (รองรับภาษาไทย)</p>
-          </button>
-          <button data-tool="pagenum" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔢</span>
-            <div class="font-bold mt-3">ใส่เลขหน้า</div>
-            <p class="text-sm text-slate-500 mt-1">ประทับเลขหน้าทุกหน้า เลือกตำแหน่งได้</p>
-          </button>
-          <button data-tool="watermark" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">💧</span>
-            <div class="font-bold mt-3">ใส่ลายน้ำ</div>
-            <p class="text-sm text-slate-500 mt-1">ประทับคำว่า "ลับ" "ฉบับร่าง" หรือข้อความใดก็ได้</p>
-          </button>
-        </div>
-
-        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">ลดขนาดและความปลอดภัย</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button data-tool="compress" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
-            <div class="font-bold mt-3">บีบอัด PDF</div>
-            <p class="text-sm text-slate-500 mt-1">ลดขนาดไฟล์ใหญ่สำหรับส่งอีเมล</p>
-          </button>
-          <button data-tool="unlock" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">🔓</span>
-            <div class="font-bold mt-3">ปลดล็อก PDF</div>
-            <p class="text-sm text-slate-500 mt-1">ถอดรหัสผ่านออกจากไฟล์ของคุณเอง</p>
-          </button>
-          <button data-tool="protect" class="toolcard bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-red-50 text-2xl">🔐</span>
-            <div class="font-bold mt-3">ใส่รหัสผ่าน PDF</div>
-            <p class="text-sm text-slate-500 mt-1">ตั้งรหัสผ่านเพื่อความเป็นส่วนตัวของเอกสาร</p>
-          </button>
-          <!-- ADVERTISEMENT SLOT -->
-          <div class="ad-box rounded-2xl min-h-[140px]" aria-label="Advertisement"></div>
-        </div>
-        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">เครื่องมือเพิ่มเติม</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <a href="../seal-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🏢</span>
-            <div class="font-bold mt-3">ตราประทับบริษัท</div>
-            <p class="text-sm text-slate-500 mt-1">ประทับตราบริษัทลงบน PDF ในตำแหน่งที่เลือก</p>
+          </a>
+          <a href="ocr-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">🔎</span>
+            <div class="font-bold mt-3">OCR ภาษาไทย</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงข้อความจากไฟล์สแกน (รองรับภาษาไทยและอังกฤษ)</p>
           </a>
           <a href="../pdf-to-png/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">🖼️</span>
             <div class="font-bold mt-3">PDF เป็น PNG</div>
             <p class="text-sm text-slate-500 mt-1">บันทึกแต่ละหน้าเป็นภาพ PNG คมชัด</p>
           </a>
-          <a href="../grayscale-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">⬛</span>
-            <div class="font-bold mt-3">PDF ขาวดำ</div>
-            <p class="text-sm text-slate-500 mt-1">แปลง PDF เป็นขาวดำเพื่อประหยัดหมึกสี</p>
-          </a>
-          <a href="../redact-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🚫</span>
-            <div class="font-bold mt-3">ปิดข้อมูลลับ PDF</div>
-            <p class="text-sm text-slate-500 mt-1">ลบข้อความสำคัญออกจาก PDF อย่างถาวร</p>
-          </a>
           <a href="../extract-images-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🏞️</span>
             <div class="font-bold mt-3">ดึงรูปจาก PDF</div>
             <p class="text-sm text-slate-500 mt-1">ดึงรูปภาพที่ฝังอยู่ใน PDF ออกมา</p>
-          </a>
-          <a href="../add-pages-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
-            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">➕</span>
-            <div class="font-bold mt-3">เพิ่มหน้าว่าง</div>
-            <p class="text-sm text-slate-500 mt-1">แทรกหน้าว่างที่ตำแหน่งใดก็ได้ใน PDF</p>
           </a>
           <a href="../pdf-to-powerpoint/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">📊</span>
@@ -470,6 +466,352 @@
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">📗</span>
             <div class="font-bold mt-3">Excel เป็น PDF</div>
             <p class="text-sm text-slate-500 mt-1">แปลงสเปรดชีตเป็น PDF ที่แชร์ได้</p>
+          </a>
+          <a href="../pdf-to-text/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">📄</span>
+            <div class="font-bold mt-3">PDF เป็นข้อความ</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงข้อความทั้งหมดจาก PDF เป็นไฟล์ .txt</p>
+          </a>
+          <a href="../pdf-to-markdown/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📑</span>
+            <div class="font-bold mt-3">PDF เป็น Markdown</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงข้อความใน PDF เป็นไฟล์ Markdown (.md)</p>
+          </a>
+          <a href="../pdf-to-html/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">🌐</span>
+            <div class="font-bold mt-3">PDF เป็น HTML</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงข้อความใน PDF เป็นหน้าเว็บ HTML ที่จัดรูปแบบแล้ว</p>
+          </a>
+          <a href="../text-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">📝</span>
+            <div class="font-bold mt-3">ข้อความเป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงข้อความหรือไฟล์ .txt เป็น PDF ที่จัดหน้าเรียบร้อย</p>
+          </a>
+          <a href="../pdf-to-webp/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">PDF เป็น WebP</div>
+            <p class="text-sm text-slate-500 mt-1">บันทึกแต่ละหน้าเป็นภาพ WebP ขนาดเล็ก</p>
+          </a>
+          <a href="../svg-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🎨</span>
+            <div class="font-bold mt-3">SVG เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงภาพเวกเตอร์ SVG เป็นเอกสาร PDF</p>
+          </a>
+          <a href="../markdown-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">📝</span>
+            <div class="font-bold mt-3">Markdown เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงข้อความหรือไฟล์ Markdown เป็น PDF ที่จัดรูปแบบแล้ว</p>
+          </a>
+          <a href="../png-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">PNG เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงไฟล์ PNG เป็นเอกสาร PDF</p>
+          </a>
+          <a href="../webp-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">WebP เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงภาพ WebP เป็นไฟล์ PDF ในเบราว์เซอร์</p>
+          </a>
+          <a href="../bmp-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">BMP เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงภาพ BMP เป็น PDF มาตรฐาน</p>
+          </a>
+          <a href="../gif-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">👾</span>
+            <div class="font-bold mt-3">GIF เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงภาพ GIF ทั้งแบบนิ่งและเคลื่อนไหวเป็นเอกสาร PDF</p>
+          </a>
+          <a href="../tiff-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">📸</span>
+            <div class="font-bold mt-3">TIFF เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงภาพ TIFF คุณภาพสูงเป็นหน้า PDF</p>
+          </a>
+          <a href="../xml-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-purple-50 text-2xl">📊</span>
+            <div class="font-bold mt-3">XML เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">สร้างรายงาน PDF จากข้อมูลหรือโครงสร้าง XML</p>
+          </a>
+          <a href="../html-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🌐</span>
+            <div class="font-bold mt-3">HTML เป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงหน้าเว็บ HTML หรือโค้ดเป็น PDF</p>
+          </a>
+        </div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">แก้ไขและเซ็นเอกสาร</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a href="../sign-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">✍️</span>
+            <div class="font-bold mt-3">เซ็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">วาด พิมพ์ หรืออัปโหลดลายเซ็น แล้ววางบนหน้าใดก็ได้</p>
+          </a>
+          <a href="../seal-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🏢</span>
+            <div class="font-bold mt-3">ตราประทับบริษัท</div>
+            <p class="text-sm text-slate-500 mt-1">ประทับตราบริษัทลงบน PDF ในตำแหน่งที่เลือก</p>
+          </a>
+          <a href="../type-on-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">⌨️</span>
+            <div class="font-bold mt-3">พิมพ์ข้อความบน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">กรอกฟอร์ม เพิ่มข้อความ วันที่ หรือโน้ตที่ตำแหน่งใดก็ได้</p>
+          </a>
+          <a href="../add-page-numbers/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🔢</span>
+            <div class="font-bold mt-3">ใส่เลขหน้า</div>
+            <p class="text-sm text-slate-500 mt-1">ประทับเลขหน้าทุกหน้า เลือกตำแหน่งได้</p>
+          </a>
+          <a href="../watermark-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">💧</span>
+            <div class="font-bold mt-3">ใส่ลายน้ำ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ประทับคำว่า "ลับ" "ฉบับร่าง" หรือข้อความใดก็ได้บนทุกหน้า</p>
+          </a>
+          <a href="../pdf-word-count/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">🔠</span>
+            <div class="font-bold mt-3">นับคำใน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">นับจำนวนคำ ตัวอักษร และหน้าใน PDF</p>
+          </a>
+          <a href="../pdf-metadata-viewer/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔎</span>
+            <div class="font-bold mt-3">ดูข้อมูลเมตาของ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ดูข้อมูลที่ซ่อนอยู่ เช่น ชื่อเรื่อง ผู้เขียน และวันที่</p>
+          </a>
+          <a href="../edit-pdf-metadata/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">🏷️</span>
+            <div class="font-bold mt-3">แก้ไขข้อมูลเมตาของ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ตั้งค่าชื่อเรื่อง ผู้เขียน หัวข้อ และคำสำคัญของ PDF</p>
+          </a>
+          <a href="../remove-pdf-metadata/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🧹</span>
+            <div class="font-bold mt-3">ลบข้อมูลเมตาของ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ลบข้อมูลที่ซ่อนอยู่ทั้งหมดออกจาก PDF เพื่อความเป็นส่วนตัว</p>
+          </a>
+          <a href="../flatten-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">📐</span>
+            <div class="font-bold mt-3">ล็อกฟอร์ม PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ล็อกฟิลด์ฟอร์มให้แก้ไข PDF ต่อไม่ได้</p>
+          </a>
+          <a href="../remove-pdf-annotations/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">🧽</span>
+            <div class="font-bold mt-3">ลบคอมเมนต์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ลบคอมเมนต์ ไฮไลท์ และหมายเหตุอื่น ๆ ออกจาก PDF</p>
+          </a>
+          <a href="../invert-pdf-colors/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">🌓</span>
+            <div class="font-bold mt-3">กลับสี PDF</div>
+            <p class="text-sm text-slate-500 mt-1">กลับสีของ PDF ให้อ่านสบายตาแบบโหมดมืด</p>
+          </a>
+          <a href="../flip-mirror-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">↔️</span>
+            <div class="font-bold mt-3">พลิกหน้า PDF</div>
+            <p class="text-sm text-slate-500 mt-1">พลิกเนื้อหาในหน้าตามแนวนอนหรือแนวตั้ง</p>
+          </a>
+          <a href="../add-cover-page/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">📔</span>
+            <div class="font-bold mt-3">เพิ่มหน้าปก</div>
+            <p class="text-sm text-slate-500 mt-1">ออกแบบและแทรกหน้าปกที่กำหนดเองไว้หน้าแรกของ PDF</p>
+          </a>
+          <a href="../change-pdf-bg-color/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">🎨</span>
+            <div class="font-bold mt-3">เปลี่ยนสีพื้นหลัง PDF</div>
+            <p class="text-sm text-slate-500 mt-1">เปลี่ยนสีพื้นหลังของหน้า PDF</p>
+          </a>
+          <a href="../pdf-link-inspector/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔗</span>
+            <div class="font-bold mt-3">ตรวจสอบลิงก์ใน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ดู แก้ไข หรือลบไฮเปอร์ลิงก์ที่ฝังอยู่ใน PDF</p>
+          </a>
+          <a href="../pdf-form-filler/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">📝</span>
+            <div class="font-bold mt-3">กรอกฟอร์ม PDF</div>
+            <p class="text-sm text-slate-500 mt-1">กรอกฟิลด์ฟอร์ม PDF ผ่านแบบฟอร์ม HTML แบบโต้ตอบ</p>
+          </a>
+          <a href="../add-image-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">แทรกรูปภาพลง PDF</div>
+            <p class="text-sm text-slate-500 mt-1">วางไฟล์รูปภาพลงบนหน้า PDF ตามตำแหน่งที่กำหนด</p>
+          </a>
+          <a href="../embed-files-in-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">📎</span>
+            <div class="font-bold mt-3">แนบไฟล์ใน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">แนบไฟล์เป็นเอกสารแนบไว้ภายใน PDF โดยตรง</p>
+          </a>
+          <a href="../extract-pdf-attachments/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">📂</span>
+            <div class="font-bold mt-3">ดึงไฟล์แนบจาก PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ดูและดึงไฟล์ที่แนบอยู่ใน PDF ออกมา</p>
+          </a>
+          <a href="../add-header-footer/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">📄</span>
+            <div class="font-bold mt-3">เพิ่มส่วนหัว/ส่วนท้าย</div>
+            <p class="text-sm text-slate-500 mt-1">เพิ่มเลขหน้า วันที่ หรือข้อความบนทุกหน้า</p>
+          </a>
+          <a href="../bates-numbering/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">🏛️</span>
+            <div class="font-bold mt-3">ประทับเลข Bates</div>
+            <p class="text-sm text-slate-500 mt-1">ประทับเลขเอกสารสำหรับงานกฎหมาย</p>
+          </a>
+          <a href="../qr-code-generator/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📱</span>
+            <div class="font-bold mt-3">สร้าง QR Code</div>
+            <p class="text-sm text-slate-500 mt-1">สร้าง QR Code และแปะลงบนเอกสาร PDF</p>
+          </a>
+        </div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">ลดขนาดและความปลอดภัย</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a href="compress-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
+            <div class="font-bold mt-3">ลดขนาดไฟล์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ย่อไฟล์ให้ส่งอีเมลได้</p>
+          </a>
+          <a href="../compress-pdf-to-size/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🎯</span>
+            <div class="font-bold mt-3">บีบอัด PDF ตามขนาดที่กำหนด</div>
+            <p class="text-sm text-slate-500 mt-1">ย่อ PDF ให้เหลือขนาดไม่เกินที่ต้องการ (เช่น 2MB)</p>
+          </a>
+          <!-- ADVERTISEMENT SLOT -->
+          <div class="ad-box rounded-2xl min-h-[140px]" aria-label="Advertisement"></div>
+          <a href="../unlock-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">🔓</span>
+            <div class="font-bold mt-3">ปลดล็อก PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ถอดรหัสผ่านออกจากไฟล์ของคุณเอง</p>
+          </a>
+          <a href="../protect-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-red-50 text-2xl">🔐</span>
+            <div class="font-bold mt-3">ใส่รหัสผ่าน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ตั้งรหัสผ่านเพื่อความเป็นส่วนตัวของเอกสาร</p>
+          </a>
+          <a href="../grayscale-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">⬛</span>
+            <div class="font-bold mt-3">PDF ขาวดำ</div>
+            <p class="text-sm text-slate-500 mt-1">แปลง PDF เป็นขาวดำเพื่อประหยัดหมึกสี</p>
+          </a>
+          <a href="../redact-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🚫</span>
+            <div class="font-bold mt-3">ปิดข้อมูลลับ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ลบข้อความสำคัญออกจาก PDF อย่างถาวร</p>
+          </a>
+          <a href="../pdf-to-scanned-look/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🖨️</span>
+            <div class="font-bold mt-3">ทำ PDF ให้ดูเหมือนสแกน</div>
+            <p class="text-sm text-slate-500 mt-1">ทำให้ไฟล์ PDF ดิจิทัลดูเหมือนถ่ายเอกสารจริง</p>
+          </a>
+          <a href="../pdf-dimensions/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">📐</span>
+            <div class="font-bold mt-3">ตรวจสอบขนาดหน้า PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ดูและปรับขนาดของแต่ละหน้าใน PDF</p>
+          </a>
+          <a href="../compare-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">⚖️</span>
+            <div class="font-bold mt-3">เปรียบเทียบไฟล์ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">เทียบสองไฟล์ PDF แบบเคียงข้างพร้อมไฮไลท์จุดต่าง</p>
+          </a>
+          <a href="../pdf-inspector/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">🔍</span>
+            <div class="font-bold mt-3">ตรวจสอบโครงสร้าง PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ดูโครงสร้าง ฟอนต์ และข้อมูลเมตาของไฟล์ PDF</p>
+          </a>
+          <a href="../pdf-letterhead-overlay/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🖨️</span>
+            <div class="font-bold mt-3">ใส่หัวจดหมายบน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">วางหัวจดหมาย โลโก้ หรือกรอบบนทุกหน้า</p>
+          </a>
+          <a href="../pdf-contact-sheet/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">ทำภาพย่อรวมทุกหน้า</div>
+            <p class="text-sm text-slate-500 mt-1">จัดหน้าทั้งหมดเป็นตารางภาพย่อ สำหรับพรีวิวหรือตรวจทาน</p>
+          </a>
+          <a href="../pdf-text-diff/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🔍</span>
+            <div class="font-bold mt-3">เปรียบเทียบข้อความ PDF</div>
+            <p class="text-sm text-slate-500 mt-1">เทียบความแตกต่างระหว่างสองเอกสาร</p>
+          </a>
+        </div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 mt-8">เครื่องมือรูปภาพ</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a href="../image-workspace/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">&#x1F5BC;&#xFE0F;</span>
+            <div class="font-bold mt-3">พื้นที่ทำงานรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">เปิดรูปครั้งเดียว ใช้เครื่องมือรูปภาพใดก็ได้ตามลำดับที่ต้องการ เหมือนโปรแกรมแก้ไขรูปบนเครื่อง</p>
+          </a>
+          <a href="../scan-to-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📷</span>
+            <div class="font-bold mt-3">สแกนเป็น PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ถ่ายด้วยกล้องมือถือ ครอบตัดและปรับให้ดูเหมือนสแกนจริง</p>
+          </a>
+          <a href="../compress-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🗜️</span>
+            <div class="font-bold mt-3">บีบอัดรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">ย่อไฟล์ JPG, PNG และ WebP ด้วยแถบเลื่อนคุณภาพ</p>
+          </a>
+          <a href="../resize-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">📐</span>
+            <div class="font-bold mt-3">ปรับขนาดรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">เปลี่ยนขนาดเป็นพิกเซลหรือเปอร์เซ็นต์</p>
+          </a>
+          <a href="../crop-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">✂️</span>
+            <div class="font-bold mt-3">ครอบตัดรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">ลากเพื่อครอบตัด พร้อมอัตราส่วนที่กำหนดได้</p>
+          </a>
+          <a href="../convert-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔁</span>
+            <div class="font-bold mt-3">แปลงไฟล์รูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">แปลง PNG กับ JPG หรือแปลงเป็น WebP</p>
+          </a>
+          <a href="../heic-to-jpg/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">📱</span>
+            <div class="font-bold mt-3">HEIC เป็น JPG</div>
+            <p class="text-sm text-slate-500 mt-1">แปลงรูป HEIC จาก iPhone เป็น JPG มาตรฐาน</p>
+          </a>
+          <a href="../compress-image-to-size/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">🎯</span>
+            <div class="font-bold mt-3">บีบอัดรูปภาพตามขนาดที่กำหนด</div>
+            <p class="text-sm text-slate-500 mt-1">กำหนดขนาดไฟล์ตาม KB สำหรับอัปโหลดวีซ่าหรือระบบต่าง ๆ</p>
+          </a>
+          <a href="passport-photo/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">🪪</span>
+            <div class="font-bold mt-3">รูปวีซ่า/ติดบัตร</div>
+            <p class="text-sm text-slate-500 mt-1">ขนาดและ KB ตามที่กำหนด</p>
+          </a>
+          <a href="../remove-image-background/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-fuchsia-50 text-2xl">🪄</span>
+            <div class="font-bold mt-3">ลบพื้นหลังรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">ลบพื้นหลังอัตโนมัติ ให้เป็น PNG โปร่งใส</p>
+          </a>
+          <a href="../image-to-text/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">🔤</span>
+            <div class="font-bold mt-3">แปลงรูปเป็นข้อความ</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงและคัดลอกข้อความที่อยู่ในรูปภาพ</p>
+          </a>
+          <a href="../rotate-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-cyan-50 text-2xl">🔄</span>
+            <div class="font-bold mt-3">หมุน/พลิกรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">หมุน 90/180/270° หรือพลิกแนวนอน/แนวตั้ง</p>
+          </a>
+          <a href="../watermark-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">💧</span>
+            <div class="font-bold mt-3">ใส่ลายน้ำรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">ใส่ข้อความทับรูป แบบทแยง เรียงซ้ำ หรือมุมภาพ</p>
+          </a>
+          <a href="../circle-crop-image/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-orange-50 text-2xl">👤</span>
+            <div class="font-bold mt-3">ครอบตัดวงกลม/รูปโปรไฟล์</div>
+            <p class="text-sm text-slate-500 mt-1">ครอบตัดเป็นวงกลม มุมโปร่งใส</p>
+          </a>
+          <a href="../favicon-generator/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-yellow-50 text-2xl">🌟</span>
+            <div class="font-bold mt-3">สร้างไอคอนเว็บไซต์</div>
+            <p class="text-sm text-slate-500 mt-1">สร้างไอคอนทุกขนาดจากรูปเดียว ดาวน์โหลดเป็น ZIP</p>
+          </a>
+          <a href="../image-color-palette/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-lime-50 text-2xl">🎨</span>
+            <div class="font-bold mt-3">ดึงชุดสีจากรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">ดึงสีเด่นในรูปและคัดลอกรหัสสี hex</p>
+          </a>
+          <a href="../merge-images/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🖼️</span>
+            <div class="font-bold mt-3">รวมรูปภาพ</div>
+            <p class="text-sm text-slate-500 mt-1">รวม JPG/PNG เป็นไฟล์เดียว แบบซ้อน เรียงข้าง หรือตาราง</p>
           </a>
         </div>
       </section>
