@@ -18,7 +18,6 @@ import pexInline from '../../assets/house-ads/pex-inline.html?raw';
 const HOS_SHOTS = [
   ['ad-thai-rent-a-car.jpg', 'Thai Rent A Car booking site'],
   ['ad-sf-cinema.jpg', 'SF Cinema booking platform'],
-  ['ad-kiatnakin.jpg', 'Kiatnakin Phatra Wealth site'],
 ];
 
 export function initHouseAds() {
