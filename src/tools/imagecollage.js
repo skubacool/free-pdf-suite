@@ -7,14 +7,32 @@ export function initImageCollage() {
 
   setupDropzone('imagecollage', (files) => {
     st.files = files;
-    $('#picked-imagecollage').textContent = `Selected: ${files.length} images`;
+    $('#picked-imagecollage').textContent = `Selected: ${files.length} image${files.length === 1 ? '' : 's'}`;
     $('#btn-imagecollage').disabled = false;
-  }, true); // Allow multiple files if setupDropzone supports it. Otherwise handle manually? Wait, setupDropzone usually returns all selected files.
+    hideResult('imagecollage');
+    setStatus('imagecollage', '');
+  });
+
+  // JPG/PNG embed as-is; anything else the browser can decode (WebP, GIF, BMP,
+  // AVIF...) is redrawn to a canvas and embedded as PNG.
+  const embed = async (pdfDoc, file) => {
+    const arr = new Uint8Array(await file.arrayBuffer());
+    if (file.type === 'image/png') return pdfDoc.embedPng(arr);
+    if (file.type === 'image/jpeg' || file.type === 'image/jpg') return pdfDoc.embedJpg(arr);
+    const bmp = await createImageBitmap(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = bmp.width;
+    canvas.height = bmp.height;
+    canvas.getContext('2d').drawImage(bmp, 0, 0);
+    bmp.close?.();
+    const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+    return pdfDoc.embedPng(new Uint8Array(await blob.arrayBuffer()));
+  };
 
   $('#btn-imagecollage').addEventListener('click', async () => {
     const files = st.files;
     if (!files || files.length === 0) return;
-    
+
     const btn = $('#btn-imagecollage');
     btn.disabled = true;
     hideResult('imagecollage');
@@ -22,70 +40,51 @@ export function initImageCollage() {
 
     try {
       const pdfDoc = await PDFLib.PDFDocument.create();
-      const page = pdfDoc.addPage([595.28, 841.89]); // A4
-      const { width, height } = page.getSize();
-      
-      const margin = 20;
-      const spacing = 10;
-      
-      // Calculate grid size (e.g. 2x2 for 4 images, 3x3 for 9)
-      const cols = Math.ceil(Math.sqrt(files.length));
-      const rows = Math.ceil(files.length / cols);
-      
-      const cellWidth = (width - (margin * 2) - (spacing * (cols - 1))) / cols;
-      const cellHeight = (height - (margin * 2) - (spacing * (rows - 1))) / rows;
-      
-      let col = 0;
-      let row = 0;
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const arr = new Uint8Array(await file.arrayBuffer());
-        
-        let pdfImage;
-        if (file.type === 'image/png') {
-          pdfImage = await pdfDoc.embedPng(arr);
-        } else if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
-          pdfImage = await pdfDoc.embedJpg(arr);
-        } else {
-          continue; // Skip unsupported
-        }
-        
-        // Scale image to fit cell while maintaining aspect ratio
-        const imgDims = pdfImage.scaleToFit(cellWidth, cellHeight);
-        
-        const x = margin + (col * (cellWidth + spacing)) + (cellWidth - imgDims.width) / 2;
-        const y = height - margin - cellHeight - (row * (cellHeight + spacing)) + (cellHeight - imgDims.height) / 2;
-        
-        page.drawImage(pdfImage, {
-          x,
-          y,
-          width: imgDims.width,
-          height: imgDims.height
-        });
-        
-        col++;
-        if (col >= cols) {
-          col = 0;
-          row++;
-        }
+      const images = [];
+      const skipped = [];
+      for (const file of files) {
+        try { images.push(await embed(pdfDoc, file)); } catch (_) { skipped.push(file.name); }
+      }
+      if (!images.length) {
+        setStatus('imagecollage', '❌ None of these images could be read (HEIC? convert it with HEIC to JPG first).', 'error');
+        return;
       }
 
-      const out = await pdfDoc.save();
-      const blob = new Blob([out], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      
-      const dlBtn = $('#dl-imagecollage');
-      dlBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Collage_${Date.now()}.pdf`;
-        a.click();
-      };
+      // A4, landscape when most images are landscape (or when chosen)
+      const orient = $('#orient-imagecollage')?.value || 'auto';
+      const wide = images.filter((im) => im.width > im.height).length;
+      const landscape = orient === 'landscape' || (orient === 'auto' && wide > images.length / 2);
+      const [width, height] = landscape ? [841.89, 595.28] : [595.28, 841.89];
+      const page = pdfDoc.addPage([width, height]);
 
-      $('#info-imagecollage').textContent = `Collage created with ${files.length} images.`;
-      showResult('imagecollage');
-      setStatus('imagecollage', '✅ Collage complete!', 'success');
+      const margin = 20;
+      const spacing = 10;
+
+      // Near-square grid: 2x2 for 4 images, 3x3 for 9, ... (wider than tall on landscape)
+      let cols = Math.ceil(Math.sqrt(images.length));
+      let rows = Math.ceil(images.length / cols);
+      if (landscape && cols < rows) [cols, rows] = [rows, cols];
+
+      const cellWidth = (width - (margin * 2) - (spacing * (cols - 1))) / cols;
+      const cellHeight = (height - (margin * 2) - (spacing * (rows - 1))) / rows;
+
+      images.forEach((pdfImage, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        // Scale image to fit cell while maintaining aspect ratio
+        const dims = pdfImage.scaleToFit(cellWidth, cellHeight);
+        page.drawImage(pdfImage, {
+          x: margin + (col * (cellWidth + spacing)) + (cellWidth - dims.width) / 2,
+          y: height - margin - cellHeight - (row * (cellHeight + spacing)) + (cellHeight - dims.height) / 2,
+          width: dims.width,
+          height: dims.height,
+        });
+      });
+
+      const out = await pdfDoc.save();
+      showResult('imagecollage', out, `Collage_${images.length}_images.pdf`, 'application/pdf',
+        `Collage of ${images.length} image${images.length === 1 ? '' : 's'} (${cols}×${rows} grid).` +
+        (skipped.length ? ` Skipped: ${skipped.join(', ')}.` : ''));
 
     } catch (e) {
       console.error(e);

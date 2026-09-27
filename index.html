@@ -130,7 +130,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&text=%E0%B9%84%E0%B8%97%E0%B8%A2&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="/tailwind.css?v=4" />
+  <link rel="stylesheet" href="/tailwind.css?v=5" />
   <style>
     ::selection { background:#2563EB; color:#fff; }
 
@@ -192,7 +192,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="./app.js?v=18"></script>
+  <script defer src="./app.js?v=19"></script>
   <!-- Optional backend scaffolding (Nhost) — inert until configured in nhost.js -->
   <script type="module" src="./nhost.js"></script>
 </head>
@@ -2511,177 +2511,182 @@
 
         
           <div id="panel-highlighter" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-            <div id="dz-highlighter" class="dropzone border-2 border-dashed border-slate-300 rounded-3xl p-10 text-center hover:bg-slate-50 transition-colors cursor-pointer bg-white">
-              <div class="text-4xl mb-3">🖍️</div>
-              <p class="text-slate-600 font-medium">Drag & drop a PDF here</p>
-              <p class="text-sm text-slate-400 mt-1">or click to browse</p>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-yellow-50 text-2xl">🖍️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Highlight Text in PDF</h2>
+                <p class="text-slate-500 text-sm">Find a word or phrase and mark every occurrence in yellow.</p>
+              </div>
+            </div>
+            <div id="dz-highlighter" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <p class="text-sm text-slate-500">Works on PDFs with selectable text</p>
               <input type="file" id="file-highlighter" accept="application/pdf,.pdf" class="hidden" />
             </div>
-            
-            <div id="config-highlighter" class="mt-6 bg-white border border-slate-200 rounded-2xl p-6 hidden">
-              <h3 class="font-bold text-slate-800 mb-4">Highlight Settings</h3>
-              <p id="picked-highlighter" class="text-sm font-medium text-slate-700 mb-4 bg-slate-50 p-3 rounded-lg"></p>
-              
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Text to highlight (case-insensitive)</label>
-                <input type="text" id="text-query" class="w-full border border-slate-300 rounded-xl px-4 py-2" placeholder="e.g. important keyword">
-              </div>
-
-              <div class="flex flex-wrap gap-3 mt-6">
-                <button id="btn-highlighter" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex-1 disabled:opacity-50" disabled>
-                  Highlight Text
-                </button>
-              </div>
+            <p id="picked-highlighter" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 grid gap-4 max-w-md">
+              <label class="text-sm font-semibold">Text to highlight
+                <input type="text" id="text-query" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="e.g. payment terms" />
+                <span class="block mt-1 text-xs font-normal text-slate-500">Not case-sensitive. Every match on every page is highlighted.</span>
+              </label>
             </div>
-
-            <div id="result-highlighter" class="mt-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 hidden text-center">
-              <div class="text-3xl mb-2">🎉</div>
-              <h3 class="font-bold text-emerald-800 mb-2">Success!</h3>
-              <p id="info-highlighter" class="text-emerald-700 mb-4"></p>
-              <button id="dl-highlighter" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl w-full sm:w-auto">
-                Download Highlighted PDF
-              </button>
+            <button id="btn-highlighter" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Highlight Text</button>
+            <p id="status-highlighter" class="mt-4 text-sm font-medium"></p>
+            <div id="res-highlighter" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-highlighter" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-highlighter" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download PDF</button>
+                <span class="text-sm text-slate-600" id="info-highlighter"></span>
+              </div>
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
             </div>
           </div>
 
 
 
           <div id="panel-bookmark" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-            <div id="dz-bookmark" class="dropzone border-2 border-dashed border-slate-300 rounded-3xl p-10 text-center hover:bg-slate-50 transition-colors cursor-pointer bg-white">
-              <div class="text-4xl mb-3">📑</div>
-              <p class="text-slate-600 font-medium">Drag & drop a PDF here</p>
-              <p class="text-sm text-slate-400 mt-1">or click to browse</p>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">📑</span>
+              <div>
+                <h2 class="text-2xl font-bold">Add Bookmarks &amp; Table of Contents</h2>
+                <p class="text-slate-500 text-sm">Type your chapters once - get clickable sidebar bookmarks and a linked contents page.</p>
+              </div>
+            </div>
+            <div id="dz-bookmark" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <p class="text-sm text-slate-500">One PDF at a time</p>
               <input type="file" id="file-bookmark" accept="application/pdf,.pdf" class="hidden" />
             </div>
-            
-            <div id="config-bookmark" class="mt-6 bg-white border border-slate-200 rounded-2xl p-6 hidden">
-              <h3 class="font-bold text-slate-800 mb-4">Table of Contents Entries</h3>
-              <p id="picked-bookmark" class="text-sm font-medium text-slate-700 mb-4 bg-slate-50 p-3 rounded-lg"></p>
-              
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Enter entries (Format: PageNumber: Title)</label>
-                <textarea id="text-toc" rows="6" class="w-full border border-slate-300 rounded-xl px-4 py-2 font-mono text-sm" placeholder="1: Introduction
-5: Chapter 1
+            <p id="picked-bookmark" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 grid gap-4">
+              <label class="text-sm font-semibold">Entries - one per line, as <span class="font-mono">page: title</span>
+                <textarea id="text-toc" rows="6" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5 font-mono text-sm" placeholder="1: Introduction
+5: Chapter 1 - Getting started
 12: Conclusion"></textarea>
-                <p class="text-xs text-slate-500 mt-1">A new TOC page will be inserted at the beginning of the PDF.</p>
-              </div>
-
-              <div class="flex flex-wrap gap-3 mt-6">
-                <button id="btn-bookmark" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex-1 disabled:opacity-50" disabled>
-                  Generate TOC
-                </button>
-              </div>
+                <span class="block mt-1 text-xs font-normal text-slate-500">Page numbers refer to your original PDF.</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" id="outline-bookmark" checked class="accent-[#2563EB]" /> Add sidebar bookmarks (replaces any existing ones)</label>
+              <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" id="tocpage-bookmark" checked class="accent-[#2563EB]" /> Insert a clickable Table of Contents page at the front</label>
             </div>
-
-            <div id="result-bookmark" class="mt-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 hidden text-center">
-              <div class="text-3xl mb-2">🎉</div>
-              <h3 class="font-bold text-emerald-800 mb-2">Success!</h3>
-              <p id="info-bookmark" class="text-emerald-700 mb-4"></p>
-              <button id="dl-bookmark" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl w-full sm:w-auto">
-                Download PDF
-              </button>
+            <button id="btn-bookmark" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Add Bookmarks</button>
+            <p id="status-bookmark" class="mt-4 text-sm font-medium"></p>
+            <div id="res-bookmark" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-bookmark" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-bookmark" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download PDF</button>
+                <span class="text-sm text-slate-600" id="info-bookmark"></span>
+              </div>
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
             </div>
           </div>
 
 
 
           <div id="panel-tableextract" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-            <div id="dz-tableextract" class="dropzone border-2 border-dashed border-slate-300 rounded-3xl p-10 text-center hover:bg-slate-50 transition-colors cursor-pointer bg-white">
-              <div class="text-4xl mb-3">📊</div>
-              <p class="text-slate-600 font-medium">Drag & drop a PDF here</p>
-              <p class="text-sm text-slate-400 mt-1">or click to browse</p>
-              <input type="file" id="file-tableextract" accept="application/pdf,.pdf" class="hidden" />
-            </div>
-            
-            <div id="config-tableextract" class="mt-6 bg-white border border-slate-200 rounded-2xl p-6 hidden">
-              <h3 class="font-bold text-slate-800 mb-4">Extract Settings</h3>
-              <p id="picked-tableextract" class="text-sm font-medium text-slate-700 mb-4 bg-slate-50 p-3 rounded-lg"></p>
-              
-              <div class="flex flex-wrap gap-3 mt-6">
-                <button id="btn-tableextract" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex-1 disabled:opacity-50" disabled>
-                  Extract Data to CSV
-                </button>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📊</span>
+              <div>
+                <h2 class="text-2xl font-bold">Extract PDF Tables to CSV</h2>
+                <p class="text-slate-500 text-sm">Each line of text becomes a row, split into columns by position - opens in Excel or Google Sheets.</p>
               </div>
             </div>
-
-            <div id="result-tableextract" class="mt-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 hidden text-center">
-              <div class="text-3xl mb-2">🎉</div>
-              <h3 class="font-bold text-emerald-800 mb-2">Success!</h3>
-              <p id="info-tableextract" class="text-emerald-700 mb-4"></p>
-              <button id="dl-tableextract" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl w-full sm:w-auto">
-                Download CSV
-              </button>
+            <div id="dz-tableextract" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <p class="text-sm text-slate-500">Works on PDFs with selectable text (not scans)</p>
+              <input type="file" id="file-tableextract" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-tableextract" class="mt-4 text-sm text-slate-600"></p>
+            <button id="btn-tableextract" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Extract to CSV</button>
+            <p id="status-tableextract" class="mt-4 text-sm font-medium"></p>
+            <div id="res-tableextract" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-tableextract" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download CSV</button>
+                <span class="text-sm text-slate-600" id="info-tableextract"></span>
+              </div>
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
             </div>
           </div>
 
 
 
-          <div id="panel-invoice" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8" style="display:block;">
-            <div class="mt-6 bg-white border border-slate-200 rounded-2xl p-6">
-              <h3 class="font-bold text-slate-800 mb-4">Invoice Details</h3>
-              
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Bill To (Name & Address)</label>
-                <textarea id="invoice-to" rows="3" class="w-full border border-slate-300 rounded-xl px-4 py-2" placeholder="Client Name
-123 Business Rd"></textarea>
-              </div>
-              
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Items (Format: Description - Amount)</label>
-                <textarea id="invoice-items" rows="4" class="w-full border border-slate-300 rounded-xl px-4 py-2" placeholder="Web Design Services - $500
-Hosting - $50"></textarea>
-              </div>
-              
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Total Amount</label>
-                <input type="text" id="invoice-total" class="w-full border border-slate-300 rounded-xl px-4 py-2" placeholder="$550.00">
-              </div>
-
-              <div class="flex flex-wrap gap-3 mt-6">
-                <button id="btn-invoice" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex-1">
-                  Generate PDF Invoice
-                </button>
+          <div id="panel-invoice" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-blue-50 text-2xl">🧾</span>
+              <div>
+                <h2 class="text-2xl font-bold">Create a PDF Invoice</h2>
+                <p class="text-slate-500 text-sm">Fill in the details and download a clean, printable invoice.</p>
               </div>
             </div>
-
-            <div id="result-invoice" class="mt-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 hidden text-center">
-              <div class="text-3xl mb-2">🎉</div>
-              <h3 class="font-bold text-emerald-800 mb-2">Success!</h3>
-              <p id="info-invoice" class="text-emerald-700 mb-4"></p>
-              <button id="dl-invoice" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl w-full sm:w-auto">
-                Download Invoice
-              </button>
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+              <label class="text-sm font-semibold">From (your business) <span class="font-normal text-slate-400">optional</span>
+                <textarea id="invoice-from" rows="3" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="Your Company Ltd.
+1 Main Street"></textarea>
+              </label>
+              <label class="text-sm font-semibold">Bill to (name &amp; address)
+                <textarea id="invoice-to" rows="3" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="Client Name
+123 Business Rd"></textarea>
+              </label>
+              <label class="text-sm font-semibold md:col-span-2">Items - one per line, as <span class="font-mono">description - amount</span>
+                <textarea id="invoice-items" rows="4" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="Web design services - $500
+Hosting (12 months) - $50"></textarea>
+              </label>
+              <label class="text-sm font-semibold">Invoice number <span class="font-normal text-slate-400">optional</span>
+                <input type="text" id="invoice-no" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="INV-001" />
+              </label>
+              <label class="text-sm font-semibold">Total <span class="font-normal text-slate-400">blank = add up the items</span>
+                <input type="text" id="invoice-total" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5" placeholder="$550.00" />
+              </label>
+            </div>
+            <button id="btn-invoice" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed">Generate PDF Invoice</button>
+            <p id="status-invoice" class="mt-4 text-sm font-medium"></p>
+            <div id="res-invoice" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-invoice" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-invoice" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Invoice</button>
+                <span class="text-sm text-slate-600" id="info-invoice"></span>
+              </div>
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
             </div>
           </div>
 
 
 
           <div id="panel-imagecollage" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-            <div id="dz-imagecollage" class="dropzone border-2 border-dashed border-slate-300 rounded-3xl p-10 text-center hover:bg-slate-50 transition-colors cursor-pointer bg-white">
-              <div class="text-4xl mb-3">🖼️</div>
-              <p class="text-slate-600 font-medium">Drag & drop multiple images here</p>
-              <p class="text-sm text-slate-400 mt-1">or click to browse</p>
-              <input type="file" id="file-imagecollage" accept="image/*" multiple class="hidden" />
-            </div>
-            
-            <div id="config-imagecollage" class="mt-6 bg-white border border-slate-200 rounded-2xl p-6 hidden">
-              <h3 class="font-bold text-slate-800 mb-4">Collage Settings</h3>
-              <p id="picked-imagecollage" class="text-sm font-medium text-slate-700 mb-4 bg-slate-50 p-3 rounded-lg"></p>
-              
-              <div class="flex flex-wrap gap-3 mt-6">
-                <button id="btn-imagecollage" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl flex-1 disabled:opacity-50" disabled>
-                  Create PDF Collage
-                </button>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🖼️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Image Collage to PDF</h2>
+                <p class="text-slate-500 text-sm">Arrange several photos in a neat grid on one A4 page.</p>
               </div>
             </div>
-
-            <div id="result-imagecollage" class="mt-6 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 hidden text-center">
-              <div class="text-3xl mb-2">🎉</div>
-              <h3 class="font-bold text-emerald-800 mb-2">Success!</h3>
-              <p id="info-imagecollage" class="text-emerald-700 mb-4"></p>
-              <button id="dl-imagecollage" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl w-full sm:w-auto">
-                Download PDF
-              </button>
+            <div id="dz-imagecollage" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop images here or click to browse</p>
+              <p class="text-sm text-slate-500">JPG, PNG, WebP, GIF - select all of them at once</p>
+              <input type="file" id="file-imagecollage" accept="image/*" multiple class="hidden" />
+            </div>
+            <p id="picked-imagecollage" class="mt-4 text-sm text-slate-600"></p>
+            <div class="mt-5 grid gap-4 max-w-md">
+              <label class="text-sm font-semibold">Page orientation
+                <select id="orient-imagecollage" class="mt-1.5 block w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+                  <option value="auto" selected>Auto - match most of the photos</option>
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </label>
+            </div>
+            <button id="btn-imagecollage" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Create Collage</button>
+            <p id="status-imagecollage" class="mt-4 text-sm font-medium"></p>
+            <div id="res-imagecollage" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-imagecollage" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-imagecollage" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download PDF</button>
+                <span class="text-sm text-slate-600" id="info-imagecollage"></span>
+              </div>
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
             </div>
           </div>
 

@@ -9,6 +9,8 @@ export function initTableExtract() {
     st.file = f;
     $('#picked-tableextract').textContent = `Selected: ${f.name} (${(f.size / 1024 / 1024).toFixed(2)} MB)`;
     $('#btn-tableextract').disabled = false;
+    hideResult('tableextract');
+    setStatus('tableextract', '');
   });
 
   $('#btn-tableextract').addEventListener('click', async () => {
@@ -80,25 +82,14 @@ export function initTableExtract() {
       }
 
       if (!csvContent.trim()) {
-        setStatus('tableextract', '⚠️ No text found in document.', 'error');
-        btn.disabled = false;
+        setStatus('tableextract', '⚠️ No text found in document. Scanned PDFs have no text layer - run OCR PDF first.', 'error');
         return;
       }
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      
-      const dlBtn = $('#dl-tableextract');
-      dlBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Extracted_Table_${f.name.replace('.pdf', '')}.csv`;
-        a.click();
-      };
-
-      $('#info-tableextract').textContent = `Extracted ${totalRows} rows of data.`;
-      showResult('tableextract');
-      setStatus('tableextract', '✅ CSV extraction complete!', 'success');
+      // Byte-order mark so Excel opens UTF-8 (Thai, accents, ...) correctly
+      const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8' });
+      showResult('tableextract', blob, `${f.name.replace(/\.pdf$/i, '')}_tables.csv`, 'text/csv',
+        `Extracted ${totalRows} rows from ${pdf.numPages} page${pdf.numPages === 1 ? '' : 's'}.`);
 
     } catch (e) {
       console.error(e);
