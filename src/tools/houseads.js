@@ -9,13 +9,17 @@
 // elsewhere. No client names or client screenshots.
 //
 // Slots filled:
+//   every page  #ad-header       banner, right below the header (not sticky -
+//                                the slot was moved out of <header> so it
+//                                scrolls with the page instead of staying
+//                                pinned)
 //   tool pages  .ad-frame-side   desktop sidebar 300x600
 //               .ad-frame-inline under a tool's Download button (shown only
 //                                once a result exists)
 //   home page   #home-view .ad-box (not #ad-home)  native card in the tool grid
 //               #ad-home                           banner below the tool grid
-// The top slot (.ad-frame-top) sits inside the sticky header and is never
-// filled; the page CSS hides every .ad-box that has no house ad in it.
+// The page CSS hides every .ad-box that has no house ad in it, so a page
+// missing one of these slots (a lean single-tool page, say) is unaffected.
 import css from '../../assets/house-ads/house-ads.css.html?raw';
 
 const files = import.meta.glob('../../assets/house-ads/*-*.html', { query: '?raw', import: 'default', eager: true });
@@ -34,6 +38,7 @@ export function initHouseAds() {
   if (document.body.dataset.ads !== 'on') return;
   const home = document.getElementById('home-view');
   const slots = [
+    ...[...document.querySelectorAll('#ad-header.ad-box')].map((el) => [el, 'banner']),
     ...[...document.querySelectorAll('.ad-box.ad-frame-side')].map((el) => [el, 'sidebar']),
     ...[...document.querySelectorAll('.ad-box.ad-frame-inline')].map((el) => [el, 'inline']),
     ...(home ? [...home.querySelectorAll('.ad-box')].filter((el) => el.id !== 'ad-home' && !el.classList.contains('ad-frame-inline')).map((el) => [el, 'card']) : []),
@@ -60,7 +65,7 @@ export function initHouseAds() {
 .ad-box.has-ha.ha-card{padding-top:0;background:#fff;}
 .ad-box.has-ha.ha-card::before{display:none;}
 .ad-box.has-ha.ha-card .hsa{border-radius:16px;}
-#ad-home.has-ha{height:auto;min-height:100px;}
+#ad-home.has-ha,#ad-header.has-ha{height:auto;min-height:100px;}
 /* The editors keep their panels clean: no inline ad under each applied step. */
 .ws-step .ad-box.ad-frame-inline{display:none!important;}
 </style>`);
