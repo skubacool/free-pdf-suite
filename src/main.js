@@ -15,24 +15,29 @@ import { initSplit } from './tools/split.js';
 import { initRotate } from './tools/rotate.js';
 import { initSignTool } from './tools/sign.js';
 import { initWorkspace } from './tools/workspace.js';
+import { initHouseAds } from './tools/houseads.js';
+
+// Each tool module is isolated: one broken panel must not stop the rest.
+const safe = (fn) => { try { fn(); } catch (e) { console.warn('[upmypdf] module skipped:', e && e.message); } };
 
 document.addEventListener('DOMContentLoaded', () => {
-  initPdfGrid();
-  initHeadFoot();
-  initBates();
-  initQRCode();
-  initTextDiff();
-  initBatchRename();
-  initHighlighter();
-  initBookmark();
-  initTableExtract();
-  initInvoice();
-  initImageCollage();
-  initMerge();
-  initSplit();
-  initRotate();
+  safe(() => initHouseAds());
+  safe(() => initPdfGrid());
+  safe(() => initHeadFoot());
+  safe(() => initBates());
+  safe(() => initQRCode());
+  safe(() => initTextDiff());
+  safe(() => initBatchRename());
+  safe(() => initHighlighter());
+  safe(() => initBookmark());
+  safe(() => initTableExtract());
+  safe(() => initInvoice());
+  safe(() => initImageCollage());
+  safe(() => initMerge());
+  safe(() => initSplit());
+  safe(() => initRotate());
   if (window.appHelpers) {
-    initSignTool(window.appHelpers);
-    initWorkspace(); // after every tool has registered its dropzone
+    safe(() => initSignTool(window.appHelpers));
+    safe(() => initWorkspace()); // after every tool has registered its dropzone
   }
 });

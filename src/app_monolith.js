@@ -462,6 +462,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   const setupDropzone = (tool, onFilesRaw) => {
     const dz = $(`#dz-${tool}`);
     const input = $(`#file-${tool}`);
+    if (!dz || !input) { console.warn(`[upmypdf] ${tool}: dropzone markup incomplete, skipped`); return; }
     const batchable = BATCH_TOOLS.has(tool);
     const onFiles = !batchable ? onFilesRaw : (files) => {
       if (files.length > 1) {

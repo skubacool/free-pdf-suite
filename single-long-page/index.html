@@ -143,6 +143,7 @@
        the layout BEFORE any ad network script runs, so filling them later
        causes zero Cumulative Layout Shift. */
     .ad-frame-top    { min-height:90px;  width:100%; }
+    .ad-box:not(.has-ha){display:none!important;} /* show only slots holding a house ad; the top slot sits in the sticky header and is never filled */
     .ad-frame-side   { width:300px;      min-height:600px; }
     .ad-frame-inline { min-height:250px; width:100%; }
 
@@ -191,12 +192,12 @@
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="../app.js?v=15"></script>
+  <script defer src="../app.js?v=16"></script>
   <!-- Optional backend scaffolding (Nhost) — inert until configured in nhost.js -->
   <script type="module" src="../nhost.js"></script>
 </head>
 
-<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-ads="off" data-default-tool="longpage">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased" data-ads="on" data-default-tool="longpage">
 
   <!-- ================= HEADER ================= -->
   <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
