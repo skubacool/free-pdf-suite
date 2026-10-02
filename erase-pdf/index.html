@@ -73,7 +73,7 @@
       {
         "@type": "Question",
         "name": "Is the erased content really gone?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Each page is flattened to an image with the fill burned in, so the logo or text under it no longer exists in the downloaded file. The trade-off is that pages become images and their text can no longer be selected." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Each page is flattened to an image with the fill burned in, so the logo or text under it no longer exists in the downloaded file. The rest of the page's text stays selectable through an invisible text layer; only the erased words are removed." }
       },
       {
         "@type": "Question",
@@ -97,7 +97,7 @@
   <!-- Tiny Noto Sans Thai subset (only the glyphs for the language switcher) -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&text=%E0%B9%84%E0%B8%97%E0%B8%A2&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/tailwind.css?v=5" />
+  <link rel="stylesheet" href="/tailwind.css?v=6" />
   <style>
     ::selection { background:#2563EB; color:#fff; }
     .ad-box { border:1px solid #E2E8F0; background:#F8FAFC; position:relative; }
@@ -141,7 +141,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script defer src="../app.js?v=24"></script>
+  <script defer src="../app.js?v=25"></script>
   <script type="module" src="../nhost.js"></script>
 </head>
 
@@ -250,7 +250,7 @@
             <p class="mt-4 text-slate-600 leading-relaxed">Invoices, quotes and reports exported from accounting tools often carry a vendor line such as &ldquo;Powered by&hellip;&rdquo; in a corner. Covering it with a white box works on a pure white page, but on a shaded or off-white page the box shows. Smart Erase looks at the colours around the area you mark and rebuilds the inside from them, so the gap blends in.</p>
             <p class="mt-4 text-slate-600 leading-relaxed">It reconstructs plain and gently shaded backgrounds convincingly. If the page behind the mark is a detailed photo, the result is a smooth patch rather than a perfect rebuild, because the original pixels are not recoverable. When the page is a flat colour you can also choose white or any colour you like.</p>
             <h2 class="text-2xl font-bold mt-10">Good to Know</h2>
-            <p class="mt-4 text-slate-600 leading-relaxed">Each page is flattened to an image with the fill burned in, so what you erased is genuinely gone from the file, and the text on that page is no longer selectable. Everything runs in your browser; the document is never uploaded. You can also use Smart Erase inside the <a href="../pdf-workspace/" class="text-brand-600 hover:underline">PDF Workspace</a> together with signing, watermarking and the other tools.</p>
+            <p class="mt-4 text-slate-600 leading-relaxed">Each page is flattened to an image with the fill burned in, so what you erased is genuinely gone from the file. The remaining text on the page stays selectable and searchable through an invisible text layer. Everything runs in your browser; the document is never uploaded. You can also use Smart Erase inside the <a href="../pdf-workspace/" class="text-brand-600 hover:underline">PDF Workspace</a> together with signing, watermarking and the other tools.</p>
           </article>
 
           <section class="mt-8">
@@ -266,7 +266,7 @@
               </details>
               <details class="faq border-b border-slate-200 py-4">
                 <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Is the erased content really gone?</summary>
-                <p class="mt-2.5 text-slate-600">Yes. Each page is flattened to an image with the fill burned in, so the logo or text under it no longer exists in the downloaded file. The trade-off is that pages become images and their text can no longer be selected.</p>
+                <p class="mt-2.5 text-slate-600">Yes. Each page is flattened to an image with the fill burned in, so the logo or text under it no longer exists in the downloaded file. The rest of the page's text stays selectable through an invisible text layer; only the erased words are removed.</p>
               </details>
               <details class="faq border-b border-slate-200 py-4">
                 <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">Does the document leave my device?</summary>

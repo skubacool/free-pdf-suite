@@ -21,6 +21,10 @@ import { initEditText } from './tools/edittext.js';
 import { initAnnotate } from './tools/annotate.js';
 import { initFormCreate } from './tools/formcreate.js';
 import { initCertSign } from './tools/certsign.js';
+import { initFindRedact } from './tools/findredact.js';
+import { initPdfA } from './tools/pdfa.js';
+import * as officeExport from './tools/officeexport.js';
+window.appOffice = officeExport;
 
 // Each tool module is isolated: one broken panel must not stop the rest.
 const safe = (fn) => { try { fn(); } catch (e) { console.warn('[upmypdf] module skipped:', e && e.message); } };
@@ -48,6 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
     safe(() => initAnnotate());
     safe(() => initFormCreate());
     safe(() => initCertSign());
+    safe(() => initFindRedact());
+    safe(() => initPdfA());
     safe(() => initWorkspace()); // after every tool has registered its dropzone
   }
 });

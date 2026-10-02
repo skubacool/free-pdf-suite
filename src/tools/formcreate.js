@@ -11,6 +11,8 @@ const TYPES = [
 ];
 const LABEL = { text: 'Text', multi: 'Text area', check: 'Checkbox', drop: 'Dropdown', radio: 'Radio' };
 
+import { detectFields } from './fielddetect.js';
+
 export function initFormCreate() {
   const { $, $$, setupDropzone, hideResult, showResult, setStatus, fmtBytes, baseName, loadPdfJs, renderPreview, PDFLib, feedTool } = window.appHelpers;
   const { PDFDocument, rgb } = PDFLib;
@@ -128,6 +130,7 @@ export function initFormCreate() {
     $('#picked-formcreate').textContent = `Selected: ${f.name} (${fmtBytes(f.size)})`;
     $('#work-formcreate').classList.remove('hidden');
     await renderPreview(st, '#preview-formcreate', '#wrap-formcreate');
+    $('#fc-detect').disabled = false;
     renderList(); drawBoxes();
     setStatus('formcreate', 'Pick a field type, then drag on the page where it should go (or just click for a default size).');
   };
@@ -137,6 +140,33 @@ export function initFormCreate() {
     }
     updateReady();
   });
+
+  // ---- auto-detect the blanks on a flat form
+  $('#fc-detect').addEventListener('click', async () => {
+    if (!st.doc) return;
+    const btn = $('#fc-detect');
+    btn.disabled = true;
+    try {
+      setStatus('formcreate', 'Looking for blanks…');
+      st.fields = st.fields.filter((f) => !f.auto);
+      const used = new Set(st.fields.map((f) => f.name));
+      const uniq = (base) => { let n = base, i = 2; while (used.has(n)) n = `${base} ${i++}`; used.add(n); return n; };
+      let added = 0;
+      for (let p = 1; p <= st.doc.numPages; p++) {
+        const found = await detectFields(await st.doc.getPage(p));
+        found.forEach((d) => {
+          const base = (d.label || '').replace(/[.\/]/g, '').replace(/\s+/g, ' ').trim() || ({ text: 'Text', multi: 'TextArea', check: 'Checkbox' }[d.type] + (++st.seq));
+          st.fields.push({ type: d.type, page: p, x: d.x, y: d.y, w: d.w, h: d.h, name: uniq(base), opts: 'Option 1, Option 2, Option 3', opt: 'Choice', req: false, auto: true });
+          added++;
+        });
+      }
+      renderList(); drawBoxes(); updateReady();
+      setStatus('formcreate', added ? `✨ Found ${added} blank${added > 1 ? 's' : ''}. Check the list below: rename, remove or add any the tool missed, then press Create Form.` : 'No blanks found. This PDF may already be fillable, or the lines are too faint. You can still place fields by hand.', added ? 'success' : '');
+    } catch (err) {
+      setStatus('formcreate', `❌ ${err.message || err}`, 'error');
+    } finally { btn.disabled = false; }
+  });
+
   $('#fc-blank').addEventListener('click', async () => {
     try {
       const d = await PDFDocument.create();

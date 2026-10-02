@@ -126,7 +126,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&text=%E0%B9%84%E0%B8%97%E0%B8%A2&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="/tailwind.css?v=5" />
+  <link rel="stylesheet" href="/tailwind.css?v=6" />
   <style>
     ::selection { background:#2563EB; color:#fff; }
 
@@ -188,7 +188,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script defer src="./app.js?v=24"></script>
+  <script defer src="./app.js?v=25"></script>
   <!-- Optional backend scaffolding (Nhost) — inert until configured in nhost.js -->
   <script type="module" src="./nhost.js"></script>
 </head>
@@ -723,6 +723,16 @@
             <div class="font-bold mt-3">Digital Signature</div>
             <p class="text-sm text-slate-500 mt-1">Sign with a real certificate. Tamper-evident.</p>
           </a>
+          <a href="find-and-redact-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">🕵️</span>
+            <div class="font-bold mt-3">Find & Redact</div>
+            <p class="text-sm text-slate-500 mt-1">Find ID numbers, phones and e-mails and black them all out.</p>
+          </a>
+          <a href="pdf-to-pdfa/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-teal-50 text-2xl">🗄️</span>
+            <div class="font-bold mt-3">PDF to PDF/A</div>
+            <p class="text-sm text-slate-500 mt-1">Make an archive-ready PDF/A-2b copy for records and audits.</p>
+          </a>
           <a href="pdf-to-scanned-look/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🖨️</span>
             <div class="font-bold mt-3">PDF to Scanned Look</div>
@@ -1189,7 +1199,7 @@
               <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">📃</span>
               <div>
                 <h2 class="text-2xl font-bold">PDF to Word</h2>
-                <p class="text-slate-500 text-sm">Extract the full text of a PDF into an editable Word document (.doc).</p>
+                <p class="text-slate-500 text-sm">Extract the full text of a PDF into an editable Word document (.docx).</p>
               </div>
             </div>
             <div id="dz-pdf2word" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">

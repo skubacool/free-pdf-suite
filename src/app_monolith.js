@@ -619,7 +619,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'scan', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage', 'workspace', 'erase', 'edittext', 'annotate', 'formcreate', 'certsign'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'scan', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage', 'workspace', 'erase', 'edittext', 'annotate', 'formcreate', 'certsign', 'findredact', 'pdfa'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -1044,32 +1044,19 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
     btn.disabled = true;
     hideResult('pdf2word');
     try {
+      const office = window.appOffice;
       const src = await loadPdfJs(await f.arrayBuffer());
-      const pagesHtml = [];
-      for (let i = 1; i <= src.numPages; i++) {
-        setStatus('pdf2word', `Extracting text from page ${i} of ${src.numPages}…`);
-        const content = await (await src.getPage(i)).getTextContent();
-        const lines = [];
-        let line = '';
-        for (const item of content.items) {
-          line += item.str;
-          if (item.hasEOL) {
-            lines.push(line);
-            line = '';
-          } else if (item.str && !item.str.endsWith(' ')) {
-            line += ' ';
-          }
-        }
-        if (line.trim()) lines.push(line);
-        pagesHtml.push(lines.map((l) => `<p>${escapeHtml(l.trim()) || '&nbsp;'}</p>`).join('\n'));
+      const pages = await office.analyzeDocument(src, (i, n) => setStatus('pdf2word', `Reading page ${i} of ${n}…`));
+      if (!pages.some((pg) => pg.blocks.some((bk) => bk.type === 'para' || bk.type === 'table'))) {
+        throw new Error('No selectable text found — this looks like a scanned PDF. Run it through OCR first, then convert.');
       }
-      const docHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
-<head><meta charset="utf-8"><title>${escapeHtml(baseName(f.name))}</title>
-<style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.4}p{margin:0 0 6pt 0}</style></head>
-<body>${pagesHtml.join(`\n<br clear="all" style="mso-special-character:line-break;page-break-before:always" />\n`)}</body></html>`;
-      const blob = new Blob(['﻿', docHtml], { type: 'application/msword' });
-      showResult('pdf2word', blob, `${baseName(f.name)}.doc`, 'application/msword',
-        `${baseName(f.name)}.doc · ${src.numPages} pages extracted · ${fmtBytes(blob.size)}`);
+      setStatus('pdf2word', 'Building the Word document…');
+      const blob = await office.buildDocx(pages, baseName(f.name));
+      const nTables = pages.reduce((a, pg) => a + pg.blocks.filter((bk) => bk.type === 'table').length, 0);
+      const nImgs = pages.reduce((a, pg) => a + pg.blocks.filter((bk) => bk.type === 'image').length, 0);
+      const nBad = pages.reduce((a, pg) => a + (pg.damaged || 0), 0);
+      showResult('pdf2word', blob, `${baseName(f.name)}.docx`, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        `${baseName(f.name)}.docx · ${src.numPages} page${src.numPages > 1 ? 's' : ''}${nTables ? ` · ${nTables} table${nTables > 1 ? 's' : ''}` : ''}${nImgs ? ` · ${nImgs} image${nImgs > 1 ? 's' : ''}` : ''} · ${fmtBytes(blob.size)}${nBad ? ` · ⚠️ ${nBad} character${nBad > 1 ? 's' : ''} (for example Thai tone marks) could not be read from this PDF's text layer and are missing — run OCR first if you need every character exact` : ''}`);
     } catch (err) {
       setStatus('pdf2word',
         `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`,
@@ -2452,7 +2439,13 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
           const ar = canvas.width / canvas.height;
           let w = LW, h = LW / ar;
           if (h > LH) { h = LH; w = LH * ar; }
-          pptx.addSlide().addImage({ data: canvas.toDataURL('image/jpeg', 0.85), x: (LW - w) / 2, y: (LH - h) / 2, w, h });
+          const slide = pptx.addSlide();
+          slide.addImage({ data: canvas.toDataURL('image/jpeg', 0.85), x: (LW - w) / 2, y: (LH - h) / 2, w, h });
+          try { // the slide's text as speaker notes, so it stays searchable and copyable
+            const pg = await window.appOffice.analyzePage(page, { images: false });
+            const t = window.appOffice.pageToText(pg).join('\n');
+            if (t.trim()) slide.addNotes(t);
+          } catch (_) {}
         }
         setStatus('pdf2ppt', 'Building .pptx…');
         const blob = await pptx.write('blob');
@@ -2490,21 +2483,12 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         const src = await loadPdfJs(await f.arrayBuffer());
         const wb = XLSX.utils.book_new();
         let anyText = false;
+        const office = window.appOffice;
         for (let i = 1; i <= src.numPages; i++) {
           setStatus('pdf2excel', `Extracting page ${i} of ${src.numPages}…`);
-          const page = await src.getPage(i);
-          const content = await page.getTextContent();
-          const items = content.items.filter((t) => t.str.trim() !== '').map((t) => ({ str: t.str, x: t.transform[4], y: t.transform[5] }));
-          if (items.length) anyText = true;
-          items.sort((a, b) => b.y - a.y || a.x - b.x);
-          const rows = [];
-          let cur = [], lastY = null;
-          for (const it of items) {
-            if (lastY === null || Math.abs(it.y - lastY) <= 4) { cur.push(it); lastY = lastY === null ? it.y : (lastY + it.y) / 2; }
-            else { rows.push(cur); cur = [it]; lastY = it.y; }
-          }
-          if (cur.length) rows.push(cur);
-          const aoa = rows.map((r) => r.sort((a, b) => a.x - b.x).map((c) => c.str.trim()));
+          const pg = await office.analyzePage(await src.getPage(i), { images: false });
+          const aoa = office.pageToRows(pg);
+          if (aoa.length) anyText = true;
           const ws = XLSX.utils.aoa_to_sheet(aoa.length ? aoa : [['']]);
           XLSX.utils.book_append_sheet(wb, ws, `Page ${i}`.slice(0, 31));
         }
@@ -2587,16 +2571,8 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   const extractPdfLines = async (src) => {
     const pages = [];
     for (let i = 1; i <= src.numPages; i++) {
-      const content = await (await src.getPage(i)).getTextContent();
-      const lines = [];
-      let line = '';
-      for (const it of content.items) {
-        line += it.str;
-        if (it.hasEOL) { lines.push(line); line = ''; }
-        else if (it.str && !it.str.endsWith(' ')) line += ' ';
-      }
-      if (line.trim()) lines.push(line);
-      pages.push(lines);
+      const pg = await window.appOffice.analyzePage(await src.getPage(i), { images: false });
+      pages.push(window.appOffice.pageToText(pg));
     }
     return pages;
   };

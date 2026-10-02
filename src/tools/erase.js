@@ -15,32 +15,28 @@
 //   This reconstructs plain or gently-varying backgrounds convincingly; a
 //   busy photographic background underneath the mark will come out smoothed
 //   rather than perfectly rebuilt - there is no real content to recover from.
-// Finished pages are rasterized (same trade-off as Redact and friends): text
-// becomes an image and is no longer selectable.
+// Finished pages are rasterized (same trade-off as Redact and friends), but the
+// page's remaining text is written back as an invisible layer so it can still be
+// selected and searched. Text under an erased box is not written back.
 // ---- the fill itself: directional-interpolation reconstruction ----------
 // Exported so Edit Text can erase the old words the same way.
 const STRIP = 6; // px of border sampled just outside each edge
 
 const avgStrip = (data, w, h, x0, x1, y0, y1) => {
-  // Average colour over the clamped rectangle [x0,x1) x [y0,y1), ignoring
-  // pixels far from the first-pass mean so a bit of neighbouring text or a
-  // border line does not tint the whole edge.
+  // Colour of the clamped rectangle [x0,x1) x [y0,y1): per-channel MEDIAN first
+  // (so a few dark pixels from neighbouring text cannot drag it). Stray glyph or
+  // border pixels are ignored because they are the minority.
   x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(w, x1); y1 = Math.min(h, y1);
-  let r = 0, g = 0, b = 0, n = 0;
+  const n = (x1 - x0) * (y1 - y0);
+  if (n <= 0) return [255, 255, 255];
+  const rs = [], gs = [], bs = [];
   for (let y = y0; y < y1; y++) {
     let i = (y * w + x0) * 4;
-    for (let x = x0; x < x1; x++, i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
+    for (let x = x0; x < x1; x++, i += 4) { rs.push(data[i]); gs.push(data[i + 1]); bs.push(data[i + 2]); }
   }
-  if (!n) return [255, 255, 255];
-  const mr = r / n, mg = g / n, mb = b / n;
-  let r2 = 0, g2 = 0, b2 = 0, n2 = 0;
-  for (let y = y0; y < y1; y++) {
-    let i = (y * w + x0) * 4;
-    for (let x = x0; x < x1; x++, i += 4) {
-      if (Math.abs(data[i] - mr) + Math.abs(data[i + 1] - mg) + Math.abs(data[i + 2] - mb) < 60) { r2 += data[i]; g2 += data[i + 1]; b2 += data[i + 2]; n2++; }
-    }
-  }
-  return n2 ? [r2 / n2, g2 / n2, b2 / n2] : [mr, mg, mb];
+  const med = (a) => a.sort((p, q) => p - q)[a.length >> 1];
+  const mr = med(rs.slice()), mg = med(gs.slice()), mb = med(bs.slice());
+  return [mr, mg, mb];
 };
 
 export const blendFill = (ctx, canvasW, canvasH, bx, by, bw, bh, mode, customColor) => {
@@ -58,6 +54,32 @@ export const blendFill = (ctx, canvasW, canvasH, bx, by, bw, bh, mode, customCol
 
   const img = ctx.getImageData(0, 0, canvasW, canvasH);
   const data = img.data;
+
+  // Flat background? If one colour makes up most of the ring just outside the
+  // box (a plain white or tinted page), fill with exactly that colour. This is
+  // what a clean invoice needs, and it ignores neighbouring glyph pixels.
+  const ring = [[bx - STRIP, bx, by - STRIP, by + bh + STRIP], [bx + bw, bx + bw + STRIP, by - STRIP, by + bh + STRIP], [bx, bx + bw, by - STRIP, by], [bx, bx + bw, by + bh, by + bh + STRIP]];
+  const buckets = new Map();
+  let total = 0;
+  ring.forEach(([x0, x1, y0, y1]) => {
+    x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(canvasW, x1); y1 = Math.min(canvasH, y1);
+    for (let y = y0; y < y1; y++) {
+      let i = (y * canvasW + x0) * 4;
+      for (let x = x0; x < x1; x++, i += 4) {
+        const k = ((data[i] >> 3) << 10) | ((data[i + 1] >> 3) << 5) | (data[i + 2] >> 3);
+        const b = buckets.get(k) || [0, 0, 0, 0];
+        b[0]++; b[1] += data[i]; b[2] += data[i + 1]; b[3] += data[i + 2];
+        buckets.set(k, b); total++;
+      }
+    }
+  });
+  let top = null;
+  buckets.forEach((b) => { if (!top || b[0] > top[0]) top = b; });
+  if (top && total && top[0] / total >= 0.55) {
+    ctx.fillStyle = `rgb(${Math.round(top[1] / top[0])},${Math.round(top[2] / top[0])},${Math.round(top[3] / top[0])})`;
+    ctx.fillRect(bx, by, bw, bh);
+    return;
+  }
 
   // Per-row left/right edge colors, per-column top/bottom edge colors.
   // Averaged over a few neighbouring rows/cols too (not just STRIP deep)
@@ -85,14 +107,17 @@ export const blendFill = (ctx, canvasW, canvasH, bx, by, bw, bh, mode, customCol
     for (let y = cy0; y < cy1; y++) {
       let i = (y * canvasW + cx0) * 4;
       for (let x = cx0; x < cx1; x++, i += 4) {
-        variance += (data[i] - mr) ** 2 + (data[i + 1] - mg) ** 2 + (data[i + 2] - mb) ** 2;
+        const d3 = (data[i] - mr) ** 2 + (data[i + 1] - mg) ** 2 + (data[i + 2] - mb) ** 2;
+        if (Math.abs(data[i] - mr) + Math.abs(data[i + 1] - mg) + Math.abs(data[i + 2] - mb) >= 24) continue; // glyph/border pixels are not grain
+        variance += d3;
         vn++;
       }
     }
   };
   sampleVar(bx - STRIP, bx, by, by + bh);
   sampleVar(bx + bw, bx + bw + STRIP, by, by + bh);
-  const grain = Math.min(10, Math.sqrt((variance / Math.max(1, vn)) / 3) * 0.35);
+  let grain = Math.min(10, Math.sqrt((variance / Math.max(1, vn)) / 3) * 0.35);
+  if (grain < 1.2) grain = 0; // a clean flat background stays clean
 
   const wV = bw / (bw + bh), wH = bh / (bw + bh); // trust the closer pair of edges more
   const out = new Uint8ClampedArray(bw * bh * 3);
@@ -120,6 +145,8 @@ export const blendFill = (ctx, canvasW, canvasH, bx, by, bw, bh, mode, customCol
   ctx.putImageData(img, 0, 0, bx, by, bw, bh);
 };
 
+
+import { extractLines, addTextLayer, lineBox, boxesOverlap } from './textlayer.js';
 
 export function initErase() {
   const { $, $$, setupDropzone, hideResult, showResult, setStatus, fmtBytes, baseName, loadPdfJs, canvasToJpeg, renderPreview, PDFLib } = window.appHelpers;
@@ -248,7 +275,16 @@ export function initErase() {
           blendFill(ctx, canvas.width, canvas.height, r.x * canvas.width, r.y * canvas.height, r.w * canvas.width, r.h * canvas.height, st.mode, st.color);
         });
         const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.9));
-        out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        const outPage = out.addPage([vp1.width, vp1.height]);
+        outPage.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        // keep the rest of the page's text selectable; anything under an erased
+        // box is left OUT of the layer so the erased words are really gone
+        try {
+          const gone = (st.rects[i] || []).map((r) => ({ x: r.x * vp1.width, w: r.w * vp1.width, top: r.y * vp1.height, h: r.h * vp1.height }));
+          const { lines } = await extractLines(page);
+          const keep = lines.filter((l) => !gone.some((g) => boxesOverlap(lineBox(l), g))).map((l) => ({ text: l.str, x: l.x, w: l.w, base: l.base, size: l.size }));
+          await addTextLayer(out, outPage, vp1.height, keep);
+        } catch (e) { console.warn('[upmypdf] text layer skipped:', e && e.message); }
       }
       const bytes = await out.save({ useObjectStreams: true });
       const n = countRects();

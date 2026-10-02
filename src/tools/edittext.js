@@ -7,14 +7,13 @@
 // erased by rebuilding the background from the pixels around them (the same
 // blend Smart Erase uses), and the new words are painted on top in a matching
 // size and colour. Pages you did not touch are copied across untouched, so they
-// stay sharp, selectable vector pages. The edited page itself becomes an image.
+// stay sharp, selectable vector pages. The edited page itself becomes an image
+// with an invisible text layer on top, so its text can still be selected,
+// copied and searched (the old words are NOT in that layer).
 import { blendFill } from './erase.js';
+import { extractLines, addTextLayer } from './textlayer.js';
+import { resolveFont, parseFontName } from './fontmatch.js';
 
-const FAMILIES = {
-  sans: 'Arial,Helvetica,"Sarabun","Noto Sans Thai","Segoe UI",sans-serif',
-  serif: '"Times New Roman",Times,"Noto Serif Thai","Noto Sans Thai",serif',
-  mono: '"Courier New",Courier,monospace',
-};
 
 export function initEditText() {
   const { $, $$, setupDropzone, hideResult, showResult, setStatus, fmtBytes, baseName, loadPdfJs, canvasToJpeg, renderPreview, PDFLib } = window.appHelpers;
@@ -30,47 +29,20 @@ export function initEditText() {
   };
 
   // ---- find the editable lines on a page (merge neighbouring pdf.js runs)
-  const guessStyle = (page, fontName, styleFamily) => {
+  const guessStyle = (page, fontName) => {
     let name = '';
     try { name = (page.commonObjs.get(fontName) || {}).name || ''; } catch (_) {}
-    const probe = `${name} ${styleFamily || ''}`;
-    return {
-      bold: /bold|black|heavy|semibold|demi/i.test(probe),
-      family: /mono|courier|consolas/i.test(probe) ? 'mono' : /(^|[^a-z])(serif)|times|georgia|garamond|minion|cambria|palatino|book/i.test(probe) && !/sans/i.test(probe) ? 'serif' : 'sans',
-    };
+    return { bold: parseFontName(name).weight >= 600, family: 'orig' };
   };
   const loadSegs = async (num) => {
     if (st.segs[num]) return st.segs[num];
     const page = await st.doc.getPage(num);
-    const vp = page.getViewport({ scale: 1 });
-    const tc = await page.getTextContent();
-    const items = [];
-    for (const it of tc.items) {
-      if (typeof it.str !== 'string' || !it.str.length) continue;
-      const t = window.pdfjsLib.Util.transform(vp.transform, it.transform);
-      const size = Math.hypot(t[2], t[3]);
-      if (!size || Math.abs(t[1]) > 0.02 * Math.abs(t[0])) continue; // skip rotated runs
-      const style = tc.styles[it.fontName] || {};
-      items.push({ str: it.str, x: t[4], base: t[5], w: it.width, size, fontName: it.fontName, family: style.fontFamily });
-    }
-    const lines = [];
-    let cur = null;
-    for (const it of items) {
-      const gap = cur ? it.x - (cur.x + cur.w) : 0;
-      if (cur && Math.abs(it.base - cur.base) < 0.25 * cur.size && gap < 0.4 * cur.size && gap > -0.6 * cur.size && Math.abs(it.size - cur.size) < 0.18 * cur.size && it.fontName === cur.fontName) {
-        cur.str += it.str; cur.w = it.x + it.w - cur.x;
-      } else {
-        if (cur) lines.push(cur);
-        cur = { ...it };
-      }
-    }
-    if (cur) lines.push(cur);
-    const segs = lines.filter((l) => l.str.trim()).map((l, id) => {
-      const g = guessStyle(page, l.fontName, l.family);
-      return { id, text: l.str.replace(/\s+$/, ''), x: l.x / vp.width, w: l.w / vp.width, base: l.base / vp.height, size: l.size, pageW: vp.width, pageH: vp.height, ...g };
+    const { width: W, height: H, lines } = await extractLines(page);
+    st.segs[num] = lines.map((l, id) => {
+      const g = guessStyle(page, l.fontName);
+      return { id, text: l.str.replace(/\s+$/, '').replace(/ํา/g, 'ำ'), x: l.x / W, w: l.w / W, base: l.base / H, size: l.size, pageW: W, pageH: H, line: l, ...g };
     });
-    st.segs[num] = segs;
-    return segs;
+    return st.segs[num];
   };
 
   const drawSegs = async () => {
@@ -117,6 +89,7 @@ export function initEditText() {
     $('#et-usecolor').checked = !!(e && e.color);
     $('#et-orig').textContent = `Original: “${s.text}”`;
     refreshMarks();
+    drawSample();
     $('#et-text').focus();
   };
   const currentSeg = () => st.sel && (st.segs[st.sel.page] || []).find((s) => s.id === st.sel.id);
@@ -130,9 +103,32 @@ export function initEditText() {
     refreshMarks();
     updateReady();
   };
+  // a small live preview in the original typeface, so you see the match before applying
+  let sampleTimer = null;
+  const drawSample = () => {
+    clearTimeout(sampleTimer);
+    sampleTimer = setTimeout(async () => {
+      const s = currentSeg(), cv = $('#et-sample');
+      if (!s || !cv) return;
+      try {
+        const page = await st.doc.getPage(st.sel.page);
+        const rf = await resolveFont(page, s.line.fontName, { bold: $('#et-bold').checked, family: $('#et-family').value });
+        const px = Math.min(30, Math.max(12, (+$('#et-size').value || s.size) * 1.6));
+        const g = cv.getContext('2d');
+        cv.width = cv.clientWidth * 2; cv.height = 80;
+        g.scale(2, 2);
+        g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height);
+        g.fillStyle = $('#et-usecolor').checked ? $('#et-color').value : '#111827';
+        g.font = rf.font(px);
+        g.textBaseline = 'middle';
+        g.fillText($('#et-text').value, 10, 20);
+        $('#et-fontinfo').textContent = `Font: ${rf.info.family}${rf.info.weight >= 600 ? ' Bold' : ''}${rf.info.viaGoogle ? ' (matched)' : rf.info.system ? ' (installed)' : rf.info.hasSubset ? ' (from your PDF)' : ''}`;
+      } catch (_) {}
+    }, 120);
+  };
   ['et-text', 'et-size', 'et-bold', 'et-family', 'et-align', 'et-color', 'et-usecolor'].forEach((id) => {
-    $(`#${id}`).addEventListener('input', stage);
-    $(`#${id}`).addEventListener('change', stage);
+    $(`#${id}`).addEventListener('input', () => { stage(); drawSample(); });
+    $(`#${id}`).addEventListener('change', () => { stage(); drawSample(); });
   });
   $('#et-revert').addEventListener('click', () => {
     if (!st.sel) return;
@@ -176,15 +172,18 @@ export function initEditText() {
   });
 
   // ---- apply: rasterize edited pages, erase the old words, paint the new
+  // The text colour is the pixel furthest from the box's background colour
+  // (median of the box), which also works for light text on a dark band.
   const darkest = (ctx, x, y, w, h) => {
     const cw = ctx.canvas.width, ch = ctx.canvas.height;
     x = Math.max(0, Math.floor(x)); y = Math.max(0, Math.floor(y));
     w = Math.max(1, Math.min(cw - x, Math.ceil(w))); h = Math.max(1, Math.min(ch - y, Math.ceil(h)));
     const d = ctx.getImageData(x, y, w, h).data;
-    let best = 1e9, bi = 0;
+    const med = [0, 1, 2].map((k) => { const a = []; for (let i = k; i < d.length; i += 4) a.push(d[i]); a.sort((p, q) => p - q); return a[a.length >> 1]; });
+    let best = -1, bi = 0;
     for (let i = 0; i < d.length; i += 4) {
-      const l = d[i] + d[i + 1] + d[i + 2];
-      if (l < best) { best = l; bi = i; }
+      const dist = Math.abs(d[i] - med[0]) + Math.abs(d[i + 1] - med[1]) + Math.abs(d[i + 2] - med[2]);
+      if (dist > best) { best = dist; bi = i; }
     }
     return `rgb(${d[bi]},${d[bi + 1]},${d[bi + 2]})`;
   };
@@ -198,7 +197,9 @@ export function initEditText() {
     try {
       setStatus('edittext', 'Applying your edits…');
       const data = await f.arrayBuffer();
-      const srcPdf = await loadPdfJs(data.slice(0));
+      // reuse the preview's pdf.js document: its font names (g_d0_f1 ...) are what
+      // the editable lines were read with, and its fonts are already loaded
+      const srcPdf = st.doc;
       const srcDoc = await PDFDocument.load(data.slice(0));
       const out = await PDFDocument.create();
       try { await document.fonts.load('16px "Sarabun"'); await document.fonts.load('16px "Noto Sans Thai"'); } catch (_) {}
@@ -224,30 +225,38 @@ export function initEditText() {
         const segs = st.segs[i] || [];
         // Measure every colour first, then erase, then paint (a later erase must
         // not smear an earlier line's colour sample).
-        const jobs = segs.filter((s) => edits[s.id]).map((s) => {
+        const jobs = [];
+        for (const s of segs.filter((q) => edits[q.id])) {
           const e = edits[s.id];
           const px = s.size * SCALE;
-          const left = (s.x * canvas.width) - px * 0.12;
-          const wpx = s.w * canvas.width + px * 0.24;
+          const left = (s.x * canvas.width) - px * 0.04;
+          const wpx = s.w * canvas.width + px * 0.08;
           const top = s.base * canvas.height - px * 1.0;
           const hpx = px * 1.35;
           const color = e.color || darkest(ctx, left, top, wpx, hpx);
-          return { s, e, px, left, wpx, top, hpx, color };
-        });
+          const rf = await resolveFont(page, s.line.fontName, { bold: e.bold, family: e.family });
+          jobs.push({ s, e, px, left, wpx, top, hpx, color, rf });
+        }
         jobs.forEach((j) => blendFill(ctx, canvas.width, canvas.height, j.left, j.top, j.wpx, j.hpx, 'auto'));
+        const layer = [];
         jobs.forEach((j) => {
-          const { s, e, px, color } = j;
+          const { s, e, px, color, rf } = j;
           const size = e.size * SCALE;
-          ctx.font = `${e.bold ? 'bold ' : ''}${size}px ${FAMILIES[e.family] || FAMILIES.sans}`;
+          ctx.font = rf.font(size);
           ctx.fillStyle = color;
           ctx.textBaseline = 'alphabetic';
           const w = ctx.measureText(e.text).width;
           const x0 = s.x * canvas.width, x1 = (s.x + s.w) * canvas.width;
           const x = e.align === 'right' ? x1 - w : e.align === 'center' ? (x0 + x1) / 2 - w / 2 : x0;
           ctx.fillText(e.text, x, s.base * canvas.height);
+          layer.push({ text: e.text, x: x / SCALE, w: w / SCALE, base: s.base * vp1.height, size: e.size });
         });
+        // every line that was not edited keeps its real text in the layer
+        segs.filter((s) => !edits[s.id]).forEach((s) => layer.push({ text: s.line.str, x: s.line.x, w: s.line.w, base: s.line.base, size: s.line.size }));
         const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.92));
-        out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        const outPage = out.addPage([vp1.width, vp1.height]);
+        outPage.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+        try { await addTextLayer(out, outPage, vp1.height, layer); } catch (e) { console.warn('[upmypdf] text layer skipped:', e && e.message); }
       }
       const bytes = await out.save({ useObjectStreams: true });
       const n = countEdits();
