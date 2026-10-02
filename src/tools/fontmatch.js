@@ -28,7 +28,7 @@ export function parseFontName(raw) {
   let fam = parts[0].replace(/(PSMT|MT|PS)$/, '');
   const style = parts.slice(1).join(' ').toLowerCase() + ' ' + (/(Bold|Italic|Oblique|Black|Light|Medium)$/.exec(fam) ? fam.toLowerCase() : '');
   fam = fam.replace(/(Bold|Italic|Oblique)+$/, '');
-  const pretty = fam.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Za-z])(\d)/g, '$1 $2').trim();
+  const pretty = fam.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Za-z])(\d)/g, '$1 $2').trim();
   let weight = 400;
   for (const [k, v] of WEIGHTS) if (style.includes(k)) weight = Math.max(weight === 400 ? 0 : weight, v);
   if (/bold/.test(style) && weight < 700) weight = 700;
@@ -50,6 +50,19 @@ export function isInstalled(family) {
   const t = 'mmmmmmmmmmlliWWW@@ ก้ำ';
   const q = `"${family}"`;
   return ['monospace', 'serif', 'sans-serif'].some((g) => Math.abs(widthOf(`${q},${g}`, t) - widthOf(g, t)) > 0.5);
+}
+
+// raw bytes of a Google font (via the @expo-google-fonts packages on jsDelivr), or null
+export async function googleFontBytes(family, weight, italic) {
+  const pascal = family.replace(/[^A-Za-z0-9]/g, '');
+  const pkg = family.replace(/\s+/g, '-').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase().replace(/[^a-z0-9-]/g, '');
+  for (const w of [weight, weight >= 600 ? 700 : 400]) {
+    const file = `${pascal}_${w}${WNAME[w]}${italic ? '_Italic' : ''}.ttf`;
+    for (const url of [`https://cdn.jsdelivr.net/npm/@expo-google-fonts/${pkg}/${file}`, `https://cdn.jsdelivr.net/npm/@expo-google-fonts/${pkg}/${w}${WNAME[w]}${italic ? '_Italic' : ''}/${file}`]) {
+      try { const res = await fetch(url); if (res.ok) return await res.arrayBuffer(); } catch (_) { /* next */ }
+    }
+  }
+  return null;
 }
 
 async function loadGoogle(family, weight, italic) {

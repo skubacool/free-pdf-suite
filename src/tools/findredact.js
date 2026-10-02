@@ -75,7 +75,7 @@ export function initFindRedact() {
       let anyText = false;
       for (let p = 1; p <= st.doc.numPages; p++) {
         const page = await st.doc.getPage(p);
-        const { width, height, lines } = await extractLines(page, { measure: true });
+        const { width, height, lines } = await extractLines(page, { measure: true, split: true });
         st.pages[p] = { w: width, h: height, lines };
         if (lines.length) anyText = true;
         lines.forEach((ln, li) => {
@@ -181,7 +181,7 @@ export function initFindRedact() {
         outPage.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
         // rebuild the text layer without the redacted characters
         try {
-          const { lines } = st.pages[i] && st.pages[i].lines ? { lines: st.pages[i].lines } : await extractLines(page);
+          const { lines } = st.pages[i] && st.pages[i].lines ? { lines: st.pages[i].lines } : await extractLines(page, { split: true });
           const layer = [];
           lines.forEach((ln, li) => {
             const cuts = ms.filter((m) => m.line === li).map((m) => [m.from, m.to]).sort((a, b) => a[0] - b[0]);

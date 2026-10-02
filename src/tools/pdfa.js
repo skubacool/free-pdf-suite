@@ -66,7 +66,7 @@ export function initPdfA() {
         const outPage = out.addPage([vp1.width, vp1.height]);
         outPage.drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
         try {
-          const { lines } = await extractLines(page);
+          const { lines } = await extractLines(page, { split: true });
           await addTextLayer(out, outPage, vp1.height, lines.map((l) => ({ text: l.str, x: l.x, w: l.w, base: l.base, size: l.size })), { latinEmbedded: true });
         } catch (e) { console.warn('[upmypdf] text layer skipped:', e && e.message); }
       }

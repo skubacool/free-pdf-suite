@@ -281,7 +281,7 @@ export function initErase() {
         // box is left OUT of the layer so the erased words are really gone
         try {
           const gone = (st.rects[i] || []).map((r) => ({ x: r.x * vp1.width, w: r.w * vp1.width, top: r.y * vp1.height, h: r.h * vp1.height }));
-          const { lines } = await extractLines(page);
+          const { lines } = await extractLines(page, { split: true });
           const keep = lines.filter((l) => !gone.some((g) => boxesOverlap(lineBox(l), g))).map((l) => ({ text: l.str, x: l.x, w: l.w, base: l.base, size: l.size }));
           await addTextLayer(out, outPage, vp1.height, keep);
         } catch (e) { console.warn('[upmypdf] text layer skipped:', e && e.message); }

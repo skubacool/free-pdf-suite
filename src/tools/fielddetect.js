@@ -96,7 +96,7 @@ export async function detectFields(page) {
   });
 
   // ---- 3. dotted / underscore leaders from the page's text
-  const { lines: tl } = await extractLines(page, { measure: true });
+  const { lines: tl } = await extractLines(page, { measure: true, split: true });
   const pts = (r) => ({ x: r.x * SCALE, y: r.top * SCALE, w: r.w * SCALE, h: r.h * SCALE });
   tl.forEach((ln) => {
     const re = /(?:\.{6,}|…{3,}|_{4,}|…{3,})/g;

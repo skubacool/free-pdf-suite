@@ -25,6 +25,8 @@ import { initFindRedact } from './tools/findredact.js';
 import { initPdfA } from './tools/pdfa.js';
 import * as officeExport from './tools/officeexport.js';
 window.appOffice = officeExport;
+import * as embeddedFont from './tools/embeddedfont.js';
+window.appEmb = embeddedFont;
 
 // Each tool module is isolated: one broken panel must not stop the rest.
 const safe = (fn) => { try { fn(); } catch (e) { console.warn('[upmypdf] module skipped:', e && e.message); } };
