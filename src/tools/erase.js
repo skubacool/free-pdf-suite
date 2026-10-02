@@ -17,6 +17,110 @@
 //   rather than perfectly rebuilt - there is no real content to recover from.
 // Finished pages are rasterized (same trade-off as Redact and friends): text
 // becomes an image and is no longer selectable.
+// ---- the fill itself: directional-interpolation reconstruction ----------
+// Exported so Edit Text can erase the old words the same way.
+const STRIP = 6; // px of border sampled just outside each edge
+
+const avgStrip = (data, w, h, x0, x1, y0, y1) => {
+  // Average colour over the clamped rectangle [x0,x1) x [y0,y1), ignoring
+  // pixels far from the first-pass mean so a bit of neighbouring text or a
+  // border line does not tint the whole edge.
+  x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(w, x1); y1 = Math.min(h, y1);
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let y = y0; y < y1; y++) {
+    let i = (y * w + x0) * 4;
+    for (let x = x0; x < x1; x++, i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
+  }
+  if (!n) return [255, 255, 255];
+  const mr = r / n, mg = g / n, mb = b / n;
+  let r2 = 0, g2 = 0, b2 = 0, n2 = 0;
+  for (let y = y0; y < y1; y++) {
+    let i = (y * w + x0) * 4;
+    for (let x = x0; x < x1; x++, i += 4) {
+      if (Math.abs(data[i] - mr) + Math.abs(data[i + 1] - mg) + Math.abs(data[i + 2] - mb) < 60) { r2 += data[i]; g2 += data[i + 1]; b2 += data[i + 2]; n2++; }
+    }
+  }
+  return n2 ? [r2 / n2, g2 / n2, b2 / n2] : [mr, mg, mb];
+};
+
+export const blendFill = (ctx, canvasW, canvasH, bx, by, bw, bh, mode, customColor) => {
+  bx = Math.max(0, Math.round(bx)); by = Math.max(0, Math.round(by));
+  bw = Math.max(1, Math.min(canvasW - bx, Math.round(bw)));
+  bh = Math.max(1, Math.min(canvasH - by, Math.round(bh)));
+  if (bw <= 0 || bh <= 0) return;
+
+  if (mode === 'white' || mode === 'custom') {
+    const hex = mode === 'white' ? '#ffffff' : (customColor || '#ffffff');
+    ctx.fillStyle = hex;
+    ctx.fillRect(bx, by, bw, bh);
+    return;
+  }
+
+  const img = ctx.getImageData(0, 0, canvasW, canvasH);
+  const data = img.data;
+
+  // Per-row left/right edge colors, per-column top/bottom edge colors.
+  // Averaged over a few neighbouring rows/cols too (not just STRIP deep)
+  // so a single stray dark pixel at the boundary doesn't bleed a streak.
+  const NEI = 2;
+  const leftOf = new Array(bh), rightOf = new Array(bh);
+  for (let y = 0; y < bh; y++) {
+    const ay = by + y;
+    leftOf[y] = avgStrip(data, canvasW, canvasH, bx - STRIP, bx, ay - NEI, ay + NEI + 1);
+    rightOf[y] = avgStrip(data, canvasW, canvasH, bx + bw, bx + bw + STRIP, ay - NEI, ay + NEI + 1);
+  }
+  const topOf = new Array(bw), botOf = new Array(bw);
+  for (let x = 0; x < bw; x++) {
+    const ax = bx + x;
+    topOf[x] = avgStrip(data, canvasW, canvasH, ax - NEI, ax + NEI + 1, by - STRIP, by);
+    botOf[x] = avgStrip(data, canvasW, canvasH, ax - NEI, ax + NEI + 1, by + bh, by + bh + STRIP);
+  }
+
+  // Edge "grain": how much the border pixels vary, used to add back a
+  // little matching noise instead of a dead-flat fill on textured paper.
+  let variance = 0, vn = 0;
+  const sampleVar = (x0, x1, y0, y1) => {
+    const cx0 = Math.max(0, x0), cy0 = Math.max(0, y0), cx1 = Math.min(canvasW, x1), cy1 = Math.min(canvasH, y1);
+    const [mr, mg, mb] = avgStrip(data, canvasW, canvasH, x0, x1, y0, y1);
+    for (let y = cy0; y < cy1; y++) {
+      let i = (y * canvasW + cx0) * 4;
+      for (let x = cx0; x < cx1; x++, i += 4) {
+        variance += (data[i] - mr) ** 2 + (data[i + 1] - mg) ** 2 + (data[i + 2] - mb) ** 2;
+        vn++;
+      }
+    }
+  };
+  sampleVar(bx - STRIP, bx, by, by + bh);
+  sampleVar(bx + bw, bx + bw + STRIP, by, by + bh);
+  const grain = Math.min(10, Math.sqrt((variance / Math.max(1, vn)) / 3) * 0.35);
+
+  const wV = bw / (bw + bh), wH = bh / (bw + bh); // trust the closer pair of edges more
+  const out = new Uint8ClampedArray(bw * bh * 3);
+  for (let y = 0; y < bh; y++) {
+    const ty = bh > 1 ? y / (bh - 1) : 0.5;
+    const [lr, lg, lb] = leftOf[y], [rr, rg, rb] = rightOf[y];
+    for (let x = 0; x < bw; x++) {
+      const tx = bw > 1 ? x / (bw - 1) : 0.5;
+      const [tr, tg, tb] = topOf[x], [brr, brg, brb] = botOf[x];
+      const hr = lr + (rr - lr) * tx, hg = lg + (rg - lg) * tx, hb = lb + (rb - lb) * tx;
+      const vr = tr + (brr - tr) * ty, vg = tg + (brg - tg) * ty, vb = tb + (brb - tb) * ty;
+      const j = (y * bw + x) * 3;
+      const n = grain ? (Math.random() - 0.5) * grain : 0;
+      out[j] = hr * wH + vr * wV + n;
+      out[j + 1] = hg * wH + vg * wV + n;
+      out[j + 2] = hb * wH + vb * wV + n;
+    }
+  }
+  for (let y = 0; y < bh; y++) {
+    let di = ((by + y) * canvasW + bx) * 4, si = y * bw * 3;
+    for (let x = 0; x < bw; x++, di += 4, si += 3) {
+      data[di] = out[si]; data[di + 1] = out[si + 1]; data[di + 2] = out[si + 2];
+    }
+  }
+  ctx.putImageData(img, 0, 0, bx, by, bw, bh);
+};
+
+
 export function initErase() {
   const { $, $$, setupDropzone, hideResult, showResult, setStatus, fmtBytes, baseName, loadPdfJs, canvasToJpeg, renderPreview, PDFLib } = window.appHelpers;
   const { PDFDocument } = PDFLib;
@@ -118,97 +222,6 @@ export function initErase() {
   $('#preview-erase').addEventListener('pointerup', finishDrag);
   $('#preview-erase').addEventListener('pointercancel', finishDrag);
 
-  // ---- the fill itself: directional-interpolation reconstruction ----------
-  const STRIP = 6; // px of border sampled just outside each edge
-
-  const avgStrip = (data, w, h, x0, x1, y0, y1) => {
-    // average color over the clamped rectangle [x0,x1) x [y0,y1)
-    x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(w, x1); y1 = Math.min(h, y1);
-    let r = 0, g = 0, b = 0, n = 0;
-    for (let y = y0; y < y1; y++) {
-      let i = (y * w + x0) * 4;
-      for (let x = x0; x < x1; x++, i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
-    }
-    return n ? [r / n, g / n, b / n] : [255, 255, 255];
-  };
-
-  const fillRegion = (ctx, canvasW, canvasH, bx, by, bw, bh, mode, customColor) => {
-    bx = Math.max(0, Math.round(bx)); by = Math.max(0, Math.round(by));
-    bw = Math.max(1, Math.min(canvasW - bx, Math.round(bw)));
-    bh = Math.max(1, Math.min(canvasH - by, Math.round(bh)));
-    if (bw <= 0 || bh <= 0) return;
-
-    if (mode === 'white' || mode === 'custom') {
-      const hex = mode === 'white' ? '#ffffff' : (customColor || '#ffffff');
-      ctx.fillStyle = hex;
-      ctx.fillRect(bx, by, bw, bh);
-      return;
-    }
-
-    const img = ctx.getImageData(0, 0, canvasW, canvasH);
-    const data = img.data;
-
-    // Per-row left/right edge colors, per-column top/bottom edge colors.
-    // Averaged over a few neighbouring rows/cols too (not just STRIP deep)
-    // so a single stray dark pixel at the boundary doesn't bleed a streak.
-    const NEI = 2;
-    const leftOf = new Array(bh), rightOf = new Array(bh);
-    for (let y = 0; y < bh; y++) {
-      const ay = by + y;
-      leftOf[y] = avgStrip(data, canvasW, canvasH, bx - STRIP, bx, ay - NEI, ay + NEI + 1);
-      rightOf[y] = avgStrip(data, canvasW, canvasH, bx + bw, bx + bw + STRIP, ay - NEI, ay + NEI + 1);
-    }
-    const topOf = new Array(bw), botOf = new Array(bw);
-    for (let x = 0; x < bw; x++) {
-      const ax = bx + x;
-      topOf[x] = avgStrip(data, canvasW, canvasH, ax - NEI, ax + NEI + 1, by - STRIP, by);
-      botOf[x] = avgStrip(data, canvasW, canvasH, ax - NEI, ax + NEI + 1, by + bh, by + bh + STRIP);
-    }
-
-    // Edge "grain": how much the border pixels vary, used to add back a
-    // little matching noise instead of a dead-flat fill on textured paper.
-    let variance = 0, vn = 0;
-    const sampleVar = (x0, x1, y0, y1) => {
-      const cx0 = Math.max(0, x0), cy0 = Math.max(0, y0), cx1 = Math.min(canvasW, x1), cy1 = Math.min(canvasH, y1);
-      const [mr, mg, mb] = avgStrip(data, canvasW, canvasH, x0, x1, y0, y1);
-      for (let y = cy0; y < cy1; y++) {
-        let i = (y * canvasW + cx0) * 4;
-        for (let x = cx0; x < cx1; x++, i += 4) {
-          variance += (data[i] - mr) ** 2 + (data[i + 1] - mg) ** 2 + (data[i + 2] - mb) ** 2;
-          vn++;
-        }
-      }
-    };
-    sampleVar(bx - STRIP, bx, by, by + bh);
-    sampleVar(bx + bw, bx + bw + STRIP, by, by + bh);
-    const grain = Math.min(10, Math.sqrt((variance / Math.max(1, vn)) / 3) * 0.35);
-
-    const wV = bw / (bw + bh), wH = bh / (bw + bh); // trust the closer pair of edges more
-    const out = new Uint8ClampedArray(bw * bh * 3);
-    for (let y = 0; y < bh; y++) {
-      const ty = bh > 1 ? y / (bh - 1) : 0.5;
-      const [lr, lg, lb] = leftOf[y], [rr, rg, rb] = rightOf[y];
-      for (let x = 0; x < bw; x++) {
-        const tx = bw > 1 ? x / (bw - 1) : 0.5;
-        const [tr, tg, tb] = topOf[x], [brr, brg, brb] = botOf[x];
-        const hr = lr + (rr - lr) * tx, hg = lg + (rg - lg) * tx, hb = lb + (rb - lb) * tx;
-        const vr = tr + (brr - tr) * ty, vg = tg + (brg - tg) * ty, vb = tb + (brb - tb) * ty;
-        const j = (y * bw + x) * 3;
-        const n = grain ? (Math.random() - 0.5) * grain : 0;
-        out[j] = hr * wH + vr * wV + n;
-        out[j + 1] = hg * wH + vg * wV + n;
-        out[j + 2] = hb * wH + vb * wV + n;
-      }
-    }
-    for (let y = 0; y < bh; y++) {
-      let di = ((by + y) * canvasW + bx) * 4, si = y * bw * 3;
-      for (let x = 0; x < bw; x++, di += 4, si += 3) {
-        data[di] = out[si]; data[di + 1] = out[si + 1]; data[di + 2] = out[si + 2];
-      }
-    }
-    ctx.putImageData(img, bx, by);
-  };
-
   $('#btn-erase').addEventListener('click', async () => {
     const f = st.file;
     if (!f) return;
@@ -232,7 +245,7 @@ export function initErase() {
         await page.render({ canvasContext: ctx, viewport: vp }).promise;
         setTimeout(() => { try { page.cleanup(); } catch (e) {} }, 0);
         (st.rects[i] || []).forEach((r) => {
-          fillRegion(ctx, canvas.width, canvas.height, r.x * canvas.width, r.y * canvas.height, r.w * canvas.width, r.h * canvas.height, st.mode, st.color);
+          blendFill(ctx, canvas.width, canvas.height, r.x * canvas.width, r.y * canvas.height, r.w * canvas.width, r.h * canvas.height, st.mode, st.color);
         });
         const jpg = await out.embedJpg(await canvasToJpeg(canvas, 0.9));
         out.addPage([vp1.width, vp1.height]).drawImage(jpg, { x: 0, y: 0, width: vp1.width, height: vp1.height });

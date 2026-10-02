@@ -17,6 +17,10 @@ import { initSignTool } from './tools/sign.js';
 import { initWorkspace } from './tools/workspace.js';
 import { initHouseAds } from './tools/houseads.js';
 import { initErase } from './tools/erase.js';
+import { initEditText } from './tools/edittext.js';
+import { initAnnotate } from './tools/annotate.js';
+import { initFormCreate } from './tools/formcreate.js';
+import { initCertSign } from './tools/certsign.js';
 
 // Each tool module is isolated: one broken panel must not stop the rest.
 const safe = (fn) => { try { fn(); } catch (e) { console.warn('[upmypdf] module skipped:', e && e.message); } };
@@ -40,6 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.appHelpers) {
     safe(() => initSignTool(window.appHelpers));
     safe(() => initErase());
+    safe(() => initEditText());
+    safe(() => initAnnotate());
+    safe(() => initFormCreate());
+    safe(() => initCertSign());
     safe(() => initWorkspace()); // after every tool has registered its dropzone
   }
 });

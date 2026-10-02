@@ -609,7 +609,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   };
 
     // Expose core helpers to window for modular tools
-  window.appHelpers = { $, $$, fmtBytes, baseName, loadPdfJs, loadPdfForEdit, canvasToJpeg, setupDropzone, showResult, hideResult, setStatus, feedTool, onResult, PW_NEEDED_MSG, PDFLib, getUnicodeFont, adjustThai, renderPreview, decodeDataUrlBytes, getRotatedOrigin, clickToNorm };
+  window.appHelpers = { $, $$, fmtBytes, baseName, loadPdfJs, loadPdfForEdit, canvasToJpeg, setupDropzone, showResult, hideResult, setStatus, feedTool, onResult, PW_NEEDED_MSG, PDFLib, getUnicodeFont, adjustThai, renderPreview, decodeDataUrlBytes, getRotatedOrigin, clickToNorm, loadScriptOnce };
 
   // ----------------------------------------------------------- view routing
   // Two page types share this script:
@@ -619,7 +619,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   //    <body data-default-tool="..."> and ship without #home-view. They never
   //    write to the URL, so each route remains a clean, individually indexable
   //    document with its own immutable <head> metadata.
-  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'scan', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage', 'workspace', 'erase'];
+  const TOOLS = ['merge', 'split', 'rotate', 'compress', 'unlock', 'protect', 'sign', 'seal', 'type', 'pagenum', 'watermark', 'word2pdf', 'pdf2word', 'img2pdf', 'pdf2jpg', 'pdf2png', 'grayscale', 'redact', 'extractimg', 'addpage', 'pdf2ppt', 'pdf2excel', 'excel2pdf', 'delete', 'organize', 'crop', 'nup', 'ocr', 'targetsize', 'pdf2text', 'pdf2md', 'pdf2html', 'text2pdf', 'wordcount', 'metaview', 'metaedit', 'metaremove', 'flatten', 'unannotate', 'reverse', 'duplicate', 'interleave', 'zippdf', 'resize', 'invert', 'flip', 'scanned', 'longpage', 'split-horiz', 'addcover', 'removeblank', 'pdf2webp', 'svg2pdf', 'md2pdf', 'bgcolor', 'dimensions', 'links', 'compare', 'booklet', 'formfiller', 'png2pdf', 'webp2pdf', 'bmp2pdf', 'gif2pdf', 'tiff2pdf', 'divide', 'addimage', 'embedfile', 'extractfiles', 'xml2pdf', 'inspect', 'html2pdf', 'imgcompress', 'imgresize', 'imgconvert', 'heic2jpg', 'imgtargetsize', 'imgcrop', 'photoid', 'imgbgremove', 'imgocr', 'imgrotate', 'imgwatermark', 'imground', 'faviconmk', 'imgpalette', 'imgmerge', 'scan', 'letterhead', 'pdfgrid', 'headfoot', 'bates', 'qrcode', 'textdiff', 'batchrename', 'highlighter', 'bookmark', 'tableextract', 'invoice', 'imagecollage', 'workspace', 'erase', 'edittext', 'annotate', 'formcreate', 'certsign'];
   const DEDICATED_TOOL = document.body.dataset.defaultTool || '';
   const activate = (view, scroll = true) => {
     const isTool = TOOLS.includes(view);
@@ -1413,8 +1413,13 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
     const f = protState.file;
     if (!f) return;
     const pw = $('#pw-protect').value;
-    if (pw.length < 4) {
-      setStatus('protect', 'Choose a password of at least 4 characters.', 'error');
+    // Optional permission restrictions (print / copy / edit / annotate / fill).
+    // When the panel has no permission checkboxes (older markup) behave as before.
+    const permBox = (id) => { const el = $(`#perm-${id}`); return el ? el.checked : true; };
+    const allow = { print: permBox('print'), copy: permBox('copy'), edit: permBox('edit'), annotate: permBox('annotate'), fill: permBox('fill'), assemble: permBox('assemble') };
+    const restricted = Object.values(allow).some((v) => !v);
+    if (pw.length < 4 && !(restricted && pw.length === 0)) {
+      setStatus('protect', restricted ? 'Leave the open password empty, or make it at least 4 characters.' : 'Choose a password of at least 4 characters.', 'error');
       return;
     }
     const btn = $('#btn-protect');
@@ -1425,14 +1430,41 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
       const lib = await getEncryptLib();
       setStatus('protect', 'Encrypting PDF…');
       const doc = await lib.PDFDocument.load(await f.arrayBuffer());
+      // The owner password is what lifts the restrictions again, so it must
+      // differ from the open password (anyone who opens with the open password
+      // would otherwise get full rights). Generate one if the user left it blank.
+      let owner = ($('#owner-protect') ? $('#owner-protect').value : '') || '';
+      let generated = false;
+      if (restricted && (!owner || owner === pw)) {
+        const abc = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        const rnd = crypto.getRandomValues(new Uint8Array(14));
+        owner = Array.from(rnd, (v) => abc[v % abc.length]).join('');
+        generated = true;
+      }
+      if (!restricted) owner = owner && owner !== pw ? owner : pw;
+      const opts = { userPassword: pw, ownerPassword: owner };
+      if (restricted) {
+        opts.permissions = {
+          printing: allow.print ? 'highResolution' : false,
+          copying: allow.copy,
+          modifying: allow.edit,
+          annotating: allow.annotate,
+          fillingForms: allow.fill,
+          documentAssembly: allow.assemble,
+          contentAccessibility: true,
+        };
+      }
       let bytes;
       if (typeof doc.encrypt === 'function') {
-        await doc.encrypt({ userPassword: pw, ownerPassword: pw });
+        await doc.encrypt(opts);
         bytes = await doc.save();
       } else {
-        bytes = await doc.save({ userPassword: pw, ownerPassword: pw });
+        bytes = await doc.save(opts);
       }
-      showResult('protect', bytes, `${baseName(f.name)}_protected.pdf`, 'application/pdf');
+      const note = restricted
+        ? `Restricted${pw ? ' + password to open' : ' (opens without a password)'}. ${generated ? `Owner password (needed to change the restrictions — save it now): ${owner}` : 'Use your owner password to change the restrictions later.'}`
+        : '';
+      showResult('protect', bytes, `${baseName(f.name)}_protected.pdf`, 'application/pdf', note);
     } catch (err) {
       setStatus('protect',
         `❌ ${/encrypt/i.test(String(err)) && /load/i.test(String(err)) ? 'This PDF is already password-protected.' : err.message || err}`,
@@ -1756,27 +1788,52 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
         });
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
+        const wantPdf = ($('#out-ocr') ? $('#out-ocr').value : 'text') === 'pdf';
+        const pagePdfs = [];   // searchable output: one Tesseract page-PDF per page
         let out = '';
         for (let i = 1; i <= total; i++) {
           ocrState._page = i;
           const page = await src.getPage(i);
           const vp = page.getViewport({ scale: dpi });
+          const vp1 = page.getViewport({ scale: 1 });
           canvas.width = Math.ceil(vp.width);
           canvas.height = Math.ceil(vp.height);
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport: vp }).promise;
 setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
-          const { data } = await ocrWorker.recognize(canvas);
+          const { data } = await ocrWorker.recognize(canvas, {}, wantPdf ? { pdf: true } : undefined);
           out += `--- Page ${i} ---\n${(data.text || '').trim()}\n\n`;
+          if (wantPdf && data.pdf) pagePdfs.push({ bytes: new Uint8Array(data.pdf), w: vp1.width, h: vp1.height });
         }
         if (!out.replace(/--- Page \d+ ---/g, '').trim()) {
           throw new Error('No readable text was found. If this is a photo-only scan, try the 3× accuracy setting or a clearer, higher-resolution file.');
         }
         if ($('#ocr-text')) $('#ocr-text').value = out.trim();
-        const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
-        showResult('ocr', blob, `${baseName(f.name)}_text.txt`, 'text/plain',
-          `${total} page${total > 1 ? 's' : ''} read · ${fmtBytes(blob.size)} of text`);
+        if (wantPdf && pagePdfs.length) {
+          // Stitch the per-page searchable PDFs together and restore each page
+          // to the original page size (Tesseract sizes pages by pixel count).
+          setStatus('ocr', 'Building searchable PDF…');
+          const merged = await PDFDocument.create();
+          for (const pp of pagePdfs) {
+            const d = await PDFDocument.load(pp.bytes);
+            const [pg] = await merged.copyPages(d, [0]);
+            const { width, height } = pg.getSize();
+            pg.scaleContent(pp.w / width, pp.h / height);
+            pg.setSize(pp.w, pp.h);
+            merged.addPage(pg);
+          }
+          merged.setTitle(baseName(f.name));
+          const bytes = await merged.save({ useObjectStreams: true });
+          if ($('#dl-ocr')) $('#dl-ocr').textContent = '⬇️ Download Searchable PDF';
+          showResult('ocr', bytes, `${baseName(f.name)}_searchable.pdf`, 'application/pdf',
+            `${total} page${total > 1 ? 's' : ''} · ${fmtBytes(bytes.length)} · text is selectable and searchable`);
+        } else {
+          const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+          if ($('#dl-ocr')) $('#dl-ocr').textContent = '⬇️ Download Text';
+          showResult('ocr', blob, `${baseName(f.name)}_text.txt`, 'text/plain',
+            `${total} page${total > 1 ? 's' : ''} read · ${fmtBytes(blob.size)} of text`);
+        }
       } catch (err) {
         setStatus('ocr', `❌ ${err?.name === 'PasswordException' ? 'This PDF is password-protected — unlock it first.' : err.message || err}`, 'error');
       } finally {
@@ -6070,7 +6127,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
   })();
 
   // ---- saved presets, for every tool panel ----
-  // Serialises the panel's own inputs (never the file input) to localStorage, so
+  // Serialises the panel's own inputs (never file or password inputs) to localStorage, so
   // recurring jobs - a company watermark, a passport size, a target file size -
   // are one click instead of retyping.
   (() => {
@@ -6078,7 +6135,7 @@ setTimeout(() => { try { page.cleanup(); } catch(e){} }, 0);
     const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (_) { return {}; } };
     const write = (o) => { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (_) {} };
     const fieldsOf = (panel) => [...panel.querySelectorAll('input,select,textarea')]
-      .filter((el) => el.id && el.type !== 'file' && el.type !== 'hidden');
+      .filter((el) => el.id && el.type !== 'file' && el.type !== 'hidden' && el.type !== 'password'); // never persist passwords
 
     $$('.panel[id^="panel-"]').forEach((panel) => {
       const tool = panel.id.replace('panel-', '');

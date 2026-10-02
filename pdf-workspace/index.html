@@ -79,7 +79,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&text=%E0%B9%84%E0%B8%97%E0%B8%A2&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/tailwind.css?v=4" />
+  <link rel="stylesheet" href="/tailwind.css?v=5" />
   <style>
     ::selection { background:#2563EB; color:#fff; }
 
@@ -144,7 +144,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script defer src="../app.js?v=23"></script>
+  <script defer src="../app.js?v=24"></script>
   <script type="module" src="../nhost.js"></script>
 </head>
 
@@ -754,6 +754,256 @@
             </div>
           </div>
 
+<div id="panel-edittext" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">✏️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Edit PDF Text</h2>
+                <p class="text-slate-500 text-sm">Click a line of text on the page, retype it, and download.</p>
+              </div>
+            </div>
+            <div id="dz-edittext" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-edittext" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-edittext" class="mt-4 text-sm text-slate-600"></p>
+            <div id="work-edittext" class="hidden mt-6">
+              <div class="text-sm font-semibold mb-1.5">Click the text you want to change
+                <label class="ml-2 font-normal text-xs">Page:
+                  <input type="number" id="page-edittext" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                  <span id="pages-edittext" class="text-slate-500"></span>
+                </label><span id="et-count" class="ml-2 text-xs font-semibold text-emerald-600"></span>
+              </div>
+              <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-edittext">
+                <canvas id="preview-edittext" class="preview-canvas"></canvas>
+              </div>
+              <div id="et-editor" class="hidden mt-4 border border-sky-200 bg-sky-50/60 rounded-xl p-4">
+                <div id="et-orig" class="text-xs text-slate-500 mb-2"></div>
+                <input type="text" id="et-text" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" aria-label="New text" />
+                <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                  <label>Size <input type="number" id="et-size" min="2" step="0.5" class="w-20 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" /></label>
+                  <label>Font <select id="et-family" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm bg-white"><option value="sans">Sans-serif</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></label>
+                  <label class="flex items-center gap-1"><input type="checkbox" id="et-bold" /> Bold</label>
+                  <label>Align <select id="et-align" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm bg-white"><option value="left">Left</option><option value="right">Right</option><option value="center">Centre</option></select></label>
+                  <label class="flex items-center gap-1"><input type="checkbox" id="et-usecolor" /> Colour <input type="color" id="et-color" value="#000000" class="w-8 h-8 border border-slate-300 rounded" /></label>
+                  <button type="button" id="et-revert" class="text-xs text-rose-600 hover:underline">Undo this change</button>
+                </div>
+                <p class="mt-2 text-xs text-slate-500">Leave colour off to match the original text. Changed lines turn green on the page.</p>
+              </div>
+              <p class="mt-3 text-xs text-slate-500">Pages you edit are re-drawn as images with the old words erased and the new ones painted in; pages you do not touch stay exactly as they were.</p>
+            </div>
+            <button id="btn-edittext" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Apply Edits</button>
+            <p id="status-edittext" class="mt-4 text-sm font-medium"></p>
+            <div id="res-edittext" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-edittext" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-edittext" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Edited PDF</button>
+                <span class="text-sm text-slate-600" id="info-edittext"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+<div id="panel-annotate" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🖍️</span>
+              <div>
+                <h2 class="text-2xl font-bold">Annotate PDF</h2>
+                <p class="text-slate-500 text-sm">Highlight, draw, add boxes, arrows and sticky notes.</p>
+              </div>
+            </div>
+            <div id="dz-annotate" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-annotate" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-annotate" class="mt-4 text-sm text-slate-600"></p>
+            <div id="work-annotate" class="hidden mt-6">
+              <div id="an-tools" class="flex flex-wrap items-center gap-2"></div>
+              <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                <span id="an-swatches" class="flex items-center gap-1.5"></span>
+                <label>Line <select id="an-width" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm bg-white"><option value="1">Thin</option><option value="2" selected>Medium</option><option value="4">Thick</option><option value="8">Marker</option></select></label>
+                <button type="button" id="an-undo" class="btn text-sm rounded-lg px-3 py-1.5 border border-slate-300">↶ Undo</button>
+                <button type="button" id="an-clear" class="btn text-sm rounded-lg px-3 py-1.5 border border-slate-300">Clear page</button>
+              </div>
+              <div class="mt-4">
+              <div class="text-sm font-semibold mb-1.5">Draw on the page
+                <label class="ml-2 font-normal text-xs">Page:
+                  <input type="number" id="page-annotate" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                  <span id="pages-annotate" class="text-slate-500"></span>
+                </label><span id="an-count" class="ml-2 text-xs font-semibold text-amber-600"></span>
+              </div>
+              </div>
+              <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-annotate">
+                <canvas id="preview-annotate" class="preview-canvas"></canvas>
+                <canvas id="overlay-annotate" style="position:absolute;left:0;top:0;height:100%;cursor:crosshair"></canvas>
+              </div>
+              <p class="mt-3 text-xs text-slate-500">Highlights, lines and shapes are drawn into the page so they show in every viewer. Sticky notes become real PDF comments.</p>
+            </div>
+            <button id="btn-annotate" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Save Annotated PDF</button>
+            <p id="status-annotate" class="mt-4 text-sm font-medium"></p>
+            <div id="res-annotate" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-annotate" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-annotate" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Annotated PDF</button>
+                <span class="text-sm text-slate-600" id="info-annotate"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+<div id="panel-formcreate" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📋</span>
+              <div>
+                <h2 class="text-2xl font-bold">Create Fillable Form</h2>
+                <p class="text-slate-500 text-sm">Turn any PDF into a form people can fill in — or start from a blank page.</p>
+              </div>
+            </div>
+            <div id="dz-formcreate" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-formcreate" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-formcreate" class="mt-4 text-sm text-slate-600"></p>
+            <p class="mt-3 text-sm text-slate-600">No PDF yet? <button type="button" id="fc-blank" class="text-brand-600 font-semibold hover:underline">Start with a blank A4 page</button></p>
+            <div id="work-formcreate" class="hidden mt-6">
+              <div id="fc-types" class="flex flex-wrap items-center gap-2"></div>
+              <div class="mt-4">
+              <div class="text-sm font-semibold mb-1.5">Drag on the page to place a field
+                <label class="ml-2 font-normal text-xs">Page:
+                  <input type="number" id="page-formcreate" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                  <span id="pages-formcreate" class="text-slate-500"></span>
+                </label><span id="fc-count" class="ml-2 text-xs font-semibold text-emerald-600"></span>
+              </div>
+              </div>
+              <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-formcreate">
+                <canvas id="preview-formcreate" class="preview-canvas" style="cursor:crosshair"></canvas>
+              </div>
+              <div class="mt-4 text-sm font-semibold">Fields</div>
+              <div id="fc-list" class="mt-2 space-y-2"></div>
+              <p class="mt-3 text-xs text-slate-500">Give each field a unique name. Radio buttons that share a name form one group. Fields use a standard font, so they suit Latin text best.</p>
+            </div>
+            <button id="btn-formcreate" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Create Form</button>
+            <p id="status-formcreate" class="mt-4 text-sm font-medium"></p>
+            <div id="res-formcreate" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-formcreate" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-formcreate" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Fillable PDF</button>
+                <span class="text-sm text-slate-600" id="info-formcreate"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+<div id="panel-certsign" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🔏</span>
+              <div>
+                <h2 class="text-2xl font-bold">Digital Signature (Certificate)</h2>
+                <p class="text-slate-500 text-sm">Sign with a real certificate: tamper-evident, not just a picture. Do this as the last step; any change afterwards breaks the signature.</p>
+              </div>
+            </div>
+            <div id="dz-certsign" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop the PDF to sign here or click to browse</p>
+              <input type="file" id="file-certsign" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-certsign" class="mt-4 text-sm text-slate-600"></p>
+            <div id="work-certsign" class="hidden mt-6">
+              <div class="text-sm font-semibold mb-1.5">Your certificate</div>
+              <div class="flex flex-wrap gap-4 text-sm">
+                <label class="flex items-center gap-1.5"><input type="radio" name="cs-mode" value="file" checked /> I have a certificate file (.p12 / .pfx)</label>
+                <label class="flex items-center gap-1.5"><input type="radio" name="cs-mode" value="new" /> Create a self-signed one for me</label>
+              </div>
+              <div id="cs-file-box" class="mt-3 flex flex-wrap items-center gap-3">
+                <input type="file" id="cs-p12" accept=".p12,.pfx,application/x-pkcs12" class="text-sm" />
+                <input type="password" id="cs-pw" placeholder="Certificate password" autocomplete="off" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" />
+              </div>
+              <div id="cs-new-box" class="hidden mt-3 grid sm:grid-cols-2 gap-3">
+                <input type="text" id="cs-cn" placeholder="Your name (shown as the signer)" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" />
+                <input type="text" id="cs-org" placeholder="Organisation (optional)" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" />
+                <input type="email" id="cs-email" placeholder="Email (optional)" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" />
+                <label class="text-sm flex items-center gap-2">Valid for <input type="number" id="cs-years" min="1" max="20" value="3" class="w-16 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" /> years</label>
+                <input type="password" id="cs-newpw" placeholder="Password to protect the certificate file" autocomplete="new-password" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm sm:col-span-2" />
+                <p class="sm:col-span-2 text-xs text-slate-500">A self-signed certificate proves the file has not changed since you signed it, but PDF readers show the signer as unverified until the recipient chooses to trust it. For legal or regulated use, bring a certificate from a recognised authority.</p>
+              </div>
+              <div class="mt-4 grid sm:grid-cols-2 gap-3">
+                <input type="text" id="cs-reason" placeholder="Reason (optional), e.g. I approve this document" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" />
+                <input type="text" id="cs-location" placeholder="Location (optional)" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm" />
+              </div>
+              <label class="mt-4 flex items-center gap-2 text-sm font-semibold"><input type="checkbox" id="cs-vis" /> Show a visible signature on the page</label>
+              <p id="cs-place" class="hidden mt-1 text-xs text-slate-500">Drag on the page below to choose where the signature appears.</p>
+              <div class="mt-3">
+              <div class="text-sm font-semibold mb-1.5">Preview
+                <label class="ml-2 font-normal text-xs">Page:
+                  <input type="number" id="page-certsign" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                  <span id="pages-certsign" class="text-slate-500"></span>
+                </label>
+              </div>
+              </div>
+              <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-certsign">
+                <canvas id="preview-certsign" class="preview-canvas"></canvas>
+              </div>
+            </div>
+            <button id="btn-certsign" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Sign PDF</button>
+            <p id="status-certsign" class="mt-4 text-sm font-medium"></p>
+            <div id="res-certsign" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-certsign" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-certsign" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Signed PDF</button>
+                <button type="button" id="cs-save-p12" class="hidden btn border border-slate-300 rounded-xl px-5 py-3 font-semibold hover:bg-slate-100">🔑 Save my certificate (.p12)</button>
+                <span class="text-sm text-slate-600" id="info-certsign"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+<div id="panel-ocr" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-indigo-50 text-2xl">🔎</span>
+              <div>
+                <h2 class="text-2xl font-bold">Make Searchable (OCR)</h2>
+                <p class="text-slate-500 text-sm">Turn a scanned PDF — a picture of text — into a searchable PDF.</p>
+              </div>
+            </div>
+            <div id="dz-ocr" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a scanned PDF here or click to browse</p>
+              <input type="file" id="file-ocr" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-ocr" class="mt-4 text-sm text-slate-600"></p>
+            <input type="hidden" id="out-ocr" value="pdf" />
+            <label class="block mt-5 text-sm font-semibold">Document language</label>
+            <select id="lang-ocr" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="eng" selected>English</option>
+              <option value="tha" style="font-family:'Noto Sans Thai',Inter,sans-serif">ไทย (Thai)</option>
+              <option value="eng+tha" style="font-family:'Noto Sans Thai',Inter,sans-serif">English + ไทย</option>
+            </select>
+            <label class="block mt-4 text-sm font-semibold">Accuracy</label>
+            <select id="dpi-ocr" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 bg-white">
+              <option value="2" selected>Standard (2× DPI) — faster</option>
+              <option value="3">High (3× DPI) — slower, better on small text</option>
+            </select>
+            <p class="mt-2 text-xs text-slate-500">Runs in your browser. The first run downloads language data (~10–20 MB); recognition takes a few seconds per page.</p>
+            <button id="btn-ocr" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Run OCR</button>
+            <p id="status-ocr" class="mt-4 text-sm font-medium"></p>
+            <div id="res-ocr" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <textarea id="ocr-text" class="hidden"></textarea>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-ocr" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Text</button>
+                <span class="text-sm text-slate-600" id="info-ocr"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
 <div id="panel-flatten" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
             <div class="flex items-center gap-3">
               <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-slate-100 text-2xl">📐</span>
@@ -832,6 +1082,21 @@
             <label class="block mt-5 text-sm font-semibold">Password</label>
             <input type="password" id="pw-protect" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="Choose a password (min. 4 characters)" autocomplete="new-password" />
             <p class="mt-2 text-xs text-slate-500">⚠️ Remember this password — there is no way to recover the file without it.</p>
+            <details class="mt-4 border border-slate-200 rounded-xl p-4 max-w-xl">
+              <summary class="cursor-pointer font-semibold text-sm">🛡️ Restrict what people can do (optional)</summary>
+              <p class="mt-2 text-xs text-slate-500">Untick what you want to block. PDF programs that respect permissions (Acrobat, Preview, Chrome, Edge) will switch those actions off. To restrict without a password to open, leave the password above empty.</p>
+              <div class="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+                <label><input type="checkbox" id="perm-print" checked /> Allow printing</label>
+                <label><input type="checkbox" id="perm-copy" checked /> Allow copying text</label>
+                <label><input type="checkbox" id="perm-edit" checked /> Allow editing</label>
+                <label><input type="checkbox" id="perm-annotate" checked /> Allow comments</label>
+                <label><input type="checkbox" id="perm-fill" checked /> Allow filling forms</label>
+                <label><input type="checkbox" id="perm-assemble" checked /> Allow page changes</label>
+              </div>
+              <label class="block mt-3 text-sm font-semibold">Owner password <span class="font-normal text-slate-500">(needed to change the restrictions later)</span></label>
+              <input type="password" id="owner-protect" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="Leave blank and one is generated for you" autocomplete="new-password" />
+              <p class="mt-2 text-xs text-slate-500">Permissions are honoured by mainstream PDF programs but are not unbreakable. For real secrecy, use a password to open the file.</p>
+            </details>
             <button id="btn-protect" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Protect PDF</button>
             <p id="status-protect" class="mt-4 text-sm font-medium"></p>
             <div id="res-protect" class="hidden mt-6 border-t border-slate-200 pt-6">

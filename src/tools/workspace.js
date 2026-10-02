@@ -32,8 +32,13 @@ export function initWorkspace() {
         { key: 'sign',        icon: '✍️', name: 'Sign' },
         { key: 'redact',      icon: '⬛', name: 'Redact' },
         { key: 'erase',       icon: '🧽', name: 'Smart erase' },
+        { key: 'edittext',    icon: '✏️', name: 'Edit text' },
+        { key: 'annotate',    icon: '🖍️', name: 'Annotate' },
+        { key: 'formcreate',  icon: '📋', name: 'Create form' },
+        { key: 'ocr',         icon: '🔎', name: 'Make searchable' },
         { key: 'flatten',     icon: '🧊', name: 'Flatten' },
         { key: 'compress',    icon: '🗜️', name: 'Compress' },
+        { key: 'certsign',    icon: '🔏', name: 'Digital signature' },
         { key: 'protect',     icon: '🔒', name: 'Add password' },
       ],
       // page count + lock state; also decides whether other tools are blocked

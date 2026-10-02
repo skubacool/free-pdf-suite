@@ -117,7 +117,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/tailwind.css?v=4" />
+  <link rel="stylesheet" href="/tailwind.css?v=5" />
   <style>
     ::selection { background:#2563EB; color:#fff; }
     .ad-box { border:1px solid #E2E8F0; background:#F8FAFC; position:relative; }
@@ -159,7 +159,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script defer src="../app.js?v=23"></script>
+  <script defer src="../app.js?v=24"></script>
   <script type="module" src="../nhost.js"></script>
 </head>
 
@@ -666,6 +666,26 @@
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-pink-50 text-2xl">🧽</span>
             <div class="font-bold mt-3">ลบโลโก้/ตราประทับออกจาก PDF</div>
             <p class="text-sm text-slate-500 mt-1">ลบโลโก้ ตราประทับ หรือข้อความท้ายกระดาษ แล้วกลืนพื้นหลังให้เนียน</p>
+          </a>
+          <a href="../edit-pdf-text/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-sky-50 text-2xl">✏️</span>
+            <div class="font-bold mt-3">แก้ไขข้อความใน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">คลิกข้อความแล้วพิมพ์ใหม่ แก้คำผิดหรือตัวเลขได้ทันที</p>
+          </a>
+          <a href="../annotate-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-amber-50 text-2xl">🖍️</span>
+            <div class="font-bold mt-3">ไฮไลต์และจดโน้ตบน PDF</div>
+            <p class="text-sm text-slate-500 mt-1">ไฮไลต์ วาดภาพ ใส่ลูกศรและโน้ตแปะ</p>
+          </a>
+          <a href="../create-pdf-form/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl">📋</span>
+            <div class="font-bold mt-3">สร้างแบบฟอร์ม PDF กรอกได้</div>
+            <p class="text-sm text-slate-500 mt-1">เพิ่มช่องกรอก ช่องติ๊ก และรายการเลือกลงใน PDF</p>
+          </a>
+          <a href="../digital-signature-pdf/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
+            <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-violet-50 text-2xl">🔏</span>
+            <div class="font-bold mt-3">ลายเซ็นดิจิทัลด้วยใบรับรอง</div>
+            <p class="text-sm text-slate-500 mt-1">เซ็นด้วยใบรับรองจริง ตรวจจับการแก้ไขภายหลังได้</p>
           </a>
           <a href="../pdf-to-scanned-look/" class="toolcard block bg-white border border-slate-200 rounded-2xl p-5 text-left">
             <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-rose-50 text-2xl">🖨️</span>
@@ -1327,7 +1347,22 @@
             <label class="block mt-5 text-sm font-semibold">รหัสผ่าน</label>
             <input type="password" id="pw-protect" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="ตั้งรหัสผ่าน (อย่างน้อย 4 ตัวอักษร)" autocomplete="new-password" />
             <p class="mt-2 text-xs text-slate-500">⚠️ โปรดจำรหัสผ่านนี้ — หากลืมจะไม่สามารถกู้คืนไฟล์ได้</p>
-            <button id="btn-protect" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ใส่รหัสผ่าน</button>
+            <details class="mt-4 border border-slate-200 rounded-xl p-4 max-w-xl">
+              <summary class="cursor-pointer font-semibold text-sm">🛡️ จำกัดสิ่งที่ผู้รับทำได้ (ไม่บังคับ)</summary>
+              <p class="mt-2 text-xs text-slate-500">เอาเครื่องหมายถูกออกจากสิ่งที่ต้องการห้าม โปรแกรม PDF ที่รองรับสิทธิ์ (Acrobat, Preview, Chrome, Edge) จะปิดฟังก์ชันเหล่านั้น หากต้องการจำกัดสิทธิ์โดยไม่ต้องใช้รหัสเปิดไฟล์ ให้เว้นช่องรหัสผ่านด้านบนว่างไว้</p>
+              <div class="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+                <label><input type="checkbox" id="perm-print" checked /> อนุญาตให้พิมพ์</label>
+                <label><input type="checkbox" id="perm-copy" checked /> อนุญาตให้คัดลอกข้อความ</label>
+                <label><input type="checkbox" id="perm-edit" checked /> อนุญาตให้แก้ไข</label>
+                <label><input type="checkbox" id="perm-annotate" checked /> อนุญาตให้ใส่ความเห็น</label>
+                <label><input type="checkbox" id="perm-fill" checked /> อนุญาตให้กรอกแบบฟอร์ม</label>
+                <label><input type="checkbox" id="perm-assemble" checked /> อนุญาตให้จัดการหน้า</label>
+              </div>
+              <label class="block mt-3 text-sm font-semibold">รหัสผ่านเจ้าของไฟล์ <span class="font-normal text-slate-500">(ใช้เปลี่ยนข้อจำกัดภายหลัง)</span></label>
+              <input type="password" id="owner-protect" class="mt-1.5 border border-slate-300 rounded-xl px-4 py-2.5 w-full max-w-sm" placeholder="เว้นว่างไว้ ระบบจะสร้างให้" autocomplete="new-password" />
+              <p class="mt-2 text-xs text-slate-500">โปรแกรม PDF ทั่วไปจะทำตามสิทธิ์เหล่านี้ แต่ไม่ได้ป้องกันได้เด็ดขาด หากต้องการความลับจริงๆ ให้ตั้งรหัสผ่านเปิดไฟล์</p>
+            </details>
+                        <button id="btn-protect" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>ใส่รหัสผ่าน</button>
             <p id="status-protect" class="mt-4 text-sm font-medium"></p>
             <div id="res-protect" class="hidden mt-6 border-t border-slate-200 pt-6">
               <div class="flex flex-wrap items-center gap-4">
