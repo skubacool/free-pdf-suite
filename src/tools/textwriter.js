@@ -41,6 +41,11 @@ export function makeContext(out) {
   return { out, copied: new Map(), subs: new Map(), pick: new Map() };
 }
 
+async function helvetica(ctx) {
+  if (!ctx.helv) ctx.helv = await ctx.out.embedFont(window.PDFLib.StandardFonts.Helvetica);
+  return ctx.helv;
+}
+
 async function subFont(ctx, family, bold) {
   const key = `${family}|${bold}`;
   if (ctx.subs.has(key)) return ctx.subs.get(key);
@@ -122,6 +127,7 @@ export async function planLine(ctx, opts) {
   const orig = !opts.family || opts.family === 'orig';
   const runs = [];
   const missing = [];
+  const dropped = [];
   let usedFont = '';
   const chunkByScript = (str) => {
     const chunks = [];
@@ -130,15 +136,35 @@ export async function planLine(ctx, opts) {
   };
   const addSub = async (str) => {
     for (const ck of chunkByScript(str)) {
-      const { sf, scale } = await substitute(ctx, emb, opts.rawName, opts.family, ck.k, bold);
-      if (!sf) continue;
+      let { sf, scale } = await substitute(ctx, emb, opts.rawName, opts.family, ck.k, bold);
+      if (!sf && ck.k === 'latin') { // offline: the built-in Helvetica still draws every English letter and digit
+        const hv = await helvetica(ctx);
+        const t = ck.s.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, '-').replace(/[^ -~¡-ÿ]/g, '?');
+        // line the built-in font up with the original's glyph widths so sizes still look consistent
+        let hs = 1;
+        if (emb) {
+          const ratios = [];
+          emb.uni2codes.forEach((codes, cp) => {
+            if (!((cp >= 0x41 && cp <= 0x5A) || (cp >= 0x61 && cp <= 0x7A) || (cp >= 0x30 && cp <= 0x39))) return;
+            const c = codes.find((q) => emb.hasInk(q, cp));
+            const hw = hv.widthOfTextAtSize(String.fromCodePoint(cp), 1);
+            if (c != null && hw > 0) ratios.push(emb.widthOf(c) / 1000 / hw);
+          });
+          ratios.sort((a, b) => a - b);
+          if (ratios.length >= 4) hs = Math.min(1.2, Math.max(0.8, ratios[ratios.length >> 1]));
+        }
+        runs.push({ kind: 'sub', text: t, sf: { font: hv, family: 'Helvetica' }, scale: hs, width: hv.widthOfTextAtSize(t, size * hs) });
+        dropped.push('(offline: used Helvetica)');
+        continue;
+      }
+      if (!sf) { for (const ch of ck.s) dropped.push(ch); continue; } // no matching font could be loaded
       const t = ck.k === 'thai' ? ck.s.replace(/ำ/g, 'ํา') : ck.s; // SARA AM as NIKHAHIT + SARA AA extracts cleanly
       runs.push({ kind: 'sub', text: t, sf, scale, width: sf.font.widthOfTextAtSize(t, size * scale) });
     }
   };
 
   if (opts.userBytes && orig && !opts.forceSub) {
-    const uf = await userFont(ctx, opts.userBytes, `user|${opts.rawName}`);
+    const uf = await userFont(ctx, opts.userBytes, `user|${opts.userKey || opts.rawName}`);
     runs.push({ kind: 'sub', text, sf: uf, scale: 1, width: uf.font.widthOfTextAtSize(text, size) });
     usedFont = 'your font file';
   } else if (emb && orig && !opts.forceSub) {
@@ -166,7 +192,7 @@ export async function planLine(ctx, opts) {
   }
   const total = runs.reduce((a, r) => a + r.width, 0);
   const x = opts.align === 'right' ? opts.x1 - total : opts.align === 'center' ? (opts.x0 + opts.x1) / 2 - total / 2 : opts.x0;
-  return { runs, width: total, x, missing: [...new Set(missing)], usedFont, opts, emb };
+  return { runs, width: total, x, missing: [...new Set(missing)], dropped: [...new Set(dropped)], usedFont, opts, emb };
 }
 
 export function emitLine(ctx, outPage, plan) {

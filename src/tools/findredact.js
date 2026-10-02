@@ -9,11 +9,14 @@
 // page (a picture of text) has nothing to find: run OCR first.
 import { extractLines, rangeBox, addTextLayer } from './textlayer.js';
 
+// No look-behind assertions: older iPhones (Safari before 16.4) fail to even parse
+// them, which would break the whole site. Each pattern captures an optional leading
+// non-digit (group 1) and the data itself (group 2).
 const PATTERNS = {
-  thaiid: { label: 'Thai ID number', re: /(?<!\d)\d[ -]?\d{4}[ -]?\d{5}[ -]?\d{2}[ -]?\d(?!\d)/g },
-  phone: { label: 'Phone number', re: /(?<!\d)(?:\+66[ -]?\d{1,2}|0\d{1,2})[ -]?\d{3}[ -]?\d{4}(?!\d)/g },
-  email: { label: 'E-mail address', re: /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g },
-  card: { label: 'Card / account number', re: /(?<!\d)(?:\d[ -]?){12,15}\d(?!\d)/g },
+  thaiid: { label: 'Thai ID number', re: /(^|\D)(\d[ -]?\d{4}[ -]?\d{5}[ -]?\d{2}[ -]?\d)(?!\d)/g },
+  phone: { label: 'Phone number', re: /(^|\D)((?:\+66[ -]?\d{1,2}|0\d{1,2})[ -]?\d{3}[ -]?\d{4})(?!\d)/g },
+  email: { label: 'E-mail address', re: /()([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g },
+  card: { label: 'Card / account number', re: /(^|\D)((?:\d[ -]?){12,15}\d)(?!\d)/g },
 };
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -56,7 +59,7 @@ export function initFindRedact() {
   const readTerms = () => {
     const useRe = $('#fr-regex').checked;
     const out = [];
-    $$('[data-frpat]').forEach((c) => { if (c.checked) out.push({ re: PATTERNS[c.dataset.frpat].re, label: PATTERNS[c.dataset.frpat].label }); });
+    $$('[data-frpat]').forEach((c) => { if (c.checked) out.push({ re: PATTERNS[c.dataset.frpat].re, label: PATTERNS[c.dataset.frpat].label, b: true }); });
     $('#fr-terms').value.split('\n').map((t) => t.trim()).filter(Boolean).forEach((t) => {
       try { out.push({ re: new RegExp(useRe ? t : esc(t), 'gi'), label: t }); } catch (_) { throw new Error(`“${t}” is not a valid pattern.`); }
     });
@@ -81,12 +84,16 @@ export function initFindRedact() {
         lines.forEach((ln, li) => {
           const text = ln.str;
           const spans = [];
-          pats.forEach(({ re }) => {
+          pats.forEach(({ re, b }) => {
             re.lastIndex = 0;
             let m;
             while ((m = re.exec(text))) {
               if (!m[0]) { re.lastIndex++; continue; }
-              spans.push([m.index, m.index + m[0].length]);
+              // built-in patterns: group 2 is the data; typed patterns: the whole match
+              const data = b ? m[2] : m[0];
+              const start = b ? m.index + m[1].length : m.index;
+              spans.push([start, start + data.length]);
+              re.lastIndex = start + data.length; // the leading boundary character stays available to the next match
             }
           });
           // merge overlapping spans from different patterns

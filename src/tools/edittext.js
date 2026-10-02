@@ -34,7 +34,11 @@ const idbGetAll = async () => {
   } catch (_) { return new Map(); }
 };
 const idbPut = async (k, v) => { try { const db = await idb(); db.transaction('fonts', 'readwrite').objectStore('fonts').put(v, k); } catch (_) {} };
-const normKey = (raw) => parseFontName(raw).family.toLowerCase().replace(/[^a-z0-9฀-๿]/g, '');
+const fontKey = (family, weight, italic) => `${family.toLowerCase().replace(/[^a-z0-9฀-๿]/g, '')}|${weight}|${italic ? 'i' : 'n'}`;
+const keyOfName = (raw, weightOverride) => { const p = parseFontName(raw); return fontKey(p.family, weightOverride || p.weight, p.italic); };
+// Company fonts hosted on the site itself (fonts/manifest.json lists the files). When a PDF uses a
+// family listed there, its full font is loaded automatically for every visitor on every device.
+const appBase = () => { const a = document.querySelector('script[src*="app.js"]'); return a ? new URL('.', a.src).href : '/'; };
 const NUMERIC = /^[\s\d,.\-+%()฿$]+(บาท|THB|Baht)?\s*$/i;
 
 export function initEditText() {
@@ -42,12 +46,33 @@ export function initEditText() {
   const { PDFDocument } = PDFLib;
   if (!$('#dz-edittext')) return;
 
-  const st = { file: null, bytes: null, doc: null, pageNum: 1, segs: {}, edits: {}, sel: null, fonts: null, userFonts: new Map() };
+  const st = { file: null, bytes: null, doc: null, pageNum: 1, segs: {}, edits: {}, sel: null, fonts: null, userFonts: new Map(), siteList: null, siteLoaded: new Set() };
   const wrap = () => $('#wrap-edittext');
   const countEdits = () => Object.values(st.edits).reduce((a, m) => a + Object.keys(m).length, 0);
   const updateReady = () => {
     $('#btn-edittext').disabled = !(st.file && countEdits() > 0);
     $('#et-count').textContent = countEdits() ? `${countEdits()} line${countEdits() > 1 ? 's' : ''} changed` : '';
+  };
+
+  const loadSiteFonts = async (rawNames) => {
+    try {
+      if (!st.siteList) { const r = await fetch(`${appBase()}fonts/manifest.json`); st.siteList = r.ok ? await r.json() : []; }
+      for (const raw of new Set(rawNames)) {
+        const fam = keyOfName(raw).split('|')[0];
+        for (const file of st.siteList) {
+          if (!fam || !file.toLowerCase().replace(/[^a-z0-9]/g, '').startsWith(fam) || st.siteLoaded.has(file)) continue;
+          st.siteLoaded.add(file);
+          try {
+            const res = await fetch(`${appBase()}fonts/${encodeURIComponent(file)}`);
+            if (!res.ok) continue;
+            const bytes = new Uint8Array(await res.arrayBuffer());
+            const fk = window.fontkit.create(bytes);
+            const key = keyOfName(fk.postscriptName || fk.fullName || file.replace(/\.[^.]+$/, ''));
+            if (!st.userFonts.has(key)) st.userFonts.set(key, bytes); // a font the user added themselves wins
+          } catch (_) { /* skip an unreadable font */ }
+        }
+      }
+    } catch (_) { /* no site fonts: nothing to do */ }
   };
 
   // ---- find the editable lines on a page (merge neighbouring pdf.js runs)
@@ -74,6 +99,7 @@ export function initEditText() {
       s.autoAlign = rightStrict && !leftStrict ? 'right' : leftStrict && !rightStrict ? 'left' : midStrict && !leftStrict && !rightStrict ? 'center' : numeric ? 'right' : 'left';
     });
     st.segs[num] = segs;
+    await loadSiteFonts(segs.map((q) => q.rawName));
     return segs;
   };
 
@@ -142,9 +168,12 @@ export function initEditText() {
   const lineOpts = (s, e, color, pageH) => {
     const align = e.align === 'auto' ? s.autoAlign : e.align;
     const x0 = s.line.x, x1 = s.line.x + s.line.w;
+    // a font file the user added: same family, and the weight the line asks for
+    const wantW = e.bold === s.bold ? parseFontName(s.rawName).weight : (e.bold ? 700 : 400);
+    const userBytes = st.userFonts.get(keyOfName(s.rawName, wantW)) || null;
     return {
-      text: e.text, size: e.size, base: s.line.base, x0, x1, align, color, emb: s.emb, rawName: s.rawName,
-      userBytes: st.userFonts.get(normKey(s.rawName)) || null, family: e.family, bold: e.bold, forceSub: e.bold !== s.bold, pageH,
+      text: e.text, size: e.size, base: s.line.base, x0, x1, align, color, emb: s.emb, rawName: s.rawName, userKey: keyOfName(s.rawName, wantW),
+      userBytes, family: e.family, bold: e.bold, forceSub: e.bold !== s.bold && !userBytes, pageH,
     };
   };
 
@@ -178,6 +207,7 @@ export function initEditText() {
         await pg.render({ canvasContext: g, viewport: vp }).promise;
         if (seq !== sampleSeq) return;
         const miss = plan.missing;
+        if (plan.dropped.length) $('#et-fontinfo').textContent = '';
         $('#et-fontinfo').textContent = `Font: ${plan.usedFont || 'closest match'}` + (miss.length ? ` · not in your PDF's copy of this font: ${miss.slice(0, 12).join(' ')}. A close match is used for those; add the font file below for an exact match.` : plan.usedFont === 'your font file' || !plan.emb || e.bold !== s.bold ? '' : ' · exact glyphs from your PDF');
         $('#et-fontrow').classList.toggle('hidden', !(miss.length || !s.emb));
       } catch (err) { if (window.console) console.warn('[upmypdf] preview:', err && err.message); }
@@ -194,21 +224,25 @@ export function initEditText() {
     if (s) select(s);
     updateReady();
   });
-  // the user supplies the full font file for the selected line's font
+  // the user adds full font files (select the whole family at once); each is filed
+  // under its own family + weight, so regular, bold and light lines each find theirs
   $('#et-fontfile').addEventListener('change', async () => {
-    const f = $('#et-fontfile').files[0];
-    const s = currentSeg();
-    if (!f || !s) return;
-    try {
-      const bytes = new Uint8Array(await f.arrayBuffer());
-      window.fontkit.create(bytes); // throws if it is not a usable font
-      const key = normKey(s.rawName);
-      st.userFonts.set(key, bytes);
-      idbPut(key, bytes);
-      setStatus('edittext', `✅ Font file added for “${parseFontName(s.rawName).family}” (kept in this browser only).`, 'success');
-      drawSample();
-    } catch (_) { setStatus('edittext', '❌ That file is not a usable .ttf or .otf font.', 'error'); }
+    const files = [...$('#et-fontfile').files];
+    let added = 0;
+    for (const f of files) {
+      try {
+        const bytes = new Uint8Array(await f.arrayBuffer());
+        const fk = window.fontkit.create(bytes); // throws if it is not a usable font
+        const ps = fk.postscriptName || fk.fullName || f.name.replace(/\.[^.]+$/, '');
+        const key = keyOfName(ps);
+        st.userFonts.set(key, bytes);
+        idbPut(key, bytes);
+        added++;
+      } catch (_) { /* skip files that are not fonts */ }
+    }
     $('#et-fontfile').value = '';
+    if (added) { setStatus('edittext', `✅ ${added} font file${added > 1 ? 's' : ''} added (kept in this browser only).`, 'success'); drawSample(); }
+    else setStatus('edittext', '❌ Those files are not usable .ttf or .otf fonts.', 'error');
   });
 
   const style = document.createElement('style');
@@ -278,8 +312,7 @@ export function initEditText() {
       const wctx = makeContext(out);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      const SCALE = 3;
-      const notes = new Set();
+      const notes = new Set(), drops = new Set();
       for (let i = 1; i <= srcPdf.numPages; i++) {
         const edits = st.edits[i] && Object.keys(st.edits[i]).length ? st.edits[i] : null;
         if (!edits) {
@@ -290,6 +323,8 @@ export function initEditText() {
         const page = await srcPdf.getPage(i);
         await loadSegs(i);
         const vp1 = page.getViewport({ scale: 1 });
+        // keep the page image under ~14 megapixels so phones and tablets do not run out of memory
+        const SCALE = Math.max(1.5, Math.min(3, Math.sqrt(14e6 / (vp1.width * vp1.height))));
         const vp = page.getViewport({ scale: SCALE });
         canvas.width = Math.ceil(vp.width);
         canvas.height = Math.ceil(vp.height);
@@ -321,6 +356,7 @@ export function initEditText() {
           const plan = await planLine(wctx, lineOpts(j.s, j.e, j.color, vp1.height));
           emitLine(wctx, outPage, plan);
           if (plan.missing.length) notes.add(plan.missing.join(''));
+          plan.dropped.forEach((d) => drops.add(d));
         }
         // lines that were not edited keep their real text, invisibly, so the page stays searchable
         const layer = segs.filter((s) => !edits[s.id]).map((s) => ({ text: s.line.str, x: s.line.x, w: s.line.w, base: s.line.base, size: s.line.size }));
@@ -328,7 +364,7 @@ export function initEditText() {
       }
       const bytes = await out.save({ useObjectStreams: true });
       const n = countEdits();
-      showResult('edittext', bytes, `${baseName(f.name)}_edited.pdf`, 'application/pdf', `${n} line${n > 1 ? 's' : ''} changed · ${fmtBytes(bytes.length)}${notes.size ? ` · some characters (${[...notes].join('').slice(0, 20)}) are not in the PDF's copy of the font, so a close match was used` : ''}`);
+      showResult('edittext', bytes, `${baseName(f.name)}_edited.pdf`, 'application/pdf', `${n} line${n > 1 ? 's' : ''} changed · ${fmtBytes(bytes.length)}${notes.size ? ` · some characters (${[...notes].join('').slice(0, 20)}) are not in the PDF's copy of the font, so a close match was used` : ''}${drops.size ? ` · ⚠️ could not load a matching font (${[...drops].join(' ').slice(0, 40)}) — check your internet connection and try again` : ''}`);
     } catch (err) {
       setStatus('edittext', `❌ ${err.message || err}`, 'error');
     } finally {
