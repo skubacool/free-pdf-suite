@@ -34,7 +34,7 @@ const idbGetAll = async () => {
   } catch (_) { return new Map(); }
 };
 const idbPut = async (k, v) => { try { const db = await idb(); db.transaction('fonts', 'readwrite').objectStore('fonts').put(v, k); } catch (_) {} };
-const fontKey = (family, weight, italic) => `${family.toLowerCase().replace(/[^a-z0-9฀-๿]/g, '')}|${weight}|${italic ? 'i' : 'n'}`;
+const fontKey = (family, weight, italic) => `${family.toLowerCase().replace(/[^a-z0-9฀-๿]/g, '').replace(/^thsarabunpsk/, 'thsarabunnew')}|${weight}|${italic ? 'i' : 'n'}`; // PSK shares the New design
 const keyOfName = (raw, weightOverride) => { const p = parseFontName(raw); return fontKey(p.family, weightOverride || p.weight, p.italic); };
 // Company fonts hosted on the site itself (fonts/manifest.json lists the files). When a PDF uses a
 // family listed there, its full font is loaded automatically for every visitor on every device.
@@ -46,7 +46,7 @@ export function initEditText() {
   const { PDFDocument } = PDFLib;
   if (!$('#dz-edittext')) return;
 
-  const st = { file: null, bytes: null, doc: null, pageNum: 1, segs: {}, edits: {}, sel: null, fonts: null, userFonts: new Map(), siteList: null, siteLoaded: new Set() };
+  const st = { file: null, bytes: null, doc: null, pageNum: 1, segs: {}, edits: {}, sel: null, fonts: null, userFonts: new Map(), siteList: null, siteLoaded: new Set(), fontLabels: new Map() };
   const wrap = () => $('#wrap-edittext');
   const countEdits = () => Object.values(st.edits).reduce((a, m) => a + Object.keys(m).length, 0);
   const updateReady = () => {
@@ -60,7 +60,7 @@ export function initEditText() {
       for (const raw of new Set(rawNames)) {
         const fam = keyOfName(raw).split('|')[0];
         for (const file of st.siteList) {
-          if (!fam || !file.toLowerCase().replace(/[^a-z0-9]/g, '').startsWith(fam) || st.siteLoaded.has(file)) continue;
+          if (!fam || keyOfName(file.replace(/\.[^.]+$/, '')).split('|')[0] !== fam || st.siteLoaded.has(file)) continue; // same family only (UI variants are separate)
           st.siteLoaded.add(file);
           try {
             const res = await fetch(`${appBase()}fonts/${encodeURIComponent(file)}`);
@@ -68,7 +68,7 @@ export function initEditText() {
             const bytes = new Uint8Array(await res.arrayBuffer());
             const fk = window.fontkit.create(bytes);
             const key = keyOfName(fk.postscriptName || fk.fullName || file.replace(/\.[^.]+$/, ''));
-            if (!st.userFonts.has(key)) st.userFonts.set(key, bytes); // a font the user added themselves wins
+            if (!st.userFonts.has(key)) { st.userFonts.set(key, bytes); st.fontLabels.set(key, fk.familyName || 'built-in font'); } // a font the user added themselves wins
           } catch (_) { /* skip an unreadable font */ }
         }
       }
@@ -173,7 +173,7 @@ export function initEditText() {
     const userBytes = st.userFonts.get(keyOfName(s.rawName, wantW)) || null;
     return {
       text: e.text, size: e.size, base: s.line.base, x0, x1, align, color, emb: s.emb, rawName: s.rawName, userKey: keyOfName(s.rawName, wantW),
-      userBytes, family: e.family, bold: e.bold, forceSub: e.bold !== s.bold && !userBytes, pageH,
+      userBytes, userLabel: userBytes ? (st.fontLabels.get(keyOfName(s.rawName, wantW)) || 'your font file') : '', family: e.family, bold: e.bold, forceSub: e.bold !== s.bold && !userBytes, pageH,
     };
   };
 
@@ -208,7 +208,7 @@ export function initEditText() {
         if (seq !== sampleSeq) return;
         const miss = plan.missing;
         if (plan.dropped.length) $('#et-fontinfo').textContent = '';
-        $('#et-fontinfo').textContent = `Font: ${plan.usedFont || 'closest match'}` + (miss.length ? ` · not in your PDF's copy of this font: ${miss.slice(0, 12).join(' ')}. A close match is used for those; add the font file below for an exact match.` : plan.usedFont === 'your font file' || !plan.emb || e.bold !== s.bold ? '' : ' · exact glyphs from your PDF');
+        $('#et-fontinfo').textContent = `Font: ${plan.usedFont || 'closest match'}` + (miss.length ? ` · not in your PDF's copy of this font: ${miss.slice(0, 12).join(' ')}. A close match is used for those; add the font file below for an exact match.` : plan.fromFile || !plan.emb || e.bold !== s.bold ? '' : ' · exact glyphs from your PDF');
         $('#et-fontrow').classList.toggle('hidden', !(miss.length || !s.emb));
       } catch (err) { if (window.console) console.warn('[upmypdf] preview:', err && err.message); }
     }, 220);
@@ -243,6 +243,38 @@ export function initEditText() {
     $('#et-fontfile').value = '';
     if (added) { setStatus('edittext', `✅ ${added} font file${added > 1 ? 's' : ''} added (kept in this browser only).`, 'success'); drawSample(); }
     else setStatus('edittext', '❌ Those files are not usable .ttf or .otf fonts.', 'error');
+  });
+
+
+  // Chrome / Edge on desktop can hand us the fonts installed on this computer (after the
+  // user allows it): that covers Arial, Calibri, Tahoma, Angsana, Cordia ... which cannot be
+  // hosted on a website, without anyone having to find the files.
+  if ('queryLocalFonts' in window) $('#et-localfonts').classList.remove('hidden');
+  $('#et-localfonts').addEventListener('click', async () => {
+    const s = currentSeg();
+    if (!s) return;
+    try {
+      const fam = keyOfName(s.rawName).split('|')[0];
+      const list = await window.queryLocalFonts();
+      let added = 0;
+      for (const fd of list) {
+        if (keyOfName(fd.postscriptName || fd.fullName || '').split('|')[0] !== fam) continue;
+        try {
+          const bytes = new Uint8Array(await (await fd.blob()).arrayBuffer());
+          const fk = window.fontkit.create(bytes);
+          const own = (fk.familyName || '').toLowerCase().replace(/[^a-z0-9฀-๿]/g, '');
+          if (!own || (own !== fam && !own.startsWith(fam) && !fam.startsWith(own))) continue; // a different family that merely shares a prefix
+          if (own !== fam && fk.familyName && /black|narrow|rounded|condensed/i.test(fk.familyName)) continue;
+          const key = keyOfName(fk.postscriptName || fd.postscriptName);
+          if (!key.startsWith(fam)) continue;
+          st.userFonts.set(key, bytes); st.fontLabels.set(key, fk.familyName || fd.family);
+          idbPut(key, bytes);
+          added++;
+        } catch (_) { /* collections and unreadable faces are skipped */ }
+      }
+      setStatus('edittext', added ? `✅ Found ${added} installed font file${added > 1 ? 's' : ''} for “${parseFontName(s.rawName).family}”.` : `⚠️ “${parseFontName(s.rawName).family}” is not installed on this computer.`, added ? 'success' : 'error');
+      drawSample();
+    } catch (_) { setStatus('edittext', 'Access to installed fonts was not allowed.', 'error'); }
   });
 
   const style = document.createElement('style');

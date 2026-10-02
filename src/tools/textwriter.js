@@ -62,7 +62,7 @@ async function subFont(ctx, family, bold) {
 async function userFont(ctx, bytes, key) {
   if (ctx.subs.has(key)) return ctx.subs.get(key);
   const fk = window.fontkit.create(new Uint8Array(bytes));
-  const font = await ctx.out.embedFont(bytes, { subset: bytes.byteLength > 3000000 });
+  const font = await ctx.out.embedFont(bytes, { subset: bytes.byteLength > 300000 });
   const o = { font, fk, family: 'your font' };
   ctx.subs.set(key, o);
   return o;
@@ -129,6 +129,7 @@ export async function planLine(ctx, opts) {
   const missing = [];
   const dropped = [];
   let usedFont = '';
+  let fromFile = false;
   const chunkByScript = (str) => {
     const chunks = [];
     for (const ch of str) { const k = scriptOf(ch); const l = chunks[chunks.length - 1]; if (l && l.k === k) l.s += ch; else chunks.push({ k, s: ch }); }
@@ -166,7 +167,8 @@ export async function planLine(ctx, opts) {
   if (opts.userBytes && orig && !opts.forceSub) {
     const uf = await userFont(ctx, opts.userBytes, `user|${opts.userKey || opts.rawName}`);
     runs.push({ kind: 'sub', text, sf: uf, scale: 1, width: uf.font.widthOfTextAtSize(text, size) });
-    usedFont = 'your font file';
+    usedFont = opts.userLabel || 'your font file';
+    fromFile = true;
   } else if (emb && orig && !opts.forceSub) {
     const parts = [];
     for (const ch of text) {
@@ -192,7 +194,7 @@ export async function planLine(ctx, opts) {
   }
   const total = runs.reduce((a, r) => a + r.width, 0);
   const x = opts.align === 'right' ? opts.x1 - total : opts.align === 'center' ? (opts.x0 + opts.x1) / 2 - total / 2 : opts.x0;
-  return { runs, width: total, x, missing: [...new Set(missing)], dropped: [...new Set(dropped)], usedFont, opts, emb };
+  return { runs, width: total, x, missing: [...new Set(missing)], dropped: [...new Set(dropped)], usedFont, fromFile, opts, emb };
 }
 
 export function emitLine(ctx, outPage, plan) {

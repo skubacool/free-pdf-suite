@@ -1,0 +1,17 @@
+Fonts in this folder
+
+CS ChatThai and CS ChatThaiUI (Regular, Bold, Light)
+Copyright (c) 2014 Chanok Samiti (BoonUni, http://boonuni.org)
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+The font files are included here unchanged. They are loaded automatically by the
+Edit PDF Text tool so that text edited in a PDF that uses these fonts is written
+in the exact same typeface.
+
+TH Sarabun New (Regular, Bold, Italic, Bold Italic)
+Copyright (c) 2010-2011 Software Industry Promotion Agency (Public Organization) (SIPA).
+Created by Suppakit Chalermlarp.
+Licensed under the GNU General Public License, version 2 or later, with the font embedding
+exception: documents that embed this font are not covered by the GPL.
+The font files are included here unchanged. TH SarabunPSK shares the same design and is
+served from these files.
