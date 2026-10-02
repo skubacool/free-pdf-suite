@@ -144,7 +144,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script defer src="../app.js?v=22"></script>
+  <script defer src="../app.js?v=23"></script>
   <script type="module" src="../nhost.js"></script>
 </head>
 
@@ -699,6 +699,55 @@
               <div class="flex flex-wrap items-center gap-4">
                 <button id="dl-redact" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Redacted PDF</button>
                 <span class="text-sm text-slate-600" id="info-redact"></span>
+              </div>
+              <!-- ADVERTISEMENT SLOT -->
+              <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>
+            </div>
+          </div>
+
+<div id="panel-erase" class="panel hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex w-11 h-11 items-center justify-center rounded-xl bg-pink-50 text-2xl">🧽</span>
+              <div>
+                <h2 class="text-2xl font-bold">Smart Erase</h2>
+                <p class="text-slate-500 text-sm">Remove a logo, stamp or footer and let the background fill in &mdash; no black box left behind.</p>
+              </div>
+            </div>
+            <div id="dz-erase" class="dropzone mt-6 border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-10 text-center cursor-pointer">
+              <div class="text-3xl">📥</div>
+              <p class="mt-2 font-semibold">Drop a PDF here or click to browse</p>
+              <input type="file" id="file-erase" accept="application/pdf,.pdf" class="hidden" />
+            </div>
+            <p id="picked-erase" class="mt-4 text-sm text-slate-600"></p>
+            <div id="work-erase" class="hidden mt-6">
+              <div class="text-sm font-semibold mb-1.5">Drag on the page to mark what to erase
+                <label class="ml-2 font-normal text-xs">Page:
+                  <input type="number" id="page-erase" min="1" value="1" class="w-16 border border-slate-300 rounded-lg px-2 py-1" />
+                  <span id="pages-erase" class="text-slate-500"></span>
+                </label>
+                <span id="erase-count" class="ml-2 text-xs font-semibold text-pink-600"></span>
+              </div>
+              <div class="relative inline-block border border-slate-300 rounded-xl overflow-hidden bg-white" id="wrap-erase">
+                <canvas id="preview-erase" class="preview-canvas" style="cursor:crosshair"></canvas>
+              </div>
+              <div class="mt-4">
+                <div class="text-sm font-semibold mb-1.5">Fill the erased area with</div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="button" data-erasemode="auto" class="btn text-sm rounded-lg px-3.5 py-1.5 border border-brand-600 bg-brand-50 text-brand-700 font-semibold">✨ Blend with background</button>
+                  <button type="button" data-erasemode="white" class="btn text-sm rounded-lg px-3.5 py-1.5 border border-slate-300">White</button>
+                  <button type="button" data-erasemode="custom" class="btn text-sm rounded-lg px-3.5 py-1.5 border border-slate-300">Pick a colour</button>
+                  <span id="erase-color-row" class="hidden"><input type="color" id="erase-color" value="#ffffff" class="w-10 h-9 border border-slate-300 rounded-lg" /></span>
+                </div>
+                <p class="mt-2 text-xs text-slate-500">Blend rebuilds the area from the colours around it &mdash; ideal for a logo or footer on a plain or softly shaded page.</p>
+              </div>
+            </div>
+            <button id="btn-erase" class="btn mt-6 bg-brand-600 hover:bg-brand-700 text-white font-bold px-7 py-3 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed" disabled>Erase Marked Areas</button>
+            <p id="status-erase" class="mt-4 text-sm font-medium"></p>
+            <div id="res-erase" class="hidden mt-6 border-t border-slate-200 pt-6">
+              <div id="preview-result-erase" class="hidden mb-5"></div>
+              <div class="flex flex-wrap items-center gap-4">
+                <button id="dl-erase" class="btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl">⬇️ Download Erased PDF</button>
+                <span class="text-sm text-slate-600" id="info-erase"></span>
               </div>
               <!-- ADVERTISEMENT SLOT -->
               <div class="ad-box ad-frame-inline rounded-xl mt-5" aria-label="Advertisement"></div>

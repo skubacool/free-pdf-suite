@@ -31,6 +31,7 @@ export function initWorkspace() {
         { key: 'type',        icon: '⌨️', name: 'Add text' },
         { key: 'sign',        icon: '✍️', name: 'Sign' },
         { key: 'redact',      icon: '⬛', name: 'Redact' },
+        { key: 'erase',       icon: '🧽', name: 'Smart erase' },
         { key: 'flatten',     icon: '🧊', name: 'Flatten' },
         { key: 'compress',    icon: '🗜️', name: 'Compress' },
         { key: 'protect',     icon: '🔒', name: 'Add password' },

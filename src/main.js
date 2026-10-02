@@ -16,6 +16,7 @@ import { initRotate } from './tools/rotate.js';
 import { initSignTool } from './tools/sign.js';
 import { initWorkspace } from './tools/workspace.js';
 import { initHouseAds } from './tools/houseads.js';
+import { initErase } from './tools/erase.js';
 
 // Each tool module is isolated: one broken panel must not stop the rest.
 const safe = (fn) => { try { fn(); } catch (e) { console.warn('[upmypdf] module skipped:', e && e.message); } };
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   safe(() => initRotate());
   if (window.appHelpers) {
     safe(() => initSignTool(window.appHelpers));
+    safe(() => initErase());
     safe(() => initWorkspace()); // after every tool has registered its dropzone
   }
 });
