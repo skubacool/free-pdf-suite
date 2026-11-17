@@ -59,3 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
     safe(() => initWorkspace()); // after every tool has registered its dropzone
   }
 });
+
+// Thai text typed into a field must come from the same font as the rest of the
+// page. The Thai part of Noto Sans Thai only downloads when a Thai letter is first
+// drawn, so fetch it as soon as someone focuses a text box (before they type).
+// Done on focus, not on load, so visitors who never type Thai don't pay for it.
+document.addEventListener('focusin', (e) => {
+  const t = e.target;
+  if (!t || !/^(INPUT|TEXTAREA)$/.test(t.tagName) || !document.fonts || !document.fonts.load) return;
+  try { [400, 500, 600, 700].forEach((w) => document.fonts.load(`${w} 16px "Noto Sans Thai"`, '\u0e01\u0e17')); } catch (_) { /* font preloading is optional */ }
+}, { once: true });
