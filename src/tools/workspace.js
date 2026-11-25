@@ -32,6 +32,7 @@ export function initWorkspace() {
         { key: 'sign',        icon: '✍️', name: 'Sign' },
         { key: 'redact',      icon: '⬛', name: 'Redact' },
         { key: 'findredact',  icon: '🕵️', name: 'Find & redact' },
+        { key: 'rmwatermark', icon: '🧼', name: 'Remove watermark' },
         { key: 'erase',       icon: '🧽', name: 'Smart erase' },
         { key: 'edittext',    icon: '✏️', name: 'Edit text' },
         { key: 'annotate',    icon: '🖍️', name: 'Annotate' },

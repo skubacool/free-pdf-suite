@@ -22,6 +22,7 @@ import { initAnnotate } from './tools/annotate.js';
 import { initFormCreate } from './tools/formcreate.js';
 import { initCertSign } from './tools/certsign.js';
 import { initFindRedact } from './tools/findredact.js';
+import { initRmWatermark } from './tools/rmwatermark.js';
 import { initPdfA } from './tools/pdfa.js';
 import * as officeExport from './tools/officeexport.js';
 window.appOffice = officeExport;
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safe(() => initFormCreate());
     safe(() => initCertSign());
     safe(() => initFindRedact());
+    safe(() => initRmWatermark());
     safe(() => initPdfA());
     safe(() => initWorkspace()); // after every tool has registered its dropzone
   }
